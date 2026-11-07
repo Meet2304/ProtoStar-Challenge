@@ -38,32 +38,39 @@ As Team Placeholders, we are developing an iterative, data-driven forecasting pi
 
 | Name | Hugging Face username | University, Program |
 |---|---|---|
-| Meet Bhatt | <@username> | Carnegie Mellon University, <program> |
-| Kohav | <@username> | <University, program> |
-| Ananya | <@username> | <University, program> |
-| Achintya | <@username> | <University, program> |
+| Meet Bhatt | @Meet2304 | Carnegie Mellon University, <program> |
+| Kohav Dey | @DragonDare | Carnegie Mellon University, Heinz College MISM |
+| Ananya Gahalaut | @Vyaghra | <University, program> |
+| Achintya Gahalaut | @agahalau | <University, program> |
 
 ## Method
 
-**Current version: the challenge's starter model** (`code/starter_model.py`), a first end-to-end run of the pipeline.
+**Current version: combined model** (`code/combo_model.py`). Each metric gets the simple forecast that backtests best on it:
 
-- **Model:** for each metric, a `RandomForestRegressor` (100 trees, `random_state=42`) trained on all cities pooled, forecasting recursively: 2019 from 2016–2018, then each year from the three before it, using earlier forecasts.
-- **Features:** the metric's own value 1, 2 and 3 years earlier (`lag_1`–`lag_3`). City-years that missed more than 10 days of data are left out of training; when one of a city's 2016–2018 values is invalid, it is replaced by the city's 1989–2018 average.
-- **How we checked it:** backtest trained only on data up to 2010 and tested on 2011–2018, scored like the leaderboard (`reports/backtest_starter.csv`). Our reference baselines match the organizers' practice run (CDD MAE: 30-year average 211.7, linear trend 174.6 °F-days; published: 212 / 175).
+- **Average temperature and cooling degree days:** the average of two forecasts per city: a straight line through its last 30 years (1989–2018), extended to 2019–2025, and its mean of the last 10 years (2009–2018). Both metrics drift upward, so a flat 30-year average lags; the trend line catches the drift but swings with noise near the end of its window; the 10-year mean is stable but lags. Their average was the most consistent.
+- **Total precipitation and hottest day:** each city's 1989–2018 average. These are mostly year-to-year noise; no candidate beat the 30-year average on them in any window.
+- **Data and validity:** `data/annual_valid.csv`, with city-years that missed more than 10 days of the data a metric uses left out (the official rule). Cities without 10 valid years in the window (not scored) fall back to the mean of the valid years they have, so all 5,880 rows are filled.
+- **How we chose it:** four backtests, each trained only on data up to the end of a window and tested on the next 8 years (1987–1994, 1995–2002, 2003–2010, 2011–2018), scored like the leaderboard (`reports/backtest_combo.csv`). Candidates per metric: 30-year average, 30-year linear trend, 10-year mean, and the trend/10-year blend. Rule, fixed in advance: per metric, the highest mean skill across the windows. No 2019+ observations or leaderboard scores were used to choose. The reference baselines match the organizers' practice run (CDD MAE: 30-year average 211.7, linear trend 174.6 °F-days; published: 212 / 175).
 
-| Backtest 2011–2018, MAE | Avg temp (°F) | Precip (in) | Hottest day (°F) | CDD (°F-days) | Score |
+| Backtest Score (leaderboard formula) | 1987–1994 | 1995–2002 | 2003–2010 | 2011–2018 | Mean |
 |---|---:|---:|---:|---:|---:|
-| Last year repeated | 1.67 | 8.55 | 3.25 | 215.2 | 0.0 |
-| 30-year average | 1.66 | 6.18 | 2.55 | 211.7 | 0.0 |
-| Linear trend (30 years) | 1.43 | 6.53 | 2.70 | 174.6 | 5.0 |
-| **Starter RF on lags** | 1.81 | 7.57 | 3.27 | 197.4 | 0.0 |
+| 30-year average | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| Linear trend (30 years) | 0.0 | 0.0 | 1.0 | 5.0 | 1.5 |
+| 10-year mean | 0.5 | 3.0 | 4.2 | 5.8 | 3.4 |
+| Trend/10-year blend, all metrics | 0.0 | 1.0 | 4.2 | 6.4 | 2.9 |
+| **Combined model** | **1.6** | **3.8** | **4.7** | **7.4** | **4.4** |
 
-The starter beats the 30-year average on CDD only: lag features carry year-to-year noise, and a random forest cannot extrapolate a warming trend. Next steps: trend-aware and shrunk models (e.g., blend of the 30-year average and the linear trend), handling station changes with `coverage_and_stations`, and city covariates.
+A trend line alone wins on temperature and CDD in 2011–2018 but loses in the earlier windows: testing on several windows, not just the latest, is what changed our choice.
+
+**Previous version: the challenge's starter model** (`code/starter_model.py`): one `RandomForestRegressor` per metric on lag-1/2/3 features, pooled across cities, forecast recursively. On the 2011–2018 backtest it was worse than the 30-year average on three of four metrics (Score 0.0; `reports/backtest_starter.csv`): lag features carry year-to-year noise, and a random forest cannot extrapolate a trend.
+
+**Next steps:** handle station changes with `coverage_and_stations` (a step in a city's record can fake a trend), shrink each city's trend toward its region's, and add city covariates.
 
 ## AI Tools and Agents
 
 - **Tools and models:** Claude Code (Anthropic).
 - **What they did:** read the challenge rules and submission template; set up the repository layout, `AGENTS.md` / `CLAUDE.md`, the data-rule guard, `prepare_data.py`, `starter_model.py` (from the challenge's starter code) and the backtest; drafted this README and the data card. Downloaded only the challenge training dataset (data up to 2018).
+- **Combined model:** Claude (Anthropic, via the Claude app) wrote `code/combo_model.py`, ran the four-window backtest and drafted this Method section, working only from `data/annual_valid.csv` (data up to 2018).
 - **What a person reviewed:** <TODO: e.g., all model code, the data-rule guard, the backtest results, the final numbers>
 - **Agent instructions file:** [`code/AGENTS.md`](code/AGENTS.md) (also loaded through `AGENTS.md` and `CLAUDE.md` at the repository root).
 
