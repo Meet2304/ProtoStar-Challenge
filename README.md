@@ -1,21 +1,5 @@
----
-pretty_name: "Protostar Climate Challenge Submission: Team Placeholders"
-license: cc-by-4.0
-task_categories:
-- time-series-forecasting
-tags:
-- climate
-- forecasting
-- protostar-climate-2026
-configs:
-- config_name: default
-  data_files:
-  - split: test
-    path: submission.csv
----
-
 <p align="center">
-  <img src="./assets/protostar-header-v0.1" alt="ProtoStar Challenge" width="100%">
+  <img src="./assets/protostar-header-v0.1.png" alt="ProtoStar Challenge" width="100%">
 </p>
 
 <h1 align="center">Team Placeholders: Protostar Climate Challenge Submission</h1>
@@ -32,16 +16,31 @@ The ProtoStar Challenge, hosted by Carnegie Mellon University, explores how mach
 As Team Placeholders, we are developing an iterative, data-driven forecasting pipeline that combines statistical baselines with machine learning models to improve prediction accuracy. Our workflow is built around Python and uv for reproducible dependency management, Google Colab for collaborative experimentation, and MLflow for tracking model performance, parameters, and artifacts. Through continuous evaluation and refinement, we aim to develop reliable city-level forecasts and translate our findings into a practical climate adaptation recommendation.
 </p>
 
-## Team
+---
+pretty_name: "Protostar Climate Challenge Submission: Team Placeholders"
+license: cc-by-4.0
+task_categories:
+- time-series-forecasting
+tags:
+- climate
+- forecasting
+- protostar-climate-2026
+configs:
+- config_name: default
+  data_files:
+  - split: test
+    path: submission.csv
+---
 
-<!-- TODO: fill in Hugging Face usernames and programs. -->
+
+## Team
 
 | Name | Hugging Face username | University, Program |
 |---|---|---|
-| Meet Bhatt | @Meet2304 | Carnegie Mellon University, <program> |
-| Kohav Dey | @DragonDare | Carnegie Mellon University, Heinz College MISM |
-| Ananya Gahalaut | @Vyaghra | <University, program> |
-| Achintya Gahalaut | @agahalau | <University, program> |
+| Meet Bhatt | Meet2304 | Carnegie Mellon University, MSAIE-ETIM |
+| Kohav Dey | DragonDare | Carnegie Mellon University, MISM |
+| Ananya Gahalaut | Vyaghra | Carnegie Mellon University, MSAIE-IS |
+| Achintya Gahalaut | agahalau | Carnegie Mellon University, MSAIE-IS |
 
 ## Method
 
@@ -69,10 +68,10 @@ A trend line alone wins on temperature and CDD in 2011–2018 but loses in the e
 ## AI Tools and Agents
 
 - **Tools and models:** Claude Code (Anthropic).
-- **What they did:** read the challenge rules and submission template; set up the repository layout, `AGENTS.md` / `CLAUDE.md`, the data-rule guard, `prepare_data.py`, `starter_model.py` (from the challenge's starter code) and the backtest; drafted this README and the data card. Downloaded only the challenge training dataset (data up to 2018).
+- **What they did:** read the challenge rules and submission template; set up the repository layout, `code/AGENTS.md` / `CLAUDE.md`, the data-rule guard, `prepare_data.py`, `starter_model.py` (from the challenge's starter code) and the backtest; drafted this README and the data card. Downloaded only the challenge training dataset (data up to 2018).
 - **Combined model:** Claude (Anthropic, via the Claude app) wrote `code/combo_model.py`, ran the four-window backtest and drafted this Method section, working only from `data/annual_valid.csv` (data up to 2018).
 - **What a person reviewed:** <TODO: e.g., all model code, the data-rule guard, the backtest results, the final numbers>
-- **Agent instructions file:** [`code/AGENTS.md`](code/AGENTS.md) (also loaded through `AGENTS.md` and `CLAUDE.md` at the repository root).
+- **Agent instructions file:** [`code/AGENTS.md`](code/AGENTS.md) (the single agent instructions file; Claude Code loads it through `CLAUDE.md` at the repository root).
 
 ## Policy Idea
 
