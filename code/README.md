@@ -17,7 +17,7 @@ python code/check_submission.py           # same checks as the challenge Space
 | `starter_model.py` | The challenge's prescribed starter: one `RandomForestRegressor` per metric on lag-1/2/3 features, pooled across cities, forecast recursively for 2019–2025. Also backtests the model and the three reference baselines (train ≤ 2010, test 2011–2018) and writes `reports/backtest_starter.csv`. Runs in about 15 seconds. |
 | `check_submission.py` | From the challenge template, unchanged: checks `submission.csv` like the Space does. |
 | `requirements.txt` | Pinned packages (the same versions as `uv.lock`). |
-| `AGENTS.md` | Instructions for AI agents, including the data rule (from the template, plus team notes). |
+| `AGENTS.md` | The repository's single instructions file for AI agents: the data rule, training-data notes and team rules (the root `CLAUDE.md` imports it). |
 
 `submission.csv` is byte-for-byte reproducible: fixed seeds, and single-threaded prediction
 (parallel prediction sums the trees in thread order and changes the last digits).
