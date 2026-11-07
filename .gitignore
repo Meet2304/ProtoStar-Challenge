@@ -1,1 +1,19 @@
-data/raw/
+# Python and uv
+.venv/
+__pycache__/
+
+# Data: everything in data/ except its README (data card)
+data/*
+!data/README.md
+
+# Notebooks
+.ipynb_checkpoints/
+
+# MLflow (local tracking store)
+mlflow.db
+mlruns/
+mlartifacts/
+
+# Secrets and outputs
+.env
+outputs/
