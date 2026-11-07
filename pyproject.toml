@@ -1,13 +1,23 @@
 [project]
 name = "protostar-challenge"
 version = "0.1.0"
-description = "Add your description here"
+description = "Reproducible climate-risk forecasting pipeline for the ProtoStar Challenge"
 readme = "README.md"
 authors = [
     { name = "Meet Bhatt", email = "meetbhatt2304@gmail.com" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "datasets>=4.0",
+    "ipykernel>=6.30",
+    "jupyter>=1.1",
+    "matplotlib>=3.10",
+    "numpy>=2.1",
+    "pandas>=2.2",
+    "pyarrow>=18.0",
+    "scikit-learn>=1.6",
+    "seaborn>=0.13",
+]
 
 [project.scripts]
 protostar-challenge = "protostar_challenge:main"

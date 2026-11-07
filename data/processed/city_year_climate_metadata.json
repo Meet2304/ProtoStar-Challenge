@@ -1,0 +1,11 @@
+{
+  "source_repository": "CMU-OSPO/protostar-climate-train-to-2018",
+  "annual_source_rows": 28052,
+  "city_year_rows": 28052,
+  "city_count": 210,
+  "year_range": [
+    1851,
+    2018
+  ],
+  "coverage_rule": "At most 10 missing relevant daily values per city-year metric"
+}
