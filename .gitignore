@@ -1,10 +1,16 @@
 # Python and uv
 .venv/
 __pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
 
-# Data: everything in data/ except its README (data card)
-data/*
-!data/README.md
+# Data: the raw Hugging Face download and scratch builds stay out of Git.
+# The curated files the submission code reads (data/*.csv) and the data card ARE tracked:
+# the challenge requires them in the submission dataset's data/ folder.
+data/raw/
+data/processed/
 
 # Notebooks
 .ipynb_checkpoints/
@@ -14,6 +20,13 @@ mlflow.db
 mlruns/
 mlartifacts/
 
-# Secrets and outputs
+# Secrets and outputs: never commit tokens
 .env
+*.token
 outputs/
+
+# Local caches, OS and editors
+.cache/
+.DS_Store
+.vscode/
+.idea/
