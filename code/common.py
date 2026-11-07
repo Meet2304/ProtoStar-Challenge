@@ -14,6 +14,8 @@ REPORTS_DIR = ROOT / "reports"
 SUBMISSION_PATH = ROOT / "submission.csv"
 
 TRAIN_REPO = "CMU-OSPO/protostar-climate-train-to-2018"
+# Pinned dataset commit; keep equal to DATASET_REVISION in src/protostar_challenge/config.py
+TRAIN_REVISION = "bbbdebdab2a18e00f97ef87bd3f35a71e222180b"
 
 # Forecasts are made as of this date (challenge data rule). Nothing later may feed a forecast.
 CUTOFF_YEAR = 2018

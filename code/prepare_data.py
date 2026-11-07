@@ -3,7 +3,7 @@
 Usage: python code/prepare_data.py
 
 Reads `annual_indices` and `city_info` from CMU-OSPO/protostar-climate-train-to-2018
-(public, CC0; no token needed) and writes:
+at the pinned revision (public, CC0; no token needed) and writes:
 
 - data/annual_valid.csv: one row per city and year (up to 2018), the four metrics,
   with a value set to empty when that year missed more than 10 days of the data it uses
@@ -14,11 +14,11 @@ Reads `annual_indices` and `city_info` from CMU-OSPO/protostar-climate-train-to-
 import pandas as pd
 
 from common import (DATA_DIR, MAX_MISSING_DAYS, METRICS, TRAIN_REPO,
-                    assert_no_post_cutoff)
+                    TRAIN_REVISION, assert_no_post_cutoff)
 
 
 def main() -> None:
-    annual = pd.read_parquet(f"hf://datasets/{TRAIN_REPO}/annual_indices")
+    annual = pd.read_parquet(f"hf://datasets/{TRAIN_REPO}@{TRAIN_REVISION}/annual_indices")
     assert_no_post_cutoff(annual, "Year", "annual_indices")
 
     out = annual[["ID", "Name", "Year"]].rename(columns={"ID": "city_id", "Name": "name", "Year": "year"})
@@ -27,7 +27,7 @@ def main() -> None:
         out[metric] = annual[column].mask(too_many_missing).round(3)
     out = out.sort_values(["city_id", "year"])
 
-    cities = (pd.read_parquet(f"hf://datasets/{TRAIN_REPO}/city_info")
+    cities = (pd.read_parquet(f"hf://datasets/{TRAIN_REPO}@{TRAIN_REVISION}/city_info")
               [["ID", "Name", "Lat", "Lon"]].drop_duplicates("ID")
               .rename(columns={"ID": "city_id", "Name": "name", "Lat": "lat", "Lon": "lon"})
               .sort_values("city_id"))

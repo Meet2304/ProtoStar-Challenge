@@ -9,6 +9,8 @@ Personal exploration space, one folder per team member:
 | [`Ananya/`](Ananya/) | Ananya |
 | [`Achintya/`](Achintya/) | Achintya |
 
+[`01_explore.ipynb`](01_explore.ipynb) is the shared Colab starter: copy it into your folder to begin (its setup cell clones the repo, installs `requirements.txt` and downloads the data to `data/raw/`).
+
 Work freely in your own folder: experiments, plots, Colab notebooks. A few shared rules:
 
 - **The data rule applies here too.** Use weather data up to 2018-12-31 only, and never score or

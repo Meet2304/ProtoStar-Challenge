@@ -36,18 +36,23 @@ This repository has the same layout as the Hugging Face submission dataset, so i
 | `README.md` | The submission write-up (method, AI tools, policy idea, feedback). Has Hugging Face dataset YAML front matter: keep it. |
 | `submission.csv` | Forecasts, 5,880 rows: `city_id,year,metric,predicted_value`. Generated: do not edit by hand. |
 | `code/` | Everything that produces `submission.csv`, plus `AGENTS.md` and `check_submission.py`. |
-| `data/` | Curated data the code reads; every file is described in `data/README.md`. |
+| `data/` | Curated data the code reads (tracked); every file is described in `data/README.md`. `data/raw/` (full download) and `data/processed/` are git-ignored. |
 | `reports/` | Backtest results written by the code. |
+| `notebooks/01_explore.ipynb` | Shared Colab starter notebook (setup cell clones the repo, installs `requirements.txt`, downloads the data). |
 | `notebooks/<Name>/` | Personal exploration space for Meet, Kohav, Ananya and Achintya. |
-| `src/protostar_challenge/` | Package stub from `uv init`; not used by the pipeline. |
+| `scripts/01_download_data.py` | Downloads all four subsets of the challenge dataset to `data/raw/` at the pinned revision. |
+| `src/protostar_challenge/config.py` | Shared paths, pinned dataset revision and cutoff for scripts and notebooks. `code/common.py` repeats the revision so `code/` runs on its own from the submission dataset: keep them equal. |
+| `requirements.txt` | Full `uv export` of `uv.lock`, for Colab. `code/requirements.txt` is the minimal pinned set the submission code needs. |
 
 ## Commands
 
-Python 3.13 with [uv](https://docs.astral.sh/uv/) (`pyproject.toml`, `uv.lock`); `code/requirements.txt` for pip users.
+This repo uses uv (Python 3.13): run code with `uv run python ...` and add packages with `uv add ...`
+(then regenerate `requirements.txt` with the `uv export` command in its header).
 
 ```bash
 uv sync                                    # install dependencies
-uv run python code/prepare_data.py         # download training data -> data/
+uv run python scripts/01_download_data.py  # optional: full raw dataset -> data/raw/ (for exploration)
+uv run python code/prepare_data.py         # curated training data -> data/
 uv run python code/starter_model.py        # backtest 2011-2018, then write submission.csv
 uv run python code/check_submission.py     # same checks the challenge Space runs
 ```

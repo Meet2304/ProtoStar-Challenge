@@ -26,6 +26,10 @@ This repository is a submission to the Protostar Challenge: Climate Risk Intelli
 
 Team Placeholders (Meet, Kohav, Ananya, Achintya). These add to the rules above; they never relax them.
 
+- This repo uses uv (Python 3.13): run code with `uv run python ...` and add packages with `uv add ...`.
+- Raw challenge data is cached in `data/raw/` (git-ignored; recreate with `uv run python scripts/01_download_data.py`).
+  The dataset revision is pinned in `src/protostar_challenge/config.py` and `code/common.py`: keep them equal.
+
 - **Guard every weather input in code.** Call `assert_no_post_cutoff()` from `code/common.py` on every
   weather table before it is used. It raises `DataRuleViolation` if any row is dated after 2018. Do not
   remove, weaken or bypass it.
