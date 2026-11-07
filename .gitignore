@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+build/
+dist/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Secrets: never commit tokens
+.env
+*.token
+
+# Local caches and experiment tracking
+.cache/
+mlruns/
+mlartifacts/
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/
