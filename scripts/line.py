@@ -710,6 +710,9 @@ def cmd_score(args, extra):
         print(sync_runs(None, only=run_dir))
     except Exception as exc:
         print(f"Run is sealed but not on MLflow ({type(exc).__name__}: {exc}). Retry with `line.py sync`.")
+    if "--phase" not in extra:  # development runs only; the reward never reads assessment origins
+        print("\n" + "-" * 30 + " reward (evaluation/REWARD.md) " + "-" * 30)
+        subprocess.run([sys.executable, str(ROOT / "code/evaluation/reward.py"), "score", run_dir], cwd=ROOT, check=False)
     return 0
 
 

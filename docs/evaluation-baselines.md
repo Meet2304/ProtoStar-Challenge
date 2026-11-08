@@ -4,6 +4,10 @@ A guide for the team. It explains how to test a new model in one command, what t
 progress is tracked. The design and its review history are in
 [`plans/baselines-and-tracking-plan.md`](plans/baselines-and-tracking-plan.md).
 
+The live assembly-line bar is the [seven official eval-v1 runs](../reports/eval-v1-official-baselines.md).
+Use `line.py score` for every model and the shared MLflow server. The first-results
+table below is retained as historical, pre-line evidence.
+
 ## The idea in one paragraph
 
 We cannot test models on 2019–2025: the official FAQ forbids comparing or choosing models against those
@@ -22,21 +26,21 @@ mirrored to **MLflow** so the team can see progress over time.
 2. From the repository root:
 
    ```bash
-   uv run python scripts/eval_model.py --name my-model-v1 --adapter code/my_model.py:forecast --assets evaluation/no-assets.json
+   uv run python scripts/line.py status
+   uv run python scripts/line.py score --name my-model-v1 --adapter code/my_model.py:forecast --assets evaluation/no-assets.json --suite outputs/evaluation/suite-v3 --phase development
    ```
 
    Use `evaluation/no-assets.json` only if your model reads no files besides `train`/`targets`; otherwise declare
    them (see [`evaluation/ASSETS.md`](../evaluation/ASSETS.md)). Add `--params my_params.json` for keyword
    arguments.
-3. Read the one-screen summary (below), then open MLflow:
+3. Read the raw-skill summary and the sealed run ID, then open the already-running
+   shared server using the [team MLflow guide](team-mlflow-guide.md). Filter on
+   `line.status=official` and `line.evaluator=eval-v1`. Do not start a local server.
 
-   ```bash
-   uv run mlflow ui --backend-store-uri sqlite:///outputs/mlflow/mlflow.db
-   ```
-
-The first run after a code change also builds the control panel (a few minutes); later runs reuse it. The default
-panel profile is `full` (all seven controls + combo + nested). If `ridge_pooled` or `starter_rf` ever break, add
-`--profile A` to use only the five simple controls + combo + nested.
+`line.py score` does not rebuild a cached control panel. Compare against the exact
+fresh run IDs in the official bar; old cached panels predate the line clock and
+are legacy evidence. The optional detailed scorecards and screening summaries
+described below do not replace assembly-line classification.
 
 ## The control panel (`controls-v1`)
 
@@ -52,8 +56,9 @@ panel profile is `full` (all seven controls + combo + nested). If `ridge_pooled`
 | *combo* (incumbent) | the method behind `submission.csv` | the model to beat |
 | *nested* (incumbent) | combo's method choice redone inside each historical origin | an honest version of combo's selection |
 
-Controls are fixed. Changing one means a new control set (`controls-v2`) and a new panel. Build or refresh it
-with `uv run python scripts/run_controls.py`.
+Controls are fixed. The eval station reruns them through `line.py score` when
+the integrator releases an evaluator. Evaluator changes are bug fixes only,
+at most one release per half-day. The current snapshot contains all seven controls.
 
 ## Reading the summary
 
@@ -79,9 +84,10 @@ cities with station changes, is in
 
 ## Rules that keep the numbers honest
 
-- **Development origins only** (1983, 1990, 1997). The assessment origins (2004, 2011) are opened only for **one
-  frozen finalist** (or a shortlist and selection rule written down first), using the harness's `freeze` workflow.
-  The finalist replaces combo only if it beats combo on both. No second round against the same periods.
+- **Development origins only** (1983, 1990, 1997). Only the integrator runs
+  assessment, **once for one chosen model**, across origins 2004 and 2011.
+  No shortlist, extra control runs or second round. Use the
+  [prepared one-shot handoff](../evaluation/ASSESSMENT_HANDOFF.md).
 - **All these years are reused history.** They have shaped earlier research, and combo itself was tuned on windows
   overlapping them. Treat results as evidence for comparing methods, not as a leaderboard forecast.
 - **Clean the inputs, never the labels.** Labels always come from the official annual values with the 10-day rule.
@@ -90,15 +96,16 @@ cities with station changes, is in
 
 ## MLflow
 
-- Local store `outputs/mlflow/` (git-ignored). Set `MLFLOW_TRACKING_URI` to use a shared server instead.
+- Use the shared server configured by `line.lock.json` or `MLFLOW_TRACKING_URI`;
+  credentials stay in the environment, never in repository files.
 - One experiment per comparable group: `protostar/<suite id>/<phase>/<protocol>/<track>`. Compare runs only
   within one experiment.
 - Each run carries the role (control, incumbent, candidate), git commit and dirty flag from the time it ran, the
   scorecard metrics, and the run's `scores.json`/`run.json`/scorecard as artifacts. It is plotted at the time the
   evaluation actually ran.
-- The run folders under `outputs/evaluation/runs/` are the source of truth. `uv run python scripts/mlflow_sync.py`
-  mirrors every verified run (idempotent, resumes interrupted mirrors). After copying a teammate's run folders in,
-  run it again.
+- The sealed run folders are the source of truth. `uv run python scripts/line.py sync`
+  mirrors verified runs with their assembly-line lineage (idempotent). Obtain
+  handoffs through `line.py pull` and publish them through `line.py release`.
 
 ## Files
 
@@ -108,12 +115,13 @@ cities with station changes, is in
 | `code/evaluation/panel.py` | builds, validates and reuses the control panel |
 | `code/evaluation/scorecard.py` | per-run characteristics |
 | `code/evaluation/tracking.py` | MLflow mirror |
-| `scripts/eval_model.py` | the one-command iteration loop |
-| `scripts/run_controls.py` | builds/refreshes the panel |
-| `scripts/mlflow_sync.py` | backfills MLflow |
+| `scripts/line.py score` | live assembly-line scoring entry point |
+| `scripts/eval_model.py` | legacy detailed iteration helper; use the assembly-line entry point for scoring |
+| `scripts/run_controls.py` | legacy cached panel helper |
+| `scripts/line.py sync` | backfills MLflow with lineage labels |
 | `tests/test_controls_panel.py` | tests for all of the above |
 
-## First results (control panel `controls-v1`, development origins)
+## Historical first results (legacy control panel)
 
 Built on 2026-11-08 at commit `d63347e`, protocol `audited-inputs-v5`, suite
 `f2a07d24bded…` (`outputs/evaluation/suite-v3-r5`), profile `full`. Panel file:
