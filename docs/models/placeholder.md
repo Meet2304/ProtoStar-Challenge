@@ -162,3 +162,31 @@ may slightly favour cleaned inputs.
    a higher 1997 final skill if a shift applied at 1997, or a win on at least 2 of 3 origins if lambda is 0 there in both.
 
 The development years have been seen several times, so a pick here is reused evidence, not an independent test.
+
+## Placeholder_v0.3 (2026-11-08)
+
+**Status: kept** (replaces v0.1 as the base of the series). Plan: `docs/plans/placeholder-improvement-plan.md`, revised after
+the Grok review (44/100).
+
+| | |
+|---|---|
+| Change | One change group on v0.1: an ungated regional warming term W for annual_avg_temp and CDD (30-year OLS temperature slope averaged over the city and its 15 nearest cities, floored at 0; CDD through its regional response to temperature, floored at 0), and learners fitted on `y - W` with the cross-city median removed per (t, h) |
+| Files | `notebooks/Meet/placeholder_v0_3.py`, `test_placeholder_v0_3.py`; assets `placeholder-v0.1-assets.json` |
+| Run | `20261108T140236Z-218e9f305e`, clean commit `7532708`, suite-v3, eval-v1. Not on MLflow yet: the server refused the connection; run `line.py sync` once it is up |
+
+| Final skill | Headline | 1983 | 1990 | 1997 |
+|---|---:|---:|---:|---:|
+| v0.1 | -0.0008 | -0.0073 | +0.0050 | 0.0000 |
+| v0.3 | **+0.0079** | +0.0251 | -0.0386 | +0.0374 |
+
+Per metric, v0.3: annual_avg_temp +0.054 / -0.115 / +0.139 (1983 / 1990 / 1997), CDD +0.035 / -0.048 / +0.013, hottest day
++0.012 / +0.009 / -0.002, precipitation 0.000 everywhere. Mean W at the outer origin: temperature +0.09 F (1983), +0.64 F
+(1990), +0.54 F (1997).
+
+**Keep rule:** headline higher (+0.0079 > -0.0008) and 1997 strictly higher (+0.0374 > 0.0000), so kept.
+
+**Reading.** The warming term fixes most of the cold bias at 1983 and 1997. At 1990 it overshoots: the 1961-1990 slope is
+steep (1960s-70s cooling, then 1980s warming) and the final years 1994-1997 include the cold 1996, so temperature loses 0.115.
+One origin out of three going the wrong way is a real risk for the submission, not noise to explain away. Adaptation (applies
+to later versions only): if v0.4-v0.7 do not reduce the 1990 loss, a version that damps W (for example a slope from a longer
+window blended with the 30-year one, or W gated with its own lambda) is the next candidate.
