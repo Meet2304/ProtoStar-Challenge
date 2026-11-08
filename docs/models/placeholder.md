@@ -240,3 +240,22 @@ annual_avg_temp, hottest_day_temp and CDD. Files `placeholder_v0_4.py`, `test_pl
 
 Selected lambdas: 0 for every metric at 1983 and 1990, 0.5 for the temperature group at 1997. Headline lower, so not kept.
 The 1990 loss stays with lambda 0, so it comes from the warming term, not from the learners: damping W is the next fix.
+
+## Placeholder_v0.5 and Placeholder_v0.7 (2026-11-08)
+
+Both built on v0.3 and scored from clean commit `2192a12`, in plan order (v0.5 first).
+
+| Final skill | Headline | 1983 | 1990 | 1997 | Run |
+|---|---:|---:|---:|---:|---|
+| v0.3 | +0.0079 | +0.0251 | -0.0386 | +0.0374 | `20261108T140236Z-218e9f305e` |
+| v0.5: 50/50 with combo | **+0.0083** | +0.0027 | -0.0235 | +0.0458 | `20261108T141546Z-d0ac8f8b36` |
+| v0.7: boosted member only | +0.0093 | +0.0268 | -0.0364 | +0.0374 | `20261108T141730Z-879c109d38` |
+
+**v0.5: kept** (headline +0.0083 > +0.0079, 1997 +0.0458 > +0.0374). Caveat from the plan: combo's method was chosen on
+backtests that include these years, so the gain is flattered. The average halves the warming term's 1990 loss
+(temperature -0.073 against -0.115) and gives up most of the 1983 gain.
+
+**v0.7: not kept.** Against v0.3 it would pass (1997 +0.037432 against +0.037405, strictly higher by 0.00003, which is a
+tie in practice), but by the time it is compared the kept version is v0.5, and its 1997 skill is lower than v0.5's. The
+boosted member alone is slightly better than the ensemble at 1983 and 1990, so combining it with v0.5 is a single later
+change worth one run.
