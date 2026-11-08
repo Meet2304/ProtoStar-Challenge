@@ -53,6 +53,9 @@ data reaches 2019 or has an unknown cutoff, and every value must come from code.
   `data/processed/releases/enhance-v2/` and declared by `evaluation/enhance-v2-assets.json` (copy its entries into a model's
   manifest). It is **not** gate-eligible: runs using it are `exploratory`, get a reward and a verdict, but cannot become
   champion. `enhance-v1` (static facts only) is gate-eligible. Bind only `data/processed/releases/enhance-v2/` paths.
+  Since main `14bf1ef` (merged into wt/train at `0a5e6fc`), `line.lock.json` sets `enhance: enhance-v2`, and
+  `code/enhance_ocean.py` provides `load_ocean_for_origin(release, origin, frequency="monthly")`, which verifies hashes
+  and the fold cutoff; adapters should load ocean indices through it rather than reading the CSVs directly.
 - Each fold must train only on years <= its origin. Inner validation (choosing hyperparameters) must use pseudo-origins
   earlier than the outer origin. The harness timeout is 900 s per origin by default.
 - Hardware: 16 logical CPU cores, 15 GB RAM, RTX 3050 Ti laptop GPU (4 GB). Python 3.13 with numpy 2.5, pandas 3.1,
