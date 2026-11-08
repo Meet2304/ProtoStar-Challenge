@@ -39,6 +39,7 @@ os.environ.setdefault("MLFLOW_HTTP_REQUEST_MAX_RETRIES", "2")  # fail fast if th
 
 LOCK_PATH = ROOT / "line.lock.json"
 STATIONS = ("clean", "enhance", "features", "train", "eval")
+BRANCH_PREFIX = "Meet/"
 UPSTREAM = {"features": ("clean", "enhance"), "train": ("features",)}
 EVALUATOR_FILES = ("code/evaluate.py", "code/common.py", *(f"code/evaluation/{name}.py" for name in (
     "core", "protocol", "worker", "runtime_audit", "native_io", "phase_policy", "assets", "suite_identity",
@@ -450,7 +451,7 @@ def pull_release(release_id, destination=None, echo=print):
 # ---------------------------------------------------------------- status
 def station_of(name=None):
     name = branch() if name is None else name
-    return name.split("/", 1)[1] if name.startswith("station/") else None
+    return name.split("/", 1)[1] if name.startswith(BRANCH_PREFIX) else None
 
 
 def findings(lock=None, check_mlflow=True):
@@ -460,7 +461,7 @@ def findings(lock=None, check_mlflow=True):
     linked = len([l for l in git("worktree", "list", "--porcelain").splitlines() if l.startswith("worktree ")]) > 1
     if here == depot and linked:
         out.append(("D1", "You are working in the depot (the main checkout).",
-                    "Commit only your own files to station/<name>, then move to the worktree for your station."))
+                    f"Follow docs/assembly-line-migration.md to move your files to {BRANCH_PREFIX}<station> in your worktree."))
     if git("status", "--porcelain"):
         out.append(("D2", "This checkout has uncommitted work.", "Commit it to your branch."))
     published = lock if lock is not None else locked_on_main()
@@ -514,6 +515,23 @@ def findings(lock=None, check_mlflow=True):
     return out
 
 
+def migration_report():
+    """For each uncommitted file in the old shared checkout, find a branch holding identical content."""
+    depot = depot_root()
+    branches = ["main", *git("for-each-ref", "--format=%(refname:short)", f"refs/heads/{BRANCH_PREFIX}").split()]
+    listing = subprocess.run(["git", "ls-files", "-z", "-m", "-o", "--exclude-standard"], cwd=depot,
+                             capture_output=True, text=True, check=True).stdout
+    rows = []
+    for name in sorted({item for item in listing.split("\0") if item}):
+        if not (depot / name).is_file():
+            rows.append((name, "deleted in the old checkout"))
+            continue
+        blob = git("hash-object", "--", name, cwd=depot)
+        holder = next((b for b in branches if git("rev-parse", "--verify", "-q", f"{b}:{name}") == blob), None)
+        rows.append((name, holder or "NOT MIGRATED"))
+    return rows
+
+
 # ---------------------------------------------------------------- integrator: worktrees and server
 def link_junction(link, target):
     link, target = Path(link), Path(target)
@@ -530,7 +548,7 @@ def link_junction(link, target):
 def setup_station(station):
     depot = depot_root()
     path = depot.parent / "wt" / station
-    target_branch = f"station/{station}"
+    target_branch = f"{BRANCH_PREFIX}{station}"
     if not path.exists():
         exists = git("rev-parse", "--verify", target_branch, cwd=depot)
         arguments = [str(path), target_branch] if exists else ["-b", target_branch, str(path), "main"]
@@ -626,6 +644,15 @@ def cmd_status(args):
     return 1 if args.strict and items else 0
 
 
+def cmd_migration(args):
+    rows = migration_report()
+    for name, where in rows:
+        print(f"  {where:<30} {name}")
+    missing = sum(where == "NOT MIGRATED" for _, where in rows)
+    print(f"{len(rows) - missing} of {len(rows)} accounted for, {missing} not migrated.")
+    return 1 if missing else 0
+
+
 def cmd_release(args):
     if git("status", "--porcelain"):
         raise LineError("Commit your work first: a release must trace to a clean commit.")
@@ -676,7 +703,7 @@ def cmd_lock(args):
     from evaluation.protocol import source_pins
 
     lock = read_lock() if LOCK_PATH.is_file() else empty_lock()
-    lock["line_started_utc"] = lock["line_started_utc"] or utc_now()
+    lock["line_started_utc"] = utc_now() if args.restart_clock else lock["line_started_utc"] or utc_now()
     if args.evaluator:
         lock["evaluators"][args.evaluator] = evaluator_hash(source_pins(ROOT))
         lock["current_evaluator"] = args.evaluator
@@ -734,6 +761,7 @@ def main(argv=None):
     status.add_argument("--json", action="store_true")
     status.add_argument("--strict", action="store_true", help="exit 1 if anything is out of sync")
     status.add_argument("--offline", action="store_true", help="skip the MLflow check")
+    commands.add_parser("migration", help="is every uncommitted file in the old checkout safely on a branch?")
     release = commands.add_parser("release")
     release.add_argument("station", choices=STATIONS)
     release.add_argument("folder", type=Path)
@@ -757,6 +785,7 @@ def main(argv=None):
     lock.add_argument("--suite", type=Path, help="suite folder to lock")
     lock.add_argument("--mlflow-uri")
     lock.add_argument("--release", nargs="*")
+    lock.add_argument("--restart-clock", action="store_true", help="runs before now become legacy")
     publish = commands.add_parser("publish-suite")
     publish.add_argument("--suite", type=Path, default=default_suite)
     get_suite = commands.add_parser("get-suite")
@@ -779,7 +808,7 @@ def main(argv=None):
         return 0
     if args.command == "serve":
         return serve(args.host, args.port, args.allowed_hosts)
-    return {"status": cmd_status, "release": cmd_release, "adopt": cmd_adopt, "pull": cmd_pull, "sync": cmd_sync,
+    return {"status": cmd_status, "migration": cmd_migration, "release": cmd_release, "adopt": cmd_adopt, "pull": cmd_pull, "sync": cmd_sync,
             "lock": cmd_lock, "publish-suite": cmd_publish_suite, "get-suite": cmd_get_suite,
             "add-user": cmd_add_user}[args.command](args) or 0
 

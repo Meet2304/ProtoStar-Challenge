@@ -80,7 +80,7 @@ development origins. Never open assessment origins 2004 or 2011; the integrator 
 Run in your own terminal so it outlives any agent. The first start asks you to choose an admin password.
 
 ```powershell
-cd "D:\Projects_Ad Astra\Project_27_ProtoStar Challenge\ProtoStar-Challenge"
+cd "D:\Projects_Ad Astra\Project_27_ProtoStar Challenge\wt\infra"
 uv run python scripts/line.py serve
 ```
 

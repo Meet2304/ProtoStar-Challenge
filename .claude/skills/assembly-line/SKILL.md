@@ -18,7 +18,7 @@ If a command fails or a finding is not in this table, stop and ask the integrato
 | Id | Finding | Fix |
 |----|---------|-----|
 | D0 | No lock on main yet | Wait for the integrator |
-| D1 | Working in the main checkout | Commit only your own files to `station/<name>`, then work from `wt/<name>` |
+| D1 | Working in the old shared checkout | Follow `docs/assembly-line-migration.md`, then work only from `wt/<station>` on branch `Meet/<station>` |
 | D2 | Uncommitted work | Commit it to your branch |
 | D3 | Behind main | `git merge main`, then run your tests. Teammates: `git fetch` and merge `origin/main` |
 | D4 | Evaluator is not the released one | Same as D3. Only the eval station edits scoring files |

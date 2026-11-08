@@ -24,7 +24,7 @@ Five rules. This is the entire procedure.
 
 | # | Rule | Why |
 |---|---|---|
-| 1 | One station, one worktree, one branch. Nobody edits in the main checkout. | No overwrites, and no run killed by someone else's edit |
+| 1 | One station, one worktree, one `Meet/<station>` branch. Nobody edits in the old shared checkout. | No overwrites, and no run killed by someone else's edit |
 | 2 | Hand-offs happen only through releases (`clean-v3`). Never read another station's working files. | A release cannot change after someone starts using it |
 | 3 | `line.lock.json` on `main` says what the current line is. Only the integrator changes it. | One answer to "what is current?" |
 | 4 | A score is **official** only if it came from a clean commit, the released evaluator and the locked test set. | Official scores are always comparable |
@@ -52,13 +52,17 @@ for every declared data file. What is missing is names for those hashes and a vi
 
 ```
 Project_27_ProtoStar Challenge\
-  ProtoStar-Challenge\      THE DEPOT, on main. No agent edits here. Owns the shared state:
+  ProtoStar-Challenge\      THE DEPOT: storage only, left on its current branch. Nobody edits here. Owns the shared state:
     data\raw\                  pinned download
     outputs\evaluation\        suite-v3 and all sealed runs (nothing moves, so old paths stay valid)
     outputs\releases\          <station>\<id>\  immutable releases
     outputs\mlflow\            mlflow.db and artifacts
-  wt\clean  wt\features  wt\enhance  wt\train  wt\eval     one worktree each, branch station/<name>
+  wt\infra                  the integrator's checkout, on main
+  wt\clean  wt\features  wt\enhance  wt\train  wt\eval     one worktree each, branch Meet/<station>
 ```
+
+The depot is deliberately not switched to `main`. Switching would mean clearing out its uncommitted files first, which is
+the one risky step, and nothing needs it. Those files stay as a safety copy.
 
 Inside each worktree:
 
@@ -184,7 +188,7 @@ Plan: docs/plans/assembly-line-plan.md. The data rule in code/AGENTS.md always c
 
 | Id | Finding | Fix |
 |----|---------|-----|
-| D1 | Working in the depot | Commit only your own files to station/<name>, then move to wt/<name> |
+| D1 | Working in the old shared checkout | Follow docs/assembly-line-migration.md, then work only from wt/<station> on Meet/<station> |
 | D2 | Uncommitted work | Commit it to your station branch |
 | D3 | Behind main | `git merge main`, then run your tests |
 | D4 | Evaluator is not the locked release | Same as D3. Re-score only the runs status lists |
@@ -208,42 +212,39 @@ runs that. Hard-code a depot path in model code. Delete another station's files.
 the station's code for other stations' paths, best effort. D7, D8: unversioned files in known output folders. D9: sealed
 runs against MLflow fingerprints.
 
-### Message to paste into each running thread
+### Backward compatibility for finished agents
 
-> The project now runs as an assembly line. Finish your current step and do not start another harness run yet. Then
-> read `docs/plans/assembly-line-plan.md` sections 1 and 7, and `.claude/skills/assembly-line/SKILL.md`, and follow the
-> skill. Your station is `<name>` and your worktree is `D:\Projects_Ad Astra\Project_27_ProtoStar Challenge\wt\<name>`.
-> Use that absolute path from now on. Report back with the skill's final summary.
+Existing agents do not need to restart their work. Once they finish, each one follows
+[`docs/assembly-line-migration.md`](../assembly-line-migration.md): copy its own files from the old checkout to its worktree,
+commit, push `Meet/<station>`, report and stop. Originals are never moved or deleted.
+`line.py migration` then confirms that every uncommitted file in the old checkout exists, byte for byte, on a branch.
 
-## 8. Getting there without breaking running work
+## 8. Go-live runbook
 
-New code: `scripts/line.py` (`setup`, `status`, `pull`, `release`, `adopt`), the skill, `tracking.py` additions.
-`scripts/` is not hashed, so `line.py` cannot invalidate a run.
+`Meet/clean`, `Meet/enhance`, `Meet/features`, `Meet/train`, `Meet/eval` hold the agents' work. Teammates use `team/<name>`.
+Only the integrator merges to `main`. `scripts/` is not hashed, so `line.py` cannot invalidate a run.
 
-| Step | Action | Who |
+| Phase | Step | Who |
 |---|---|---|
-| 0 | Build and test `line.py` and the skill in a separate worktree | Integrator |
-| 1 | Let in-flight work reach a checkpoint (table below); no new harness runs | All |
-| 2 | Back up the working tree, including untracked files | Integrator |
-| 3 | Sort the 26 entries by owner and commit each onto its station branch. A person confirms the deletion of `notebooks/01_explore.ipynb` | Integrator |
-| 4 | Merge evaluator work to `main`, tag `eval-v1`, write `line.lock.json` | Integrator |
-| 5 | Put the depot on `main`; run `line.py setup` for the 5 stations | Integrator |
-| 6 | Start MLflow; backfill the 17 runs as `legacy`; run the controls under `eval-v1` | Integrator |
-| 7 | `adopt` existing outputs as `v0`; paste the message into each thread | Integrator |
+| **A. While agents finish** | 1. Start the login-protected MLflow server | Meet |
+| | 2. Create logins for agents and teammates; set up Tailscale | Meet |
+| | 3. Publish `suite-v3` to MLflow | Meet |
+| **B. Agents finished** | 4. Confirm no thread is running; back up the old checkout | Meet |
+| | 5. Paste the migration message into each thread | Meet |
+| | 6. Check each report, all `Meet/*` branches on GitHub, and `line.py migration` | Meet |
+| **C. Integrate** | 7. Merge `Meet/*` into `main`, finalize `eval-v1` from the evaluator's final code, restart the clock, push `main` | Integrator |
+| | 8. Backfill MLflow; re-run the controls under `eval-v1` | Integrator, eval |
+| **D. Start** | 9. Restart T3 so agents get MLflow credentials | Meet |
+| | 10. Each station merges `main`, runs `line.py status`, starts work | Agents |
+| | 11. Teammates follow the team guide | Team |
 
-| Thread | State now | Next |
-|---|---|---|
-| 01_Dataset Cleaning | Running | Checkpoint, then wt/clean. Output adopted as `clean-v0`. Needs a per-origin build for `clean-v1` |
-| 02_Feature Engineering | Idle, advice only | Restart in wt/features. Publish `features-v1` from the Placeholder feature code |
-| 03_Dataset Enhancement | Idle, research report only | Restart in wt/enhance. First release is static context (weather-independent) |
-| 04_Model Training | Running; plan under review | Checkpoint, then wt/train. Run v0.1 after `eval-v1` |
-| 05_ii_Baseline Creation | Running, Grok review r3 in flight | Its `controls`, `scorecard`, `tracking` work goes into `eval-v1` |
-| 05_Model Evaluation | Cancelled; Opus audit round 4 still running | Wait for the audit, then fold its fixes into `eval-v1` |
+`eval-v1` is finalized only in step 7, because the evaluator is still being changed. Runs from before that point are `legacy`.
+The cleaning station adopts its existing output as `clean-v0`, not gate-eligible, and needs a per-origin build for `clean-v1`.
 
 ## 9. Sequence
 
-Infrastructure goes in first while agents are paused, as fast as possible. Rapid iteration starts as soon as Step 7 is done,
-with no fixed milestones before the challenge deadline.
+Infrastructure goes in first, while agents are paused. Rapid iteration starts after step 10, with no fixed milestones
+before the challenge deadline.
 
 Two requirements for the final build, both existing rules:
 
