@@ -137,13 +137,14 @@ remain candidates, one change group each.
 
 ## Placeholder_v0.1_clean (2026-11-08)
 
-**Status: selection in progress.** The first version of the series to train on cleaned history, from the per-origin release
-`clean-v1` (gate-eligible). Built on `Placeholder_v0.1`, the kept version.
+**Status: not kept.** Training on cleaned history works end to end, but it does not raise the headline. The first version of
+the series to train on cleaned history, from the per-origin release `clean-v1` (gate-eligible). Built on `Placeholder_v0.1`,
+the kept version when this started (v0.3 has since replaced it; see below).
 
 | | |
 |---|---|
 | Change | One change group: the tables behind every feature and shift target come from `origin-YYYY/annual_clean.parquet`, one series per metric through the `inputs` parameter. The anchor `ref30` and the inner-fold scoring stay on the official labels, because those are what is scored and lambda 0 must stay the reference. With every metric on `official` this is v0.1 (tested) |
-| Files | `notebooks/Meet/placeholder_v0_1_clean.py`, `placeholder-v0.1-clean-assets.json`, `placeholder-v0.1-clean-{qc,homog,fill}.json`, `test_placeholder_v0_1_clean.py` (all in `notebooks/Meet/`) |
+| Files | `notebooks/Meet/placeholder_v0_1_clean.py`, `placeholder-v0.1-clean-assets.json`, `placeholder-v0.1-clean-{qc,homog,fill,pick}.json`, `test_placeholder_v0_1_clean.py` (all in `notebooks/Meet/`) |
 | Data | `clean-v1/origin-YYYY/annual_clean.parquet`, one file per origin, each built only from data up to that origin. Declared as `weather_input` per origin |
 
 **Caveat.** Inner folds use the cleaned series of their outer origin, so the cleaning behind an inner fold saw years up to that
@@ -162,6 +163,41 @@ may slightly favour cleaned inputs.
    a higher 1997 final skill if a shift applied at 1997, or a win on at least 2 of 3 origins if lambda is 0 there in both.
 
 The development years have been seen several times, so a pick here is reused evidence, not an independent test.
+
+**Runs.** suite-v3, development origins only, adapter and evaluation code identical in all four (no diff from `af917dd` to
+`c217d1b`). None are on MLflow yet: the server refused the connection; run `line.py sync` once it is up.
+
+| Recipe | Run | Commit | Headline | 1983 | 1990 | 1997 |
+|---|---|---|---:|---:|---:|---:|
+| v0.1 (reference) | `20261108T111421Z-b7a95baa04` | `feafddc` | 0.1678 | 0.0000 | 0.5035 | 0.0000 |
+| `qc` | `20261108T140227Z-695b90931b` | `7532708` | 0.1678 | 0.0000 | 0.5035 | 0.0000 |
+| `homog` | `20261108T140426Z-2b27228f7a` | `7532708` | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
+| `fill` | `20261108T140654Z-19687d1bb4` | `7532708`, exploratory | 0.0634 | 0.0000 | 0.1901 | 0.0000 |
+| pick | `20261108T140925Z-7c06c3dfed` | `c217d1b` | 0.1678 | 0.0000 | 0.5035 | 0.0000 |
+
+Headline and origin columns are the clipped final score. The `fill` run is labelled exploratory because another thread's
+untracked v0.4 files were in the checkout while it ran; its code matched the other runs.
+
+Mean final skill over the three origins (step 2):
+
+| Metric | v0.1 | `qc` | `homog` | `fill` | Pick |
+|---|---:|---:|---:|---:|---|
+| annual_avg_temp | -0.00416 | **-0.00132** | -0.00504 | -0.00493 | `qc` (+0.00284) |
+| total_precip_in | 0.00000 | 0.00000 | 0.00000 | 0.00000 | official (no gain) |
+| hottest_day_temp | -0.00340 | -0.00340 | -0.00160 | -0.00210 | official (`homog` gains +0.00180, under 0.002) |
+| cdd | 0.00449 | 0.00449 | -0.00253 | 0.00132 | official (nothing beats v0.1) |
+
+The pick (QC average temperature, everything else official) is none of the three recipes, so it was run once
+(`placeholder-v0.1-clean-pick.json`). Its scores match `qc` to the digit, as expected: under `qc` the other three metrics already
+scored exactly as on official labels, so only average temperature differs from v0.1.
+
+**Keep rule (step 4).** The headline is equal to v0.1 (0.1678), not higher, so the pick is **not kept**. The whole gain is at
+1983, where QC average temperature moves final skill from -0.0125 to -0.0040; the clipped 1983 score is 0 either way. At 1990 and
+1997 the gate chose lambda 0 for average temperature in both runs, so the forecast there is the 30-year average.
+
+**What this means.** The cleaning removes some error at 1983, but the gate does not find a shift worth applying at the later
+origins from cleaned inputs alone. Station-adjusted series (`homog`) made CDD worse at every origin. The cleaned release is ready
+for any later version that builds features from it; v0.3, the current base, still reads official labels only.
 
 ## Placeholder_v0.3 (2026-11-08)
 
