@@ -81,7 +81,8 @@ def branch():
 
 def main_ref():
     """Stations share the local main; teammates' clones follow the team's published main."""
-    return "main" if branch().startswith("station/") or not git("rev-parse", "--verify", "origin/main") else "origin/main"
+    entries = [l for l in git("worktree", "list", "--porcelain").splitlines() if l.startswith("worktree ")]
+    return "main" if len(entries) > 1 or not git("rev-parse", "--verify", "origin/main") else "origin/main"
 
 
 def utc_now():
@@ -352,7 +353,7 @@ def make_release(station, source, note, upstream=(), gate_eligible=False, lineag
                     "gate_eligible": bool(gate_eligible), "lineage": lineage, "note": note, "files": record}
         while True:
             versions = station_versions(station, root)
-            number = max(versions[-1] + 1, first_version) if versions else first_version
+            number = first_version if first_version not in versions else versions[-1] + 1
             manifest["id"] = f"{station}-v{number}"
             (temp / "release.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
             try:
