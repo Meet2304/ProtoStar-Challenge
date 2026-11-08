@@ -96,7 +96,11 @@ class RuntimeAudit:
         # precedes own-output permission because asset snapshots live beneath it.
         if path in self.inputs or path in self.assets:
             decision, reason = ("deny", "immutable_supplied_input") if writing else ("allow", "supplied_input")
-        elif _inside(path, self.output) and _inside(lexical, self.output):
+        # Resolve the physical destination first. Windows short (8.3) aliases
+        # such as RUNNER~1 need not share a lexical prefix with the long root.
+        # A symlink escaping own-output still resolves outside and is denied
+        # by the protected lexical/physical checks below.
+        elif _inside(path, self.output):
             decision, reason = "allow", "own_origin_output"
         elif any(_inside(candidate, root) for candidate in (path, lexical) for root in self.protected):
             decision, reason = "deny", "undeclared_protected_path"

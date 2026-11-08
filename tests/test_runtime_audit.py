@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 PROJECT = Path(__file__).resolve().parents[1]
 
@@ -211,6 +212,25 @@ class WorkerRuntimeAuditTests(unittest.TestCase):
         io, _, _ = self.run_worker(tamper, extra_args=extra_args)
         self.assertTrue(any(event["reason"] == "immutable_supplied_input" and event["decision"] == "deny"
                             for event in io["events"]))
+
+
+class OwnOutputAliasTests(unittest.TestCase):
+    def test_physical_output_alias_does_not_require_same_lexical_prefix(self):
+        sys.path.insert(0, str(PROJECT / "code"))
+        from evaluation import runtime_audit
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            output = root / "outputs/run/origin-1980"
+            audit = runtime_audit.RuntimeAudit({"schema_version": 1, "project_root": str(root),
+                "suite_root": str(root / "suite"), "own_output": str(output),
+                "source_pins": {}, "adapter_file": None, "declared_sources": []}, input_files=[])
+            audit.active = True
+            # Emulate Windows resolving RUNNER~1 to runneradmin. No filesystem
+            # alias is needed, so every CI platform exercises this decision.
+            alias = root / "different-lexical-prefix/predictions.csv"
+            with patch.object(runtime_audit, "_path", return_value=output / "predictions.csv"):
+                audit._hook("open", (str(alias), "w", os.O_WRONLY | os.O_CREAT))
+            self.assertTrue(any(key[2:] == ("allow", "own_origin_output") for key in audit.events))
 
 
 if __name__ == "__main__":
