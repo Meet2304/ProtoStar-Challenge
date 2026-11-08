@@ -1,4 +1,4 @@
 index,original_url,capture_timestamp,archive_url,last_value
-oni,https://www.esrl.noaa.gov/psd/data/correlation/oni.data,20170601090456,https://web.archive.org/web/20170601090456id_/https://www.esrl.noaa.gov/psd/data/correlation/oni.data,2017-03
-pdo,https://www.esrl.noaa.gov/psd/data/correlation/pdo.data,20170518155543,https://web.archive.org/web/20170518155543id_/https://www.esrl.noaa.gov/psd/data/correlation/pdo.data,2017-02
-amo,https://www.esrl.noaa.gov/psd/data/correlation/amon.us.data,20181012132625,https://web.archive.org/web/20181012132625id_/https://www.esrl.noaa.gov/psd/data/correlation/amon.us.data,2018-09
+oni,www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt,20181226185227,https://web.archive.org/web/20181226185227id_/http://www.cpc.ncep.noaa.gov:80/data/indices/oni.ascii.txt,2018-10
+pdo,research.jisao.washington.edu/pdo/PDO.latest,20181225054921,https://web.archive.org/web/20181225054921id_/http://research.jisao.washington.edu/pdo/PDO.latest,2018-09
+amo,www.esrl.noaa.gov/psd/data/correlation/amon.us.data,20181012132625,https://web.archive.org/web/20181012132625id_/https://www.esrl.noaa.gov/psd/data/correlation/amon.us.data,2018-09

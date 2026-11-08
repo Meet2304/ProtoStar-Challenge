@@ -4,8 +4,13 @@
     pdo  Pacific Decadal Oscillation: a slow North Pacific pattern that persists for years
     amo  Atlantic Multidecadal Oscillation (unsmoothed): a slow North Atlantic pattern
 
-Source: NOAA Physical Sciences Laboratory (PSL), files under psl.noaa.gov/data/correlation/
-(called www.esrl.noaa.gov/psd/data/correlation/ until 2019).
+Sources (each the newest copy archived on or before 2018-12-31):
+    oni  NOAA Climate Prediction Center, www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt
+         (3-month seasons, e.g. 'SON 2018' = Sep-Nov 2018, stored under its middle month)
+    pdo  University of Washington JISAO, research.jisao.washington.edu/pdo/PDO.latest
+         (Mantua et al. 1997 PDO index, monthly)
+    amo  NOAA Physical Sciences Laboratory, www.esrl.noaa.gov/psd/data/correlation/amon.us.data
+         (now psl.noaa.gov; Enfield et al. 2001 AMO, unsmoothed, monthly)
 
 Data rule: the live NOAA files run to the present and cannot be cut at 2018, so this script never
 calls them. It downloads the Internet Archive's copy of each file, taken on or before 2018-12-31
@@ -22,6 +27,7 @@ Writes:
 """
 
 import json
+import re
 import time
 import urllib.parse
 import urllib.request
@@ -31,8 +37,13 @@ import pandas as pd
 
 from common import CUTOFF_YEAR, DATA_DIR, assert_no_post_cutoff
 
-ORIGINAL_BASE = "https://www.esrl.noaa.gov/psd/data/correlation/"
-FILES = {"oni": "oni.data", "pdo": "pdo.data", "amo": "amon.us.data"}
+SOURCES = {   # index -> (original URL, parser name)
+    "oni": ("www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt", "cpc_oni"),
+    "pdo": ("research.jisao.washington.edu/pdo/PDO.latest", "jisao_pdo"),
+    "amo": ("www.esrl.noaa.gov/psd/data/correlation/amon.us.data", "psl"),
+}
+SEASON_MONTH = {s: i + 1 for i, s in enumerate(
+    ["DJF", "JFM", "FMA", "MAM", "AMJ", "MJJ", "JJA", "JAS", "ASO", "SON", "OND", "NDJ"])}
 CAPTURED_BY = f"{CUTOFF_YEAR}1231235959"   # newest archive capture allowed: 2018-12-31
 USER_AGENT = "protostar-placeholders-data-prep/1.0"
 
@@ -87,13 +98,39 @@ def parse_psl(text: str, name: str) -> pd.DataFrame:
     return long.dropna(subset=["value"]).sort_values(["year", "month"]).reset_index(drop=True)
 
 
+def parse_cpc_oni(text: str, name: str) -> pd.DataFrame:
+    """CPC 'SEAS YR TOTAL ANOM' rows; the anomaly is stored under the season's middle month."""
+    rows = []
+    for line in text.splitlines():
+        parts = line.split()
+        if len(parts) == 4 and parts[0] in SEASON_MONTH and parts[1].isdigit():
+            rows.append((name, int(parts[1]), SEASON_MONTH[parts[0]], float(parts[3])))
+    return pd.DataFrame(rows, columns=["index", "year", "month", "value"])
+
+
+def parse_jisao_pdo(text: str, name: str) -> pd.DataFrame:
+    """JISAO rows 'YEAR v1 ... v12' (a year may carry '**' and fewer than 12 months)."""
+    rows = []
+    for line in text.splitlines():
+        match = re.match(r"^(\d{4})\**\s+(-?\d.*)$", line.strip())
+        if match:
+            for month, value in enumerate(match.group(2).split(), start=1):
+                rows.append((name, int(match.group(1)), month, float(value)))
+    return pd.DataFrame(rows, columns=["index", "year", "month", "value"])
+
+
+PARSERS = {"psl": parse_psl, "cpc_oni": parse_cpc_oni, "jisao_pdo": parse_jisao_pdo}
+
+
 def main() -> None:
     tables, sources = [], []
-    for name, filename in FILES.items():
-        original = ORIGINAL_BASE + filename
+    for name, (original, parser) in SOURCES.items():
         timestamp, captured_url = latest_capture_before_cutoff(original)
         archive_url = f"https://web.archive.org/web/{timestamp}id_/{captured_url}"
-        table = parse_psl(_get(archive_url).decode("utf-8", errors="replace"), name)
+        table = PARSERS[parser](_get(archive_url).decode("utf-8", errors="replace"), name)
+        table = table.sort_values(["year", "month"]).reset_index(drop=True)
+        if table.empty:
+            raise SystemExit(f"{name}: could not read any values from {archive_url}")
         assert_no_post_cutoff(table, year_col="year", source=f"{name} ({archive_url})")
         last = table.iloc[-1]
         print(f"{name}: {len(table):,} monthly values, {int(table['year'].min())}-01 to "

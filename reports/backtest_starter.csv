@@ -1,9 +1,9 @@
 model,metric,mae,skill
-starter_rf_lags,annual_avg_temp,1.8134,-0.0951
+starter_rf_lags,annual_avg_temp,1.8004,-0.0872
 last_year_repeated,annual_avg_temp,1.6704,-0.0087
 30_year_average,annual_avg_temp,1.656,0.0
 linear_trend,annual_avg_temp,1.4255,0.1392
-starter_rf_lags,total_precip_in,7.5677,-0.2245
+starter_rf_lags,total_precip_in,7.67,-0.241
 last_year_repeated,total_precip_in,8.5516,-0.3837
 30_year_average,total_precip_in,6.1803,0.0
 linear_trend,total_precip_in,6.5291,-0.0564
