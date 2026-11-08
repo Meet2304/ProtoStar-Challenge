@@ -81,8 +81,10 @@ Run in your own terminal so it outlives any agent. The first start asks you to c
 
 ```powershell
 cd "D:\Projects_Ad Astra\Project_27_ProtoStar Challenge\wt\infra"
-uv run --with flask-wtf python scripts/line.py serve
+uv run --with flask-wtf python scripts/line.py serve --allowed-hosts "127.0.0.1:5000,localhost:5000,meetpc.taild2c878.ts.net,meetpc.taild2c878.ts.net:443"
 ```
+
+Without `--allowed-hosts`, the server works locally but refuses teammates coming in through Tailscale (403).
 
 Add a teammate (the password is shown once, so send it privately):
 
@@ -96,7 +98,9 @@ uv run --with flask-wtf python scripts/line.py add-user kohav
 Publish the test set once with `uv run python scripts/line.py publish-suite`, then backfill with
 `uv run python scripts/line.py sync`.
 
-**Reaching it from other machines:** keep the server on `127.0.0.1` and use Tailscale, so it is never on the public
-internet. Install Tailscale, invite teammates to your tailnet, then run `tailscale serve --bg 5000` and restart the server
-with `--allowed-hosts "127.0.0.1:5000,localhost:5000,<machine>.<tailnet>.ts.net"`. Teammates use
-`https://<machine>.<tailnet>.ts.net` as the address. Your PC must stay awake for them to log.
+**Reaching it from other machines:** the server stays on `127.0.0.1`, and Tailscale carries teammates to it, so it is
+never on the public internet. Set up on 2026-11-08: this PC is `meetpc` on the tailnet, and `tailscale serve --bg 5000`
+(set once; it survives restarts) forwards `https://meetpc.taild2c878.ts.net` to the server. To let a teammate in, share
+`meetpc` with them at https://login.tailscale.com/admin/machines (the `...` menu, **Share**); they install Tailscale and
+accept. Teammates use `https://meetpc.taild2c878.ts.net` as `MLFLOW_TRACKING_URI`. Agents on this PC keep using
+`http://127.0.0.1:5000`. Your PC must stay awake for teammates to log.
