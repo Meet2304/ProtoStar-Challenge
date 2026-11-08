@@ -713,6 +713,9 @@ def cmd_score(args, extra):
     if "--phase" not in extra:  # development runs only; the reward never reads assessment origins
         print("\n" + "-" * 30 + " reward (evaluation/REWARD.md) " + "-" * 30)
         subprocess.run([sys.executable, str(ROOT / "code/evaluation/reward.py"), "score", run_dir], cwd=ROOT, check=False)
+        print("\n" + "-" * 28 + " insights (evaluation/INSIGHTS.md) " + "-" * 28)
+        subprocess.run([sys.executable, str(ROOT / "code/evaluation/insights.py"), run_dir, "--top", "6"],
+                       cwd=ROOT, check=False)
     return 0
 
 
