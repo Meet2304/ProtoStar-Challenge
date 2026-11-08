@@ -4,6 +4,13 @@ Station: `enhance`, branch: `Meet/enhance`. Generated datasets are handed off on
 with `scripts/line.py release`; source and processing documentation live in
 [`data/README.md`](../data/README.md).
 
+The latest enhanced input dataset is pinned in `enhanced/latest.json`. Run
+`uv run python scripts/materialize_enhanced.py` to create the verified real copy
+under `enhanced/enhance-v2/` in your own worktree. The canonical release copy is
+also retained for evaluator asset binding and eligibility checks. See
+[`enhanced/README.md`](../enhanced/README.md). New model evaluations should pin
+this latest enhanced input version while preserving its exploratory status.
+
 ## `enhance-v1`: fixed station geography
 
 ```powershell

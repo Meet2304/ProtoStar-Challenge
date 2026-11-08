@@ -205,6 +205,14 @@ No predictive-value claim is made until a model is scored through `line.py score
 
 ## Ocean-temperature release (`enhance-v2`)
 
+The requested friendly tagged copy is `enhanced/enhance-v2/`, materialized by
+`uv run python scripts/materialize_enhanced.py`. `enhanced/latest.json` records
+the current tag and release-manifest hash for future model-input evaluations.
+The helper uses the assembly-line release downloader and validates every file.
+Evaluator asset declarations keep the canonical `data/processed/releases/`
+paths so lineage and eligibility remain visible. This does not change the
+underlying release, its eligibility, or evaluation target data.
+
 **Use: historical forecast-input candidates, exploratory; not certified
 gate-eligible.** This cumulative release includes the unchanged `enhance-v1`
 city table, links that immutable release as upstream, and adds three monthly

@@ -25,6 +25,9 @@ mlartifacts/
 *.token
 outputs/
 
+# Verified enhancement release copies; pointer and usage README stay tracked.
+enhanced/enhance-v*/
+
 # Local caches, OS and editors
 .cache/
 .DS_Store
