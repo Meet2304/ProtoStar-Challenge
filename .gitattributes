@@ -1,6 +1,10 @@
 # Preserve downloaded reference snapshots exactly: manifest hashes cover bytes.
 evaluation/upstream/** -text
 scripts/build_independent_holdout.py text eol=lf
+scripts/build_independent_holdout_v2.py text eol=lf
+scripts/evaluate_independent_holdout.py text eol=lf
 evaluation/independent/*.json text eol=lf
 outputs/independent-v1/selection*.json text eol=lf
+outputs/independent-v1/quality.json text eol=lf
+outputs/independent-v2/selection*.json text eol=lf
 evaluation/independent/snapshots/*.gz -text
