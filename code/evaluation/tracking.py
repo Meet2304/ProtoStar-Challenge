@@ -40,16 +40,8 @@ def tracking_uri() -> str:
 
 
 def role_of(meta: dict) -> str:
-    spec = meta.get("model_spec") or {}
-    entry = spec.get("entry_point") or {}
-    module = entry.get("module")
-    if module == "evaluation.controls":
-        return "control"
-    if (module, entry.get("function")) in {("evaluation.adapters", "combo"), ("evaluation.nested", "forecast")}:
-        return "incumbent"
-    if spec.get("kind") == "baseline":
-        return "control"
-    return "candidate"
+    from evaluation.trials import run_role
+    return run_role(meta)
 
 
 def track_of(meta: dict) -> str:
@@ -160,7 +152,7 @@ def log_run(run_dir, client=None) -> str | None:
               "entry_point": json.dumps(entry, sort_keys=True), "params": json.dumps(meta.get("params") or {}, sort_keys=True),
               "suite_id": meta["suite_id"], "phase": meta.get("phase", ""), "seed": meta["config"].get("seed"),
               "origins": ",".join(str(o) for o in meta.get("origins", [])), "track": track_of(meta),
-              "control_set": CONTROL_SET, "scorecard_version": SCORECARD_VERSION}
+              "control_set": meta.get("control_set", "unknown_legacy_unstamped"), "scorecard_version": SCORECARD_VERSION}
     for key, value in params.items():
         client.log_param(rid, key, str(value)[:6000])
     for key, value in flat_metrics(card).items():

@@ -111,6 +111,8 @@ A trend line alone wins on temperature and CDD in 2011–2018 but loses in the e
 
 ## Data
 
+**Analysis only:** a preregistered pre-2019 station benchmark supplements the reused city backtests; see [selection, provenance and limits](evaluation/independent/README.md). It does not feed the submitted forecasts.
+
 - **External data:** none.
 - **Curated data:** see the data card in [`data/README.md`](data/README.md) (each file, its source, license and preparation).
 

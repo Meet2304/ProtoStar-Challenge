@@ -41,16 +41,22 @@
       "round": 5,
       "model": "claude-opus-5-5",
       "report": "reports/evaluation-review-opus-round-5.md",
-      "status": "ready for new independent review",
-      "source_manifest": "reports/evaluation-reviewed-source-round-5.json"
+      "status": "completed",
+      "source_manifest": "reports/evaluation-reviewed-source-round-5.json",
+      "score": 90.25
     }
   ],
   "reviewed_source_fingerprint": "5a59a1a39d73fe89b19ba1f117707825d5f956e86fecacc3232b1612a2213879",
   "known_open_evidence": [
     {
-      "issue": "Opus round4 N1-N6 and integrated controls scope",
-      "fix_state": "implemented audited-inputs-v5; bothOSCI passes; all9 freshpanelruns andMLflowmirrors verified; freshauditpending",
-      "record": "reports/evaluation-opus-round-4-fixes.md"
+      "issue": "Opus round5 R1-R5",
+      "fix_state": "parent-audited-v6 implemented; 197-test Windows/Linux CI passes; fresh source-matched geographic evidence in preparation",
+      "record": "reports/evaluation-opus-round-5-fixes.md"
+    },
+    {
+      "issue": "Reused historical labels",
+      "fix_state": "User attests only challenge dataset used; V1 unused-station pilot failed coverage without scoring; V2 preregistered new cohort acquisition underway",
+      "record": "evaluation/independent/preregistration-v2.json"
     }
   ],
   "completion_requirements": [
@@ -63,13 +69,30 @@
   ],
   "guide": "evaluation/TEAM_GUIDE.md",
   "guide_status": "draft; final audit acceptance pending",
-  "goal_status": "active",
+  "goal_status": "paused_by_user",
   "passing_condition": "latest independently reviewed final implementation score > 92/100",
   "tests": {
-    "passed": 161,
+    "total": 197,
+    "skipped": 4,
+    "passed": 193,
     "command": "python -m unittest discover -s tests -v",
+    "ci": "https://github.com/Meet2304/ProtoStar-Challenge/actions/runs/42475483353"
+  },
+  "stop_instruction": "Finish current step, commit it, and stop (2026-11-08)",
+  "current_checkpoint": "reports/evaluation-checkpoint-paused.md",
+  "new_external_cohort": {
+    "selected": 48,
+    "eligible": 33,
+    "strata": 6,
+    "scores_opened": false,
+    "record": "evaluation/independent/v2-acquisition-manifest.json"
+  },
+  "checkpoint_workspace_tests": {
+    "total": 236,
+    "passed": 233,
     "skipped": 3,
-    "total": 164,
-    "ci": "https://github.com/Meet2304/ProtoStar-Challenge/actions/runs/42471119448"
+    "seconds": 310.234,
+    "includes_untracked_cleaning_tests": true,
+    "real_data_opt_in": false
   }
 }

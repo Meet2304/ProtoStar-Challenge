@@ -169,7 +169,19 @@ def collect_exposure_counts(runs, suite_id=None):
         if unresolved:
             summary["warnings"].append("Some known access run IDs have missing or conflicting freeze identities.")
         summaries.append(summary)
-    return {"groups": summaries, "warnings": warnings}
+    from evaluation.exposure import assessment_inventory
+    combined = assessment_inventory(runs)
+    from evaluation.trials import candidate_inventory
+    for group in summaries:
+        group["candidate_trials"] = candidate_inventory(runs, group["suite_id"])
+        cohort = next((c for c in combined["cohorts"] if c["suite_id"] == group["suite_id"]), None)
+        group["city_year_exposure"] = cohort
+        if cohort and cohort["cross_suite_warning"]:
+            warnings.append(f"Assessment city-years for suite {group['suite_id']} were accessed across "
+                            f"{len(cohort['overlapping_access_suite_ids'])} known suites; combined accesses "
+                            f"{cohort['known_assessment_phase_accesses_across_suites']}, repeated city-year accesses "
+                            f"{cohort['known_repeated_city_year_accesses']}.")
+    return {"groups": summaries, "warnings": warnings + combined["warnings"], "city_year_assessment_exposure": combined}
 
 
 def render_report(runs, output, suite_id=None):
@@ -184,6 +196,8 @@ def render_report(runs, output, suite_id=None):
         run = runs / row["run_id"]
         scores = read_json(run / "scores.json")
         row["scores"] = scores
+        row["runtime_input_summary"] = read_json(run / "run.json").get("runtime_input_summary", {})
+        row["runtime_input_summary_available"] = bool(row["runtime_input_summary"])
         # Copy linked metadata into the report package. Relative paths across
         # Windows drives are undefined, and links into another machine's run
         # directory would not survive sharing the report folder.
@@ -241,10 +255,10 @@ const preferred=runs.filter(r=>r.protocol_version===currentProtocol && r.phase==
 function render(){const visible=runs.filter(r=>r.comparison_group===select.value && (r.model+' '+r.run_id).toLowerCase().includes(search.value.toLowerCase()));
 const selected=runs.find(r=>r.comparison_group===select.value);
 const scope=selected ? exposures.groups.filter(e=>e.suite_id===selected.suite_id && (e.protocol_version===selected.protocol_version || e.protocol_version==='unattributed-protocol')) : exposures.groups;
-document.getElementById('exposure').innerHTML=scope.map(e=>`<div><strong>${esc(e.suite_id.slice(0,12))} / ${esc(e.protocol_version)}</strong><p>Known development trials: <strong>${e.known_development_trials}</strong> (${Object.entries(e.development_status_counts).map(([k,v])=>esc(k)+': '+v).join(', ') || 'none in available run records'}). Known assessment attempts: <strong>${e.known_assessment_attempts}</strong>.</p><p>Assessment access run IDs: <strong>${e.assessment_accesses===null?'unknown total; at least '+e.known_assessment_accesses:e.assessment_accesses}</strong>. Unique accessed freezes: <strong>${e.unique_freezes===null?'unknown total; at least '+e.known_unique_freezes:e.unique_freezes}</strong>. Known repeated access run IDs: <strong>${e.known_repeated_assessment_accesses}</strong>. Ledger: ${esc(e.ledger_status)}.</p>${e.warnings.map(w=>'<p class="small">'+esc(w)+'</p>').join('')}</div>`).join('') + exposures.warnings.map(w=>'<p class="small">'+esc(w)+'</p>').join('');
+document.getElementById('exposure').innerHTML=scope.map(e=>`<div><strong>${esc(e.suite_id.slice(0,12))} / ${esc(e.protocol_version)}</strong><p>Known candidate attempts: <strong>${e.candidate_trials.known_candidate_attempts}</strong> (controls/incumbents excluded). Known development trials: <strong>${e.known_development_trials}</strong> (${Object.entries(e.development_status_counts).map(([k,v])=>esc(k)+': '+v).join(', ') || 'none in available run records'}). Known assessment attempts: <strong>${e.known_assessment_attempts}</strong>.</p><p>Assessment access run IDs: <strong>${e.assessment_accesses===null?'unknown total; at least '+e.known_assessment_accesses:e.assessment_accesses}</strong>. Unique accessed freezes: <strong>${e.unique_freezes===null?'unknown total; at least '+e.known_unique_freezes:e.unique_freezes}</strong>. Known repeated access run IDs: <strong>${e.known_repeated_assessment_accesses}</strong>. Ledger: ${esc(e.ledger_status)}.</p>${e.city_year_exposure ? '<p>Known assessment-phase accesses to these city-years across suites: <strong>'+e.city_year_exposure.known_assessment_phase_accesses_across_suites+'</strong>; repeated city-year accesses: <strong>'+e.city_year_exposure.known_repeated_city_year_accesses+'</strong>. These counts exclude manual reads and real-data tests.</p>' : ''}${e.warnings.map(w=>'<p class="small">'+esc(w)+'</p>').join('')}</div>`).join('') + exposures.warnings.map(w=>'<p class="small">'+esc(w)+'</p>').join('');
 document.getElementById('count').textContent=visible.length+' runs';
 document.getElementById('rows').innerHTML=visible.map(r=>`<tr><td class="number">${r.internal_rank}</td><td><div class="model">${esc(r.model)}</div><a class="small" href="${esc(r.metadata_url)}">${esc(r.run_id)}</a><br><span class="small">${esc(r.phase)} / ${esc(r.history_status)}</span></td><td><span class="score">${fmt(100*r.final_mean_skill_unclipped)}%</span></td><td class="number">${fmt(r.final_selection_score)}</td><td class="number">${fmt(r.final_min_score)} to ${fmt(r.final_max_score)}</td><td class="number">${fmt(100*r.live_mean_skill_unclipped)}%</td><td class="number">${r.final_n_folds}</td></tr>`).join('');
-document.getElementById('details').innerHTML=visible.length ? visible.map(r=>`<details><summary><strong>${esc(r.model)}</strong> <span class="small">${esc(r.run_id)}</span></summary><div class="scroll"><table><thead><tr><th>Origin</th><th>Split</th><th>Official fold Score</th><th>Raw fold skill</th><th>Metric</th><th>MAE</th><th>Skill</th><th>Total scored rows</th></tr></thead><tbody>${r.scores.flatMap(s=>Object.keys(s.mae).map(m=>`<tr><td>${s.origin}</td><td>${esc(s.split)}</td><td>${fmt(s.score)}</td><td>${fmt(s.mean_skill_unclipped,4)}</td><td>${esc(m)}</td><td class="number">${fmt(s.mae[m],4)}</td><td class="number">${fmt(s.skill[m],4)}</td><td class="number">${s.n_rows}</td></tr>`)).join('')}</tbody></table></div></details>`).join('') : '<p class="empty">No complete matching experiments. Run an evaluation, then regenerate this report.</p>';
+document.getElementById('details').innerHTML=visible.length ? visible.map(r=>`<details><summary><strong>${esc(r.model)}</strong> <span class="small">${esc(r.run_id)}</span></summary><p>${r.runtime_input_summary_available?'Observed input review:':'Worker input summary unavailable for this legacy, baseline or external-CSV run; review its provenance. Counts below describe recorded events only.'} ${Object.values(r.runtime_input_summary).reduce((a,s)=>a+(s.external_read_count||0),0)} external reads; ${Object.values(r.runtime_input_summary).reduce((a,s)=>a+(s.environment_nonpackage_read_count||0),0)} non-package environment reads; ${Object.values(r.runtime_input_summary).reduce((a,s)=>a+(s.subprocess_count||0),0)} subprocess events. ${Object.values(r.runtime_input_summary).some(s=>s.requires_review)?'<strong>Input review required before assessment.</strong>':''} Inspect the linked run metadata for paths and per-origin receipts.</p><div class="scroll"><table><thead><tr><th>Origin</th><th>Split</th><th>Official fold Score</th><th>Raw fold skill</th><th>Metric</th><th>MAE</th><th>Skill</th><th>Total scored rows</th></tr></thead><tbody>${r.scores.flatMap(s=>Object.keys(s.mae).map(m=>`<tr><td>${s.origin}</td><td>${esc(s.split)}</td><td>${fmt(s.score)}</td><td>${fmt(s.mean_skill_unclipped,4)}</td><td>${esc(m)}</td><td class="number">${fmt(s.mae[m],4)}</td><td class="number">${fmt(s.skill[m],4)}</td><td class="number">${s.n_rows}</td></tr>`)).join('')}</tbody></table></div></details>`).join('') : '<p class="empty">No complete matching experiments. Run an evaluation, then regenerate this report.</p>';
 }select.addEventListener('change',render);search.addEventListener('input',render);render();
 </script></html>'''
     path = output / "index.html"

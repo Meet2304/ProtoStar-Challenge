@@ -24,6 +24,7 @@ from evaluation.panel import PANEL_ROOT, PROFILES, build_panel, gates, load_curr
 from evaluation.report import render_report
 from evaluation.scorecard import SCORECARD_DIR, write_scorecard
 from evaluation.tracking import try_log_run
+from evaluation.trials import candidate_inventory
 
 
 def fmt(value, spec="+.4f", missing="n/a"):
@@ -41,10 +42,10 @@ def describe(name, comparison):
     lines.append("     by metric " + "  ".join(f"{m} {v:+.4f}" for m, v in metric.items()))
     loo = comparison.get("leave_one_period_out_delta_points") or []
     if loo:
-        lines.append("     leave one origin out (skill points): " + ", ".join(f"{v:+.2f}" for v in loo))
+        lines.append("     leave one origin out (raw skill): " + ", ".join(f"{v / 100:+.4f}" for v in loo))
     interval = comparison.get("period_bootstrap_95_percent_sensitivity_interval_points")
     if interval:
-        lines.append(f"     whole-period resampling range (points): {interval[0]:+.2f} to {interval[1]:+.2f}  "
+        lines.append(f"     whole-period resampling range (raw skill): {interval[0] / 100:+.4f} to {interval[1] / 100:+.4f}  "
                      "(descriptive sensitivity only, not a confidence interval)")
     return "\n".join(lines)
 
@@ -107,7 +108,10 @@ def main():
     print("\nPaired comparisons (positive = this model is better):")
     print(describe("combo", vs_combo))
     print(describe(f"{best_id} (best control)", vs_best))
-    print("\nScreening gates (heuristics on 3 reused periods, not statistical tests):")
+    trials = candidate_inventory(args.runs, meta["suite_id"])
+    print(f"\nCandidate {trials['known_candidate_attempts']} tried in this suite (known attempts; fixed controls/incumbents excluded).")
+    print("Screening gates (heuristics on 3 reused periods, not statistical tests):")
+    print("Repeated trials make a passing gate weak evidence; it is not a corrected significance test.")
     results = gates(card, panel, vs_combo)
     for label, ok, detail in results:
         print(f"  [{'PASS' if ok else 'FAIL'}] {label:58s} {detail}")
@@ -118,6 +122,7 @@ def main():
     print(f"\nRun: {run_dir}\nScorecard: {card_path}")
     out = card_path.with_name(card_path.stem + ".comparisons.json")
     out.write_text(json.dumps({"profile": args.profile, "best_control": best_id, "vs_combo": vs_combo,
+                               "candidate_trials": trials,
                                "vs_best_control": vs_best,
                                "gates": [{"gate": g, "pass": bool(ok), "detail": d} for g, ok, d in results]},
                               indent=2, allow_nan=False) + "\n", encoding="utf-8")
@@ -132,4 +137,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except (ValueError, RuntimeError, OSError) as exc:
+        raise SystemExit(f"Evaluation failed: {exc}") from None

@@ -40,6 +40,8 @@ PANEL_SOURCES = (
     "code/evaluation/official_score.py", "code/evaluation/core.py", "code/evaluation/worker.py",
     "code/evaluation/runtime_audit.py", "code/evaluation/protocol.py", "code/evaluation/assets.py",
     "code/evaluation/native_io.py", "code/evaluation/phase_policy.py", "code/evaluation/suite_identity.py",
+    "code/evaluation/audit_transport.py", "code/evaluation/input_review.py", "code/evaluation/defaults.py",
+    "code/evaluation/exposure.py", "code/evaluation/trials.py",
     "uv.lock", "pyproject.toml", "requirements.txt", "code/requirements.txt",
 )
 INCUMBENTS = {"combo": "evaluation.adapters:combo", "nested": "evaluation.nested:forecast"}
@@ -241,6 +243,7 @@ def load_current_panel(suite, runs, profile="full", panel_root=PANEL_ROOT) -> di
         meta = _verified(run_dir, key, entry.get("run_fingerprint")) if run_dir.is_dir() else None
         if meta is None or entry.get("reuse_key") != key:
             return None
+        entry["role"] = role
         entry.update(summarize(run_dir, meta))
     panel["best_control"] = best_control(panel["entries"])
     return panel

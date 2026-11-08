@@ -395,6 +395,8 @@ def run_suite(suite, runs, model, adapter=None, params=None, prediction_dir=None
                 "versions": {"numpy": np.__version__, "pandas": pd.__version__},
                 "installed_environment": installed_environment(),
                 "scorer_sha256": digest(SCORER), "artifact_sha256": {}}
+    from evaluation.controls import CONTROL_SET
+    metadata["control_set"] = CONTROL_SET
     try:
         from importlib.metadata import version
         metadata["versions"].update({name: version(name) for name in ("pyarrow", "scikit-learn")})
@@ -409,6 +411,8 @@ def run_suite(suite, runs, model, adapter=None, params=None, prediction_dir=None
     try:
         if freeze_record is not None:
             write_json(run / "freeze.json", freeze_record)
+            from evaluation.exposure import cohort_from_manifest
+            metadata["assessment_cohort"] = cohort_from_manifest(manifest, origins)
             metadata["assessment_access_record"] = str(log_assessment_access(suite, freeze_record, run.name))
             write_json(run / "run.json", metadata)
         for origin in origins:
@@ -467,13 +471,41 @@ def run_suite(suite, runs, model, adapter=None, params=None, prediction_dir=None
                     if asset_snapshot is not None:
                         command += ["--asset-root", asset_snapshot["snapshot_root"],
                                     "--asset-binding", asset_snapshot["binding_path"]]
-                    with (output / "adapter.log").open("w", encoding="utf-8") as log:
+                    from evaluation.audit_transport import AuditPipe
+                    with AuditPipe() as audit_pipe, (output / "adapter.log").open("w", encoding="utf-8") as log:
+                        command += audit_pipe.child_args
+                        process = subprocess.Popen(command, cwd=work, env=env, stdout=log,
+                                                   stderr=subprocess.STDOUT, **audit_pipe.popen_kwargs)
+                        audit_pipe.after_spawn()
+                        timed_out = False
                         try:
-                            process = subprocess.run(command, cwd=work, env=env, stdout=log,
-                                                     stderr=subprocess.STDOUT, timeout=timeout)
-                        except subprocess.TimeoutExpired as exc:
-                            raise RuntimeError(f"adapter timed out after {timeout}s for origin {origin}; "
-                                               f"see {output / 'adapter.log'}") from exc
+                            process.wait(timeout=timeout)
+                        except subprocess.TimeoutExpired:
+                            timed_out = True
+                            process.kill()
+                            process.wait()
+                        receipt = audit_pipe.finish(timeout=5)
+                    if output.is_symlink() or not output.resolve().is_relative_to(run):
+                        raise RuntimeError("adapter replaced its output directory")
+                    # Child-writable files are never the authoritative audit. The
+                    # monotonic pipe stream has already reached the parent.
+                    for audit_name in ("io_audit.json", "imported_source.json", "runtime_receipt.json"):
+                        audit_path = output / audit_name
+                        if audit_path.is_symlink() or audit_path.is_file():
+                            audit_path.unlink()
+                        elif audit_path.exists():
+                            raise RuntimeError("adapter planted a non-file audit destination")
+                    for audit_name, observed in receipt["reports"].items():
+                        if audit_name in ("io_audit.json", "imported_source.json"):
+                            write_json(output / audit_name, observed)
+                    write_json(output / "runtime_receipt.json", receipt)
+                    if timed_out:
+                        raise RuntimeError(f"adapter timed out after {timeout}s for origin {origin}; see {output / 'adapter.log'}")
+                    if not receipt["verified"]:
+                        raise RuntimeError(f"adapter did not finish a verified parent audit for origin {origin}; see {output / 'runtime_receipt.json'}")
+                    from evaluation.input_review import review_input_summary
+                    if phase == "assessment" and review_input_summary(receipt["summary"])["requires_review"]:
+                        raise RuntimeError("assessment adapter used undeclared external inputs; declare them before a new freeze")
                 if process.returncode:
                     raise RuntimeError(f"adapter failed for origin {origin}; see {output / 'adapter.log'}")
                 for audit_name in ("io_audit.json", "imported_source.json"):
@@ -509,6 +541,7 @@ def run_suite(suite, runs, model, adapter=None, params=None, prediction_dir=None
         metadata["elapsed_seconds"] = time.monotonic() - start
         if adapter:
             metadata["runtime_audits"] = {}
+            metadata["runtime_input_summary"] = {}
             for origin in origins:
                 audit_summary = {}
                 for file in ("io_audit.json", "imported_source.json"):
@@ -519,6 +552,10 @@ def run_suite(suite, runs, model, adapter=None, params=None, prediction_dir=None
                     else:
                         audit_summary[file] = {"status": "not_recorded"}
                 metadata["runtime_audits"][str(origin)] = audit_summary
+                receipt_path = run / f"origin-{origin}" / "runtime_receipt.json"
+                if receipt_path.is_file():
+                    from evaluation.input_review import review_input_summary
+                    metadata["runtime_input_summary"][str(origin)] = review_input_summary(read_json(receipt_path)["summary"])
         metadata["artifact_sha256"] = {p.relative_to(run).as_posix(): digest(p)
                                          for p in sorted(run.rglob("*")) if p.is_file() and p.name != "run.json"}
         metadata["run_fingerprint"] = canonical_hash(metadata)
@@ -537,12 +574,16 @@ def verify_run(path):
         if claimed != canonical_hash(metadata):
             raise ValueError(f"run metadata fingerprint changed: {path.name}")
         metadata["run_fingerprint"] = claimed
-    if metadata.get("protocol_version") == "audited-inputs-v5" and metadata.get("adapter"):
+    if metadata.get("protocol_version") in ("audited-inputs-v5", "parent-audited-v6") and metadata.get("adapter"):
         for origin in metadata["origins"]:
             for audit_name in ("io_audit.json", "imported_source.json"):
                 audit_path = path / f"origin-{origin}" / audit_name
                 if not audit_path.is_file() or read_json(audit_path).get("status") != "verified":
                     raise ValueError(f"run has no verified worker audit: {origin}/{audit_name}")
+            if metadata["protocol_version"] == "parent-audited-v6":
+                receipt_path = path / f"origin-{origin}" / "runtime_receipt.json"
+                if not receipt_path.is_file() or not read_json(receipt_path).get("verified"):
+                    raise ValueError("run has no verified parent audit receipt")
     hashes = metadata.get("artifact_sha256", {})
     if "scores.json" not in hashes:
         raise ValueError(f"run has no score artifact fingerprint: {path.name}")

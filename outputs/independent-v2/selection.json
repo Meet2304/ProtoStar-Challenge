@@ -1,0 +1,1294 @@
+{
+  "algorithm": {
+    "annual_avg_temp": "(mean(valid TMAX) + mean(valid TMIN))/2; published-definition approximation",
+    "cdd": "sum(max((TMAX+TMIN)/2 - 65 F, 0)) over paired valid days",
+    "conus_bounds": [
+      25,
+      49,
+      -125,
+      -67
+    ],
+    "data_types": [
+      "TMAX",
+      "TMIN",
+      "PRCP"
+    ],
+    "distance_km_min": 100,
+    "eligibility": {
+      "baseline_1982_2011": 20,
+      "final_2015_2018": 3,
+      "live_2012_2014": 2,
+      "metric_validity": "official per-variable missing counts <=10 and finite value",
+      "target_2012_2018": 6
+    },
+    "end": "2018-12-31",
+    "inventory": "each of TMAX,TMIN,PRCP begins by 1950 and ends no earlier than 2018",
+    "latitude_split": 37,
+    "limitation": "Current archive QC and revisions; single-station aggregation is not the challenge city composite. Supplementary geographic generalization, never private-answer-key validation or rank.",
+    "longitude_splits": [
+      -104,
+      -87
+    ],
+    "minimum_benchmark": {
+      "stations": 12,
+      "strata": 4
+    },
+    "missing": "full calendar reindex; totals require at least one valid day",
+    "prior_exclusions": {
+      "all_ids_names_and_locations": true,
+      "distance_km_min": 100,
+      "selection": "outputs/independent-v1/selection.json",
+      "selection_sha256": "2a3da7755f1a4870097ee11dfea07d82c64f19cd2b265853d5bb5d06feef5efc"
+    },
+    "quality": "nonempty QFLAG invalid; temperature outside [-130,140] F invalid; negative PRCP invalid; TMAX<TMIN invalidates both",
+    "selection": "SHA256(protostar-external-v2|station_id), first eight in each stratum",
+    "start": "1950-01-01",
+    "station_history": "one station ID; physical moves/changes unknown; segment/change fields null",
+    "station_network": "USW prefix only (WBAN network, often airport stations; not all stations are airports)",
+    "stations_per_stratum": 8,
+    "trace": "PRCP measurement flag T with numeric zero is valid; count recorded",
+    "units": "standard: Fahrenheit and inches",
+    "version": "protostar-external-v2"
+  },
+  "algorithm_sha256": "cc1900b9c9663563fa8af2a47ffe0474e637f95d4efa0a165a461da05f836381",
+  "benchmark_id": "protostar-external-v2",
+  "created_utc": "2026-11-08T11:39:20.029786+00:00",
+  "eligible_counts": {
+    "north_central": 24,
+    "north_east": 13,
+    "north_west": 39,
+    "south_central": 25,
+    "south_east": 13,
+    "south_west": 16
+  },
+  "exclusion_files": {
+    "data/city_info.csv": "b46552f8bb118ca6914510e8b4e7250da8d59b304d22cfa9a68547fb4f5017e0",
+    "data/raw/.cache/huggingface/download/city_info/train-00000-of-00001.parquet.metadata": "77dffc3ee8ca1c8de66bc697d76d156bde647152850f12a113a7406236271f84",
+    "data/raw/city_info/train-00000-of-00001.parquet": "6b71424c7c30a1b8027ba47a92ccb9aab8553147950af491538ea0912bbb955d",
+    "outputs/independent-v1/quality.json": "c21efcffaf163217b082d2c223a73685dc52889d827837e3384e6d3747dfe657",
+    "outputs/independent-v1/selection.json": "2a3da7755f1a4870097ee11dfea07d82c64f19cd2b265853d5bb5d06feef5efc"
+  },
+  "metadata_files": {
+    "metadata/inventory.txt": "3d7378c3ecad6841340b47392f10b391c42a5f47369765e6bb032704d2301125",
+    "metadata/stations.txt": "437ee87f0343bcad408a492cf7a02163fb69255364c541b4006d5d76055d0dc3"
+  },
+  "metadata_provenance": {
+    "inventory": {
+      "local_import": true,
+      "sha256": "3d7378c3ecad6841340b47392f10b391c42a5f47369765e6bb032704d2301125",
+      "source_url": "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-inventory.txt"
+    },
+    "stations": {
+      "local_import": true,
+      "sha256": "437ee87f0343bcad408a492cf7a02163fb69255364c541b4006d5d76055d0dc3",
+      "source_url": "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt"
+    }
+  },
+  "preregistration": "evaluation/independent/preregistration-v2.json",
+  "preregistration_sha256": "d76cacc86f769d19b5120b7ec559b2dde8e9f3c6caa5dfb9dca1836fd6e7ce06",
+  "schema_version": 1,
+  "script_sha256": "812aa171da6b42e4c2a424beb8e12e3f009c2a3a2897935d6ee9f94990133015",
+  "source_hash": "9faffc1689a9f5851f300cdd1bc1f9f553588626147fcc0a2b764c7f992502a3",
+  "stations": [
+    {
+      "elevation_m": 2297.3,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 37.4394,
+      "lon": -105.8617,
+      "name": "ALAMOSA-BERGMAN FLD",
+      "nearest_excluded_km": 152.54310552932944,
+      "selection_key": "0c36939a279200227a6b77d0ada660da212914e881aae57335b2586750720da1",
+      "state": "CO",
+      "station_id": "USW00023061",
+      "stratum": "north_west"
+    },
+    {
+      "elevation_m": 11.9,
+      "inventory": {
+        "PRCP": [
+          1945,
+          2019
+        ],
+        "TMAX": [
+          1945,
+          2026
+        ],
+        "TMIN": [
+          1945,
+          2026
+        ]
+      },
+      "lat": 37.4058,
+      "lon": -122.0481,
+      "name": "MOFFETT FED AIRFIELD",
+      "nearest_excluded_km": 139.22758637883442,
+      "selection_key": "18cf51a6edbb1d1c8a0447133e4e52af8ecfc2209d5f6895c9302de0d6080ac2",
+      "state": "CA",
+      "station_id": "USW00023244",
+      "stratum": "north_west"
+    },
+    {
+      "elevation_m": 14.3,
+      "inventory": {
+        "PRCP": [
+          1945,
+          2020
+        ],
+        "TMAX": [
+          1945,
+          2026
+        ],
+        "TMIN": [
+          1945,
+          2026
+        ]
+      },
+      "lat": 48.35,
+      "lon": -122.6667,
+      "name": "WHIDBEY ISLAND NAS",
+      "nearest_excluded_km": 104.07625834697033,
+      "selection_key": "18d1ac8d9f950eab4d509f8978af6ce51bcf4dd7c6236be3f0311950e73a532c",
+      "state": "WA",
+      "station_id": "USW00024255",
+      "stratum": "north_west"
+    },
+    {
+      "elevation_m": 153.0,
+      "inventory": {
+        "PRCP": [
+          1899,
+          2026
+        ],
+        "TMAX": [
+          1900,
+          2026
+        ],
+        "TMIN": [
+          1900,
+          2026
+        ]
+      },
+      "lat": 43.2336,
+      "lon": -123.3578,
+      "name": "ROSEBURG RGNL AP",
+      "nearest_excluded_km": 100.04085467653827,
+      "selection_key": "1f15335244542d9d83824ab96a0a129c8b309e96b5d0359ec4a91bb2ce3ca692",
+      "state": "OR",
+      "station_id": "USW00024231",
+      "stratum": "north_west"
+    },
+    {
+      "elevation_m": 1.5,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 37.7178,
+      "lon": -122.2331,
+      "name": "OAKLAND INTL AP",
+      "nearest_excluded_km": 117.26215871417551,
+      "selection_key": "1f7c59ab6496dcd0b3a8ebc4dcb0189431db39006c07a80fa73a51948ad3dc5f",
+      "state": "CA",
+      "station_id": "USW00023230",
+      "stratum": "north_west"
+    },
+    {
+      "elevation_m": 1834.6,
+      "inventory": {
+        "PRCP": [
+          1938,
+          2026
+        ],
+        "TMAX": [
+          1938,
+          2026
+        ],
+        "TMIN": [
+          1938,
+          2026
+        ]
+      },
+      "lat": 47.4547,
+      "lon": -115.6711,
+      "name": "MULLAN PASS VOR/DME",
+      "nearest_excluded_km": 133.24408319263765,
+      "selection_key": "20fbaa82c1272c31ed94dafaabebfa57babeca43da6e756efa2b7bbcd1ad2a47",
+      "state": "ID",
+      "station_id": "USW00024154",
+      "stratum": "north_west"
+    },
+    {
+      "elevation_m": 1170.7,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 42.6,
+      "lon": -123.3667,
+      "name": "SEXTON SUMMIT",
+      "nearest_excluded_km": 115.95198190564444,
+      "selection_key": "2917e7103c735feb37d40803174a94d8d722d9acdc2dad430c589c14a27f0b71",
+      "state": "OR",
+      "station_id": "USW00024235",
+      "stratum": "north_west"
+    },
+    {
+      "elevation_m": 1172.0,
+      "inventory": {
+        "PRCP": [
+          1903,
+          2026
+        ],
+        "TMAX": [
+          1903,
+          2026
+        ],
+        "TMIN": [
+          1903,
+          2026
+        ]
+      },
+      "lat": 48.6036,
+      "lon": -112.3767,
+      "name": "CUT BANK AP",
+      "nearest_excluded_km": 145.81693043991098,
+      "selection_key": "2a0d73806e23a7509395e57efe8f42a923886cc43728378409959dd29a10803f",
+      "state": "MT",
+      "station_id": "USW00024137",
+      "stratum": "north_west"
+    },
+    {
+      "elevation_m": 963.8,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 44.0458,
+      "lon": -103.0545,
+      "name": "RAPID CITY RGNL AP",
+      "nearest_excluded_km": 240.2156794295675,
+      "selection_key": "08331fa7429eed17f0e227c18053b258100c2bffa146e3bd06df6e9eb8d3621b",
+      "state": "SD",
+      "station_id": "USW00024090",
+      "stratum": "north_central"
+    },
+    {
+      "elevation_m": 362.1,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 43.1544,
+      "lon": -93.3261,
+      "name": "MASON CITY MUNI AP",
+      "nearest_excluded_km": 100.67940175286415,
+      "selection_key": "3412a388c44b92d28c1217ec784db25f5c506ef81c1c22330dc94a9734d0a28f",
+      "state": "IA",
+      "station_id": "USW00014940",
+      "stratum": "north_central"
+    },
+    {
+      "elevation_m": 312.7,
+      "inventory": {
+        "PRCP": [
+          1892,
+          2026
+        ],
+        "TMAX": [
+          1906,
+          2026
+        ],
+        "TMIN": [
+          1906,
+          2026
+        ]
+      },
+      "lat": 44.5483,
+      "lon": -95.0806,
+      "name": "REDWOOD FALLS MUNI AP",
+      "nearest_excluded_km": 124.21423838307201,
+      "selection_key": "646e5265e38e688cc7b2590525df7e8a1da01f89c99ed3fcd789d0f2f67d24cd",
+      "state": "MN",
+      "station_id": "USW00014992",
+      "stratum": "north_central"
+    },
+    {
+      "elevation_m": 463.3,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 38.0683,
+      "lon": -97.8608,
+      "name": "HUTCHINSON MUNI AP",
+      "nearest_excluded_km": 155.60771466174674,
+      "selection_key": "6573e8875c6fa1189d1216342cdb1502f9fff1179bb8005ddbb2d6b3d1d4aef2",
+      "state": "KS",
+      "station_id": "USW00013986",
+      "stratum": "north_central"
+    },
+    {
+      "elevation_m": 301.8,
+      "inventory": {
+        "PRCP": [
+          1950,
+          2026
+        ],
+        "TMAX": [
+          1950,
+          2026
+        ],
+        "TMIN": [
+          1950,
+          2026
+        ]
+      },
+      "lat": 45.7728,
+      "lon": -92.6886,
+      "name": "GRANTSBURG",
+      "nearest_excluded_km": 100.32858123558373,
+      "selection_key": "66222d5997ccd22ddf1ab5b8180213cb1513c7c2a73fa981365a0479c9af9728",
+      "state": "WI",
+      "station_id": "USW00014995",
+      "stratum": "north_central"
+    },
+    {
+      "elevation_m": 254.2,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 41.1008,
+      "lon": -92.4444,
+      "name": "OTTUMWA IND AP",
+      "nearest_excluded_km": 106.038569455271,
+      "selection_key": "6c161969ff95f37d7bb01e96c5c9d1b0388f127b78d1db0a262f62eda908658d",
+      "state": "IA",
+      "station_id": "USW00014950",
+      "stratum": "north_central"
+    },
+    {
+      "elevation_m": 455.7,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 46.9258,
+      "lon": -98.6703,
+      "name": "JAMESTOWN MUNI AP",
+      "nearest_excluded_km": 141.18522584729266,
+      "selection_key": "70b2f4dae8edd37842eba3cad5cf73ab6aac507b786a0a7f65fa9ade16dd481b",
+      "state": "ND",
+      "station_id": "USW00014919",
+      "stratum": "north_central"
+    },
+    {
+      "elevation_m": 439.2,
+      "inventory": {
+        "PRCP": [
+          1893,
+          2026
+        ],
+        "TMAX": [
+          1893,
+          2026
+        ],
+        "TMIN": [
+          1893,
+          2026
+        ]
+      },
+      "lat": 46.8997,
+      "lon": -95.0669,
+      "name": "PARK RAPIDS MUNI AP",
+      "nearest_excluded_km": 132.51547489062548,
+      "selection_key": "755c6fbbab7312c1a7acf26c42081afd4e1e62b949d4696d1f163fefceec994b",
+      "state": "MN",
+      "station_id": "USW00094967",
+      "stratum": "north_central"
+    },
+    {
+      "elevation_m": 185.3,
+      "inventory": {
+        "PRCP": [
+          1896,
+          2026
+        ],
+        "TMAX": [
+          1896,
+          2026
+        ],
+        "TMIN": [
+          1896,
+          2026
+        ]
+      },
+      "lat": 44.7389,
+      "lon": -85.5678,
+      "name": "TRAVERSE CY CHERRY CAPITAL AP",
+      "nearest_excluded_km": 179.10246080395612,
+      "selection_key": "149a7c79ee894a560dcb4001c67b334d1f51a4ff89e03a17a05c367015fe5a26",
+      "state": "MI",
+      "station_id": "USW00014850",
+      "stratum": "north_east"
+    },
+    {
+      "elevation_m": 394.7,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 44.2656,
+      "lon": -85.3967,
+      "name": "CADILLAC",
+      "nearest_excluded_km": 133.29719229408855,
+      "selection_key": "483f66f99ea90f6b45d0ab6ee29a8b0b614e852f46e82b9872b500e199b85186",
+      "state": "MI",
+      "station_id": "USW00014817",
+      "stratum": "north_east"
+    },
+    {
+      "elevation_m": 125.0,
+      "inventory": {
+        "PRCP": [
+          1938,
+          2026
+        ],
+        "TMAX": [
+          1938,
+          2026
+        ],
+        "TMIN": [
+          1938,
+          2026
+        ]
+      },
+      "lat": 43.1111,
+      "lon": -76.1039,
+      "name": "SYRACUSE HANCOCK INTL AP",
+      "nearest_excluded_km": 127.66699676251714,
+      "selection_key": "5f8765709bed6723b15ffbfeb65d3628fb677a0af5d1f41ab621332b3905bf2e",
+      "state": "NY",
+      "station_id": "USW00014771",
+      "stratum": "north_east"
+    },
+    {
+      "elevation_m": 285.3,
+      "inventory": {
+        "PRCP": [
+          1938,
+          2026
+        ],
+        "TMAX": [
+          1938,
+          2026
+        ],
+        "TMIN": [
+          1938,
+          2026
+        ]
+      },
+      "lat": 42.1567,
+      "lon": -76.9028,
+      "name": "ELMIRA CORNING RGNL AP",
+      "nearest_excluded_km": 101.57770569741349,
+      "selection_key": "85afedeb65d9ac943283da3b7a57d7f37f8fb79769c2a2ce76a1e78c73242854",
+      "state": "NY",
+      "station_id": "USW00014748",
+      "stratum": "north_east"
+    },
+    {
+      "elevation_m": 179.8,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 45.0606,
+      "lon": -83.4281,
+      "name": "ALPENA WWTP",
+      "nearest_excluded_km": 150.14315717968546,
+      "selection_key": "9d243c9c38d967d075bdda2b7352c682367cba61c13caab179e75c72e11a7dad",
+      "state": "MI",
+      "station_id": "USW00014814",
+      "stratum": "north_east"
+    },
+    {
+      "elevation_m": 1911.7,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 44.2703,
+      "lon": -71.3033,
+      "name": "MT WASHINGTON",
+      "nearest_excluded_km": 105.86213237815338,
+      "selection_key": "b3192abe21b410d4d24231f7b6b12a1c221c5c1f5312acca8ab770191f9009be",
+      "state": "NH",
+      "station_id": "USW00014755",
+      "stratum": "north_east"
+    },
+    {
+      "elevation_m": 215.2,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 45.5644,
+      "lon": -84.7928,
+      "name": "PELLSTON RGNL AP",
+      "nearest_excluded_km": 107.1580657917785,
+      "selection_key": "c61536d7109a7deccd4f7d5cbe79c1abc172740cd58cb74c149cdfbb6f78e04a",
+      "state": "MI",
+      "station_id": "USW00014841",
+      "stratum": "north_east"
+    },
+    {
+      "elevation_m": 1.8,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 41.2589,
+      "lon": -72.8892,
+      "name": "NEW HAVEN TWEED AP",
+      "nearest_excluded_km": 105.15807303674795,
+      "selection_key": "d63d4cb7528b72aff35abac070b1c9912e16c54e008fa0eac1bc369882792417",
+      "state": "CT",
+      "station_id": "USW00014758",
+      "stratum": "north_east"
+    },
+    {
+      "elevation_m": 120.4,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 33.6189,
+      "lon": -114.7144,
+      "name": "BLYTHE ASOS",
+      "nearest_excluded_km": 108.12029008134984,
+      "selection_key": "16d9d8c15ab0cccfb3d0acaebc7085e910df4b32b43b49736c9ba1c5990ef24c",
+      "state": "CA",
+      "station_id": "USW00023158",
+      "stratum": "south_west"
+    },
+    {
+      "elevation_m": 2094.0,
+      "inventory": {
+        "PRCP": [
+          1940,
+          2026
+        ],
+        "TMAX": [
+          1940,
+          2026
+        ],
+        "TMIN": [
+          1940,
+          2026
+        ]
+      },
+      "lat": 35.6558,
+      "lon": -105.1386,
+      "name": "LAS VEGAS MUNI AP",
+      "nearest_excluded_km": 150.34506883484994,
+      "selection_key": "1de6e22d72527188d6c59e3050ad7b015994f75f8212aa6179a9ffe7f8db7db3",
+      "state": "NM",
+      "station_id": "USW00023054",
+      "stratum": "south_west"
+    },
+    {
+      "elevation_m": 22.3,
+      "inventory": {
+        "PRCP": [
+          1930,
+          2026
+        ],
+        "TMAX": [
+          1930,
+          2026
+        ],
+        "TMIN": [
+          1930,
+          2026
+        ]
+      },
+      "lat": 36.6636,
+      "lon": -121.6092,
+      "name": "SALINAS AP",
+      "nearest_excluded_km": 168.92826989981825,
+      "selection_key": "2aca7f89cc3d13976c03eda7aed2ad94404591090925e962a3debcd662cc012a",
+      "state": "CA",
+      "station_id": "USW00023233",
+      "stratum": "south_west"
+    },
+    {
+      "elevation_m": 1936.4,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 36.7417,
+      "lon": -104.5078,
+      "name": "RATON MUNI CREWS FLD AP",
+      "nearest_excluded_km": 125.18494775730113,
+      "selection_key": "2fdd2554293183f4fc399c39bc8992c3f7c5d501c687e5a546581330ac5274c3",
+      "state": "NM",
+      "station_id": "USW00023052",
+      "stratum": "south_west"
+    },
+    {
+      "elevation_m": 662.9,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 36.0719,
+      "lon": -115.1633,
+      "name": "MCCARRAN INTL AP",
+      "nearest_excluded_km": 153.20165133047814,
+      "selection_key": "47b0bd710910f49989cddaf96462cf5a462f5e517cc163efe6168fa7d2d06db6",
+      "state": "NV",
+      "station_id": "USW00023169",
+      "stratum": "south_west"
+    },
+    {
+      "elevation_m": 990.6,
+      "inventory": {
+        "PRCP": [
+          1930,
+          2026
+        ],
+        "TMAX": [
+          1930,
+          2026
+        ],
+        "TMIN": [
+          1930,
+          2026
+        ]
+      },
+      "lat": 32.3336,
+      "lon": -104.2583,
+      "name": "CAVERN CITY AP",
+      "nearest_excluded_km": 110.7838931555283,
+      "selection_key": "49f946570b43ae431ac31a6104578da48fcc9b04d2ebbeacc9e7655251d14c57",
+      "state": "NM",
+      "station_id": "USW00093033",
+      "stratum": "south_west"
+    },
+    {
+      "elevation_m": 249.9,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 35.6694,
+      "lon": -120.6292,
+      "name": "PASO ROBLES MUNI AP",
+      "nearest_excluded_km": 144.86025062503887,
+      "selection_key": "69c33a393595a054e8963e0679a993c4416c8def02e79df3295e29472c89baac",
+      "state": "CA",
+      "station_id": "USW00093209",
+      "stratum": "south_west"
+    },
+    {
+      "elevation_m": -14.0,
+      "inventory": {
+        "PRCP": [
+          1945,
+          2025
+        ],
+        "TMAX": [
+          1945,
+          2026
+        ],
+        "TMIN": [
+          1945,
+          2026
+        ]
+      },
+      "lat": 32.8325,
+      "lon": -115.6639,
+      "name": "EL CENTRO NAF",
+      "nearest_excluded_km": 100.02285453671068,
+      "selection_key": "7b112b33011c9f3f67b9255dd74b6be4ddca7f34eb65999c4ba9983552b853bf",
+      "state": "CA",
+      "station_id": "USW00023199",
+      "stratum": "south_west"
+    },
+    {
+      "elevation_m": 3.0,
+      "inventory": {
+        "PRCP": [
+          1943,
+          2026
+        ],
+        "TMAX": [
+          1943,
+          2026
+        ],
+        "TMIN": [
+          1943,
+          2026
+        ]
+      },
+      "lat": 28.7247,
+      "lon": -96.2536,
+      "name": "PALACIOS MUNI AP",
+      "nearest_excluded_km": 148.6982979001289,
+      "selection_key": "0d4ce2ddc86597c2a431003bf16574828b69fea3aa7627f5671a19d18eac50fd",
+      "state": "TX",
+      "station_id": "USW00012935",
+      "stratum": "south_central"
+    },
+    {
+      "elevation_m": 129.2,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 35.5933,
+      "lon": -88.9169,
+      "name": "JACKSON MCKELLAR- SIPES AP",
+      "nearest_excluded_km": 113.9223499348878,
+      "selection_key": "26d8eba26d35e5e8ecec2b8f84fb5864dd0abb692d49304a7af914cb9f557abc",
+      "state": "TN",
+      "station_id": "USW00003811",
+      "stratum": "south_central"
+    },
+    {
+      "elevation_m": -0.9,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 29.9975,
+      "lon": -90.2778,
+      "name": "NEW ORLEANS AP",
+      "nearest_excluded_km": 102.80017030243158,
+      "selection_key": "2f043820fc6606c375791772b3da75cca029374555965062f29c52ba83c44d56",
+      "state": "LA",
+      "station_id": "USW00012916",
+      "stratum": "south_central"
+    },
+    {
+      "elevation_m": 143.9,
+      "inventory": {
+        "PRCP": [
+          1949,
+          2026
+        ],
+        "TMAX": [
+          1949,
+          2026
+        ],
+        "TMIN": [
+          1949,
+          2026
+        ]
+      },
+      "lat": 28.4586,
+      "lon": -99.2228,
+      "name": "COTULLA LA SALLE CO AP",
+      "nearest_excluded_km": 140.48204155216223,
+      "selection_key": "30c2296a64737f380c9f1cf606b246e033a0df3dedd9288a48f982dd7a247e18",
+      "state": "TX",
+      "station_id": "USW00012947",
+      "stratum": "south_central"
+    },
+    {
+      "elevation_m": 159.4,
+      "inventory": {
+        "PRCP": [
+          1883,
+          2026
+        ],
+        "TMAX": [
+          1883,
+          2026
+        ],
+        "TMIN": [
+          1883,
+          2026
+        ]
+      },
+      "lat": 32.3586,
+      "lon": -95.4039,
+      "name": "TYLER POUNDS FLD",
+      "nearest_excluded_km": 147.07105300658986,
+      "selection_key": "3406a23d106f200298978f712d6146b8968bc276a6b11c7019ac0a9c77254267",
+      "state": "TX",
+      "station_id": "USW00013972",
+      "stratum": "south_central"
+    },
+    {
+      "elevation_m": 229.5,
+      "inventory": {
+        "PRCP": [
+          1893,
+          2026
+        ],
+        "TMAX": [
+          1893,
+          2026
+        ],
+        "TMIN": [
+          1893,
+          2026
+        ]
+      },
+      "lat": 34.8825,
+      "lon": -95.7817,
+      "name": "MCALESTER RGNL AP",
+      "nearest_excluded_km": 138.47861861490878,
+      "selection_key": "397fd4aaad90bf4ccdf670e84264adb12fb253647dc50f940088e1911c9e9018",
+      "state": "OK",
+      "station_id": "USW00093950",
+      "stratum": "south_central"
+    },
+    {
+      "elevation_m": 765.0,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2021
+        ],
+        "TMAX": [
+          1948,
+          2021
+        ],
+        "TMIN": [
+          1948,
+          2021
+        ]
+      },
+      "lat": 32.2442,
+      "lon": -101.4536,
+      "name": "BIG SPRING",
+      "nearest_excluded_km": 132.84282795015312,
+      "selection_key": "3c0cc622b148326027cec2feeb975bc193305bf7f0908bcdf6bb9f5ee3f75ecb",
+      "state": "TX",
+      "station_id": "USW00023041",
+      "stratum": "south_central"
+    },
+    {
+      "elevation_m": 1230.8,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 35.1806,
+      "lon": -103.6014,
+      "name": "TUCUMCARI MUNI AP",
+      "nearest_excluded_km": 146.65510012813175,
+      "selection_key": "3f1a5e418a6aa50fa8d8a20367a984a629558db695f62de4270d35339c733560",
+      "state": "NM",
+      "station_id": "USW00023048",
+      "stratum": "south_central"
+    },
+    {
+      "elevation_m": 296.0,
+      "inventory": {
+        "PRCP": [
+          1910,
+          2026
+        ],
+        "TMAX": [
+          1910,
+          2026
+        ],
+        "TMIN": [
+          1910,
+          2026
+        ]
+      },
+      "lat": 35.8181,
+      "lon": -83.9858,
+      "name": "KNOXVILLE AP",
+      "nearest_excluded_km": 137.7661663531722,
+      "selection_key": "1749ed503bb2ca9b3e1023f255e53e90c81c476dcda4b1bda43b244a8bdf54d7",
+      "state": "TN",
+      "station_id": "USW00013891",
+      "stratum": "south_east"
+    },
+    {
+      "elevation_m": 7.0,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 34.2667,
+      "lon": -77.9,
+      "name": "WILMINGTON INTL AP",
+      "nearest_excluded_km": 182.8396988250869,
+      "selection_key": "32652478a036a7a376567c1cd50e0aa1dba1e94f9491cb1fa7a22684717f82e4",
+      "state": "NC",
+      "station_id": "USW00013748",
+      "stratum": "south_east"
+    },
+    {
+      "elevation_m": 11.9,
+      "inventory": {
+        "PRCP": [
+          1937,
+          2026
+        ],
+        "TMAX": [
+          1937,
+          2026
+        ],
+        "TMIN": [
+          1937,
+          2026
+        ]
+      },
+      "lat": 32.8994,
+      "lon": -80.0408,
+      "name": "CHARLESTON INTL AP",
+      "nearest_excluded_km": 139.06038449073245,
+      "selection_key": "3b633864a04309d684c8fe419fc1036762d954345b4410b7ca7a99df4791e38b",
+      "state": "SC",
+      "station_id": "USW00013880",
+      "stratum": "south_east"
+    },
+    {
+      "elevation_m": 58.8,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 30.7764,
+      "lon": -83.2739,
+      "name": "VALDOSTA RGNL AP",
+      "nearest_excluded_km": 109.42350638892965,
+      "selection_key": "3c170bf56f6e7757b7a48a97df76f31e1ff68a1d350eef377e61d4e38c0cd179",
+      "state": "GA",
+      "station_id": "USW00093845",
+      "stratum": "south_east"
+    },
+    {
+      "elevation_m": 43.0,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 34.1878,
+      "lon": -79.7308,
+      "name": "FLORENCE RGNL AP",
+      "nearest_excluded_km": 130.56801085587034,
+      "selection_key": "4ce7c8e087f7d03f9797634e35736ffc57401491c1bf8134f12b595bac3a0cf7",
+      "state": "SC",
+      "station_id": "USW00013744",
+      "stratum": "south_east"
+    },
+    {
+      "elevation_m": 310.6,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2025
+        ],
+        "TMAX": [
+          1948,
+          2025
+        ],
+        "TMIN": [
+          1948,
+          2025
+        ]
+      },
+      "lat": 35.9981,
+      "lon": -84.2192,
+      "name": "OAK RIDGE ATDD",
+      "nearest_excluded_km": 139.5137986353044,
+      "selection_key": "4f28b7d936b7ededb794f342f07691920a26a71883a0117c4961ed8a46266253",
+      "state": "TN",
+      "station_id": "USW00003841",
+      "stratum": "south_east"
+    },
+    {
+      "elevation_m": 3.4,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 35.0683,
+      "lon": -77.0478,
+      "name": "NEW BERN - ASOS",
+      "nearest_excluded_km": 101.02454406034742,
+      "selection_key": "5250a19fd743999c1b869ef274290e9f7747f6448a2a56ad418d20d359504fc1",
+      "state": "NC",
+      "station_id": "USW00093719",
+      "stratum": "south_east"
+    },
+    {
+      "elevation_m": 3.0,
+      "inventory": {
+        "PRCP": [
+          1893,
+          2026
+        ],
+        "TMAX": [
+          1893,
+          2026
+        ],
+        "TMIN": [
+          1893,
+          2026
+        ]
+      },
+      "lat": 32.775,
+      "lon": -79.9239,
+      "name": "DWTN CHARLESTON",
+      "nearest_excluded_km": 140.377730759019,
+      "selection_key": "5267ad82a6d43b75c13e091a609c19932268a60da603868a73f1a880fecf2429",
+      "state": "SC",
+      "station_id": "USW00013782",
+      "stratum": "south_east"
+    }
+  ]
+}

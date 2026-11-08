@@ -74,3 +74,21 @@ The dataset card asks users to cite the original records:
 - Lai, Yuchuan; Dzombak, David (2019). Compiled historical daily temperature and precipitation data for selected 210 U.S. cities. Carnegie Mellon University. Dataset. https://doi.org/10.1184/R1/7890488.v6
 - Lai, Yuchuan; Dzombak, David (2019). Historical changes of annual temperature and precipitation indices at selected 210 U.S. cities. Carnegie Mellon University. Dataset. https://doi.org/10.1184/R1/7961012.v6
 - Lai, Y., & Dzombak, D. A. (2019). Use of historical data to assess regional climate change. Journal of Climate, 32(14), 4299–4320. https://doi.org/10.1175/JCLI-D-18-0630.1
+
+## Supplementary station validation (analysis only)
+
+NOAA NCEI GHCN-D Daily Summaries observations were requested only for
+1950-01-01 through 2018-12-31, with explicit API start/end dates and response
+validation before caching. The structural station and inventory catalogs come
+from https://www.ncei.noaa.gov/pub/data/ghcn/daily/; the date-bounded API is
+https://www.ncei.noaa.gov/access/services/data/v1 (see its official documentation
+at https://www.ncei.noaa.gov/access/search/documentation/data-service/). These
+public U.S. government observations are supplementary analysis only, not inputs
+to submission.csv. V1 failed its frozen coverage minimum without model scoring;
+V2 freezes 48 different WBAN station candidates and qualifies 33 across six
+regions under unchanged quality thresholds. Selection and models precede
+acquisition/scoring; every method and exclusion is reported. Exact raw response
+bytes, provenance and aggregation inputs are archived in
+evaluation/independent/snapshots/v2-acquisition.tar.gz and its SHA256 manifest.
+See evaluation/independent/README.md for chronology, limits and the one-time
+opening rule. No observed 2019+ weather is obtained or used.

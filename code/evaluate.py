@@ -10,6 +10,7 @@ from evaluation.core import (DEFAULT_CONFIG, prepare, verify_suite, run_suite,
                              read_json, write_json, compare_runs, validate_predictions, rubric_score)
 from evaluation.report import render_report
 from evaluation.protocol import create_freeze, arguments_from_spec
+from evaluation.defaults import DEFAULT_SUITE
 
 BASE = ROOT / "outputs/evaluation"
 
@@ -45,7 +46,7 @@ def main(argv=None):
     model.add_argument("--predictions", type=Path, help="pin assessment CSV bytes and declared external provenance")
     commands.add_parser("baselines", help="evaluate all three challenge reference methods")
     for command in (build, verify, run, score, freeze, commands.choices["baselines"]):
-        command.add_argument("--suite", type=Path, default=BASE / "suite-v3")
+        command.add_argument("--suite", type=Path, default=DEFAULT_SUITE)
     for command in (run, score, commands.choices["baselines"]):
         command.add_argument("--phase", choices=("development", "assessment"), default="development")
         command.add_argument("--freeze", type=Path, help="required for assessment, from the freeze command")
@@ -57,7 +58,7 @@ def main(argv=None):
     report.add_argument("--suite-id", help="optional exact suite fingerprint to include")
     diagnose = commands.add_parser("diagnose", help="separate development-only station, CDD and precision sensitivities")
     diagnose.add_argument("--run", type=Path, required=True)
-    diagnose.add_argument("--suite", type=Path, default=BASE / "suite-v3")
+    diagnose.add_argument("--suite", type=Path, default=DEFAULT_SUITE)
     compare = commands.add_parser("compare", help="paired raw-skill evidence and whole-period sensitivity")
     compare.add_argument("first", type=Path)
     compare.add_argument("second", type=Path)

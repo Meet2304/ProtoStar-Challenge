@@ -1,0 +1,951 @@
+{
+  "benchmark_id": "protostar-external-v1",
+  "eligible_stations": 5,
+  "eligible_strata": 4,
+  "limitations": "Current archive QC and revisions; single-station aggregation is not the challenge city composite. Supplementary geographic generalization, never private-answer-key validation or rank.",
+  "no_scores_computed": true,
+  "selection_sha256": "2a3da7755f1a4870097ee11dfea07d82c64f19cd2b265853d5bb5d06feef5efc",
+  "stations": [
+    {
+      "eligible": false,
+      "failure_reasons": [
+        "annual_avg_temp:baseline valid years 18 < 20",
+        "annual_avg_temp:target valid years 5 < 6",
+        "annual_avg_temp:final valid years 2 < 3",
+        "total_precip_in:target valid years 5 < 6",
+        "total_precip_in:final valid years 2 < 3",
+        "hottest_day_temp:baseline valid years 18 < 20",
+        "hottest_day_temp:target valid years 5 < 6",
+        "hottest_day_temp:final valid years 2 < 3",
+        "cdd:baseline valid years 18 < 20",
+        "cdd:target valid years 5 < 6",
+        "cdd:final valid years 2 < 3"
+      ],
+      "station_id": "USC00104670",
+      "stratum": "north_west",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 18,
+          "final": 2,
+          "live": 3,
+          "target": 5
+        },
+        "cdd": {
+          "baseline": 18,
+          "final": 2,
+          "live": 3,
+          "target": 5
+        },
+        "hottest_day_temp": {
+          "baseline": 18,
+          "final": 2,
+          "live": 3,
+          "target": 5
+        },
+        "total_precip_in": {
+          "baseline": 26,
+          "final": 2,
+          "live": 3,
+          "target": 5
+        }
+      }
+    },
+    {
+      "eligible": false,
+      "failure_reasons": [
+        "annual_avg_temp:target valid years 1 < 6",
+        "annual_avg_temp:live valid years 1 < 2",
+        "annual_avg_temp:final valid years 0 < 3",
+        "total_precip_in:target valid years 3 < 6",
+        "total_precip_in:final valid years 1 < 3",
+        "hottest_day_temp:target valid years 1 < 6",
+        "hottest_day_temp:live valid years 1 < 2",
+        "hottest_day_temp:final valid years 0 < 3",
+        "cdd:target valid years 1 < 6",
+        "cdd:live valid years 1 < 2",
+        "cdd:final valid years 0 < 3"
+      ],
+      "station_id": "USC00041614",
+      "stratum": "north_west",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 24,
+          "final": 0,
+          "live": 1,
+          "target": 1
+        },
+        "cdd": {
+          "baseline": 24,
+          "final": 0,
+          "live": 1,
+          "target": 1
+        },
+        "hottest_day_temp": {
+          "baseline": 24,
+          "final": 0,
+          "live": 1,
+          "target": 1
+        },
+        "total_precip_in": {
+          "baseline": 29,
+          "final": 1,
+          "live": 2,
+          "target": 3
+        }
+      }
+    },
+    {
+      "eligible": false,
+      "failure_reasons": [
+        "annual_avg_temp:baseline valid years 6 < 20",
+        "total_precip_in:baseline valid years 18 < 20",
+        "hottest_day_temp:baseline valid years 6 < 20",
+        "cdd:baseline valid years 6 < 20"
+      ],
+      "station_id": "USC00454572",
+      "stratum": "north_west",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 6,
+          "final": 3,
+          "live": 3,
+          "target": 6
+        },
+        "cdd": {
+          "baseline": 6,
+          "final": 3,
+          "live": 3,
+          "target": 6
+        },
+        "hottest_day_temp": {
+          "baseline": 6,
+          "final": 3,
+          "live": 3,
+          "target": 6
+        },
+        "total_precip_in": {
+          "baseline": 18,
+          "final": 3,
+          "live": 3,
+          "target": 6
+        }
+      }
+    },
+    {
+      "eligible": true,
+      "failure_reasons": [],
+      "station_id": "USW00024230",
+      "stratum": "north_west",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 23,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "cdd": {
+          "baseline": 23,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "hottest_day_temp": {
+          "baseline": 23,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "total_precip_in": {
+          "baseline": 25,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        }
+      }
+    },
+    {
+      "eligible": false,
+      "failure_reasons": [
+        "total_precip_in:target valid years 5 < 6",
+        "total_precip_in:final valid years 2 < 3"
+      ],
+      "station_id": "USC00210287",
+      "stratum": "north_central",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 26,
+          "final": 3,
+          "live": 3,
+          "target": 6
+        },
+        "cdd": {
+          "baseline": 26,
+          "final": 3,
+          "live": 3,
+          "target": 6
+        },
+        "hottest_day_temp": {
+          "baseline": 26,
+          "final": 3,
+          "live": 3,
+          "target": 6
+        },
+        "total_precip_in": {
+          "baseline": 30,
+          "final": 2,
+          "live": 3,
+          "target": 5
+        }
+      }
+    },
+    {
+      "eligible": false,
+      "failure_reasons": [
+        "annual_avg_temp:target valid years 0 < 6",
+        "annual_avg_temp:live valid years 0 < 2",
+        "annual_avg_temp:final valid years 0 < 3",
+        "total_precip_in:target valid years 2 < 6",
+        "total_precip_in:live valid years 0 < 2",
+        "total_precip_in:final valid years 2 < 3",
+        "hottest_day_temp:target valid years 0 < 6",
+        "hottest_day_temp:live valid years 0 < 2",
+        "hottest_day_temp:final valid years 0 < 3",
+        "cdd:target valid years 0 < 6",
+        "cdd:live valid years 0 < 2",
+        "cdd:final valid years 0 < 3"
+      ],
+      "station_id": "USC00327530",
+      "stratum": "north_central",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 29,
+          "final": 0,
+          "live": 0,
+          "target": 0
+        },
+        "cdd": {
+          "baseline": 29,
+          "final": 0,
+          "live": 0,
+          "target": 0
+        },
+        "hottest_day_temp": {
+          "baseline": 29,
+          "final": 0,
+          "live": 0,
+          "target": 0
+        },
+        "total_precip_in": {
+          "baseline": 28,
+          "final": 2,
+          "live": 0,
+          "target": 2
+        }
+      }
+    },
+    {
+      "eligible": true,
+      "failure_reasons": [],
+      "station_id": "USC00143527",
+      "stratum": "north_central",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 26,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "cdd": {
+          "baseline": 26,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "hottest_day_temp": {
+          "baseline": 26,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "total_precip_in": {
+          "baseline": 26,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        }
+      }
+    },
+    {
+      "eligible": false,
+      "failure_reasons": [
+        "annual_avg_temp:baseline valid years 5 < 20",
+        "annual_avg_temp:target valid years 3 < 6",
+        "annual_avg_temp:live valid years 0 < 2",
+        "total_precip_in:baseline valid years 14 < 20",
+        "total_precip_in:target valid years 2 < 6",
+        "total_precip_in:live valid years 0 < 2",
+        "total_precip_in:final valid years 2 < 3",
+        "hottest_day_temp:baseline valid years 5 < 20",
+        "hottest_day_temp:target valid years 3 < 6",
+        "hottest_day_temp:live valid years 0 < 2",
+        "cdd:baseline valid years 5 < 20",
+        "cdd:target valid years 3 < 6",
+        "cdd:live valid years 0 < 2"
+      ],
+      "station_id": "USC00142894",
+      "stratum": "north_central",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 5,
+          "final": 3,
+          "live": 0,
+          "target": 3
+        },
+        "cdd": {
+          "baseline": 5,
+          "final": 3,
+          "live": 0,
+          "target": 3
+        },
+        "hottest_day_temp": {
+          "baseline": 5,
+          "final": 3,
+          "live": 0,
+          "target": 3
+        },
+        "total_precip_in": {
+          "baseline": 14,
+          "final": 2,
+          "live": 0,
+          "target": 2
+        }
+      }
+    },
+    {
+      "eligible": false,
+      "failure_reasons": [
+        "annual_avg_temp:target valid years 4 < 6",
+        "annual_avg_temp:final valid years 2 < 3",
+        "total_precip_in:baseline valid years 18 < 20",
+        "hottest_day_temp:target valid years 4 < 6",
+        "hottest_day_temp:final valid years 2 < 3",
+        "cdd:target valid years 4 < 6",
+        "cdd:final valid years 2 < 3"
+      ],
+      "station_id": "USC00203585",
+      "stratum": "north_east",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 25,
+          "final": 2,
+          "live": 2,
+          "target": 4
+        },
+        "cdd": {
+          "baseline": 25,
+          "final": 2,
+          "live": 2,
+          "target": 4
+        },
+        "hottest_day_temp": {
+          "baseline": 25,
+          "final": 2,
+          "live": 2,
+          "target": 4
+        },
+        "total_precip_in": {
+          "baseline": 18,
+          "final": 4,
+          "live": 2,
+          "target": 6
+        }
+      }
+    },
+    {
+      "eligible": true,
+      "failure_reasons": [],
+      "station_id": "USW00014609",
+      "stratum": "north_east",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 27,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "cdd": {
+          "baseline": 27,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "hottest_day_temp": {
+          "baseline": 27,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "total_precip_in": {
+          "baseline": 27,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        }
+      }
+    },
+    {
+      "eligible": false,
+      "failure_reasons": [
+        "annual_avg_temp:baseline valid years 14 < 20",
+        "total_precip_in:baseline valid years 14 < 20",
+        "hottest_day_temp:baseline valid years 14 < 20",
+        "cdd:baseline valid years 14 < 20"
+      ],
+      "station_id": "USW00013764",
+      "stratum": "north_east",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 14,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "cdd": {
+          "baseline": 14,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "hottest_day_temp": {
+          "baseline": 14,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "total_precip_in": {
+          "baseline": 14,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        }
+      }
+    },
+    {
+      "eligible": false,
+      "failure_reasons": [
+        "total_precip_in:target valid years 1 < 6",
+        "total_precip_in:live valid years 1 < 2",
+        "total_precip_in:final valid years 0 < 3"
+      ],
+      "station_id": "USC00303346",
+      "stratum": "north_east",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 21,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "cdd": {
+          "baseline": 21,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "hottest_day_temp": {
+          "baseline": 21,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "total_precip_in": {
+          "baseline": 27,
+          "final": 0,
+          "live": 1,
+          "target": 1
+        }
+      }
+    },
+    {
+      "eligible": false,
+      "failure_reasons": [
+        "annual_avg_temp:baseline valid years 4 < 20",
+        "annual_avg_temp:target valid years 0 < 6",
+        "annual_avg_temp:live valid years 0 < 2",
+        "annual_avg_temp:final valid years 0 < 3",
+        "total_precip_in:target valid years 1 < 6",
+        "total_precip_in:live valid years 1 < 2",
+        "total_precip_in:final valid years 0 < 3",
+        "hottest_day_temp:baseline valid years 4 < 20",
+        "hottest_day_temp:target valid years 0 < 6",
+        "hottest_day_temp:live valid years 0 < 2",
+        "hottest_day_temp:final valid years 0 < 3",
+        "cdd:baseline valid years 4 < 20",
+        "cdd:target valid years 0 < 6",
+        "cdd:live valid years 0 < 2",
+        "cdd:final valid years 0 < 3"
+      ],
+      "station_id": "USC00291063",
+      "stratum": "south_west",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 4,
+          "final": 0,
+          "live": 0,
+          "target": 0
+        },
+        "cdd": {
+          "baseline": 4,
+          "final": 0,
+          "live": 0,
+          "target": 0
+        },
+        "hottest_day_temp": {
+          "baseline": 4,
+          "final": 0,
+          "live": 0,
+          "target": 0
+        },
+        "total_precip_in": {
+          "baseline": 20,
+          "final": 0,
+          "live": 1,
+          "target": 1
+        }
+      }
+    },
+    {
+      "eligible": false,
+      "failure_reasons": [
+        "annual_avg_temp:baseline valid years 16 < 20",
+        "annual_avg_temp:target valid years 5 < 6",
+        "annual_avg_temp:final valid years 2 < 3",
+        "total_precip_in:target valid years 4 < 6",
+        "total_precip_in:final valid years 2 < 3",
+        "hottest_day_temp:baseline valid years 16 < 20",
+        "hottest_day_temp:target valid years 5 < 6",
+        "hottest_day_temp:final valid years 2 < 3",
+        "cdd:baseline valid years 16 < 20",
+        "cdd:target valid years 5 < 6",
+        "cdd:final valid years 2 < 3"
+      ],
+      "station_id": "USC00290640",
+      "stratum": "south_west",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 16,
+          "final": 2,
+          "live": 3,
+          "target": 5
+        },
+        "cdd": {
+          "baseline": 16,
+          "final": 2,
+          "live": 3,
+          "target": 5
+        },
+        "hottest_day_temp": {
+          "baseline": 16,
+          "final": 2,
+          "live": 3,
+          "target": 5
+        },
+        "total_precip_in": {
+          "baseline": 23,
+          "final": 2,
+          "live": 2,
+          "target": 4
+        }
+      }
+    },
+    {
+      "eligible": false,
+      "failure_reasons": [
+        "annual_avg_temp:target valid years 5 < 6",
+        "annual_avg_temp:final valid years 2 < 3",
+        "total_precip_in:target valid years 5 < 6",
+        "total_precip_in:final valid years 2 < 3",
+        "hottest_day_temp:target valid years 5 < 6",
+        "hottest_day_temp:final valid years 2 < 3",
+        "cdd:target valid years 5 < 6",
+        "cdd:final valid years 2 < 3"
+      ],
+      "station_id": "USC00044232",
+      "stratum": "south_west",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 22,
+          "final": 2,
+          "live": 3,
+          "target": 5
+        },
+        "cdd": {
+          "baseline": 22,
+          "final": 2,
+          "live": 3,
+          "target": 5
+        },
+        "hottest_day_temp": {
+          "baseline": 22,
+          "final": 2,
+          "live": 3,
+          "target": 5
+        },
+        "total_precip_in": {
+          "baseline": 23,
+          "final": 2,
+          "live": 3,
+          "target": 5
+        }
+      }
+    },
+    {
+      "eligible": false,
+      "failure_reasons": [
+        "annual_avg_temp:baseline valid years 0 < 20",
+        "annual_avg_temp:target valid years 5 < 6",
+        "total_precip_in:baseline valid years 4 < 20",
+        "total_precip_in:target valid years 1 < 6",
+        "total_precip_in:live valid years 0 < 2",
+        "total_precip_in:final valid years 1 < 3",
+        "hottest_day_temp:baseline valid years 0 < 20",
+        "hottest_day_temp:target valid years 5 < 6",
+        "cdd:baseline valid years 0 < 20",
+        "cdd:target valid years 5 < 6"
+      ],
+      "station_id": "USC00023961",
+      "stratum": "south_west",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 0,
+          "final": 3,
+          "live": 2,
+          "target": 5
+        },
+        "cdd": {
+          "baseline": 0,
+          "final": 3,
+          "live": 2,
+          "target": 5
+        },
+        "hottest_day_temp": {
+          "baseline": 0,
+          "final": 3,
+          "live": 2,
+          "target": 5
+        },
+        "total_precip_in": {
+          "baseline": 4,
+          "final": 1,
+          "live": 0,
+          "target": 1
+        }
+      }
+    },
+    {
+      "eligible": false,
+      "failure_reasons": [
+        "annual_avg_temp:baseline valid years 19 < 20",
+        "hottest_day_temp:baseline valid years 19 < 20",
+        "cdd:baseline valid years 19 < 20"
+      ],
+      "station_id": "USC00226177",
+      "stratum": "south_central",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 19,
+          "final": 4,
+          "live": 2,
+          "target": 6
+        },
+        "cdd": {
+          "baseline": 19,
+          "final": 4,
+          "live": 2,
+          "target": 6
+        },
+        "hottest_day_temp": {
+          "baseline": 19,
+          "final": 4,
+          "live": 2,
+          "target": 6
+        },
+        "total_precip_in": {
+          "baseline": 23,
+          "final": 3,
+          "live": 3,
+          "target": 6
+        }
+      }
+    },
+    {
+      "eligible": false,
+      "failure_reasons": [
+        "annual_avg_temp:baseline valid years 6 < 20",
+        "total_precip_in:baseline valid years 7 < 20",
+        "hottest_day_temp:baseline valid years 6 < 20",
+        "cdd:baseline valid years 6 < 20"
+      ],
+      "station_id": "USC00417944",
+      "stratum": "south_central",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 6,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "cdd": {
+          "baseline": 6,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "hottest_day_temp": {
+          "baseline": 6,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "total_precip_in": {
+          "baseline": 7,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        }
+      }
+    },
+    {
+      "eligible": false,
+      "failure_reasons": [
+        "annual_avg_temp:baseline valid years 13 < 20",
+        "annual_avg_temp:target valid years 5 < 6",
+        "annual_avg_temp:final valid years 2 < 3",
+        "hottest_day_temp:baseline valid years 13 < 20",
+        "hottest_day_temp:target valid years 5 < 6",
+        "hottest_day_temp:final valid years 2 < 3",
+        "cdd:baseline valid years 13 < 20",
+        "cdd:target valid years 5 < 6",
+        "cdd:final valid years 2 < 3"
+      ],
+      "station_id": "USC00031152",
+      "stratum": "south_central",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 13,
+          "final": 2,
+          "live": 3,
+          "target": 5
+        },
+        "cdd": {
+          "baseline": 13,
+          "final": 2,
+          "live": 3,
+          "target": 5
+        },
+        "hottest_day_temp": {
+          "baseline": 13,
+          "final": 2,
+          "live": 3,
+          "target": 5
+        },
+        "total_precip_in": {
+          "baseline": 27,
+          "final": 3,
+          "live": 3,
+          "target": 6
+        }
+      }
+    },
+    {
+      "eligible": false,
+      "failure_reasons": [
+        "annual_avg_temp:baseline valid years 2 < 20",
+        "annual_avg_temp:target valid years 5 < 6",
+        "total_precip_in:baseline valid years 15 < 20",
+        "total_precip_in:target valid years 5 < 6",
+        "hottest_day_temp:baseline valid years 2 < 20",
+        "hottest_day_temp:target valid years 5 < 6",
+        "cdd:baseline valid years 2 < 20",
+        "cdd:target valid years 5 < 6"
+      ],
+      "station_id": "USC00411007",
+      "stratum": "south_central",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 2,
+          "final": 3,
+          "live": 2,
+          "target": 5
+        },
+        "cdd": {
+          "baseline": 2,
+          "final": 3,
+          "live": 2,
+          "target": 5
+        },
+        "hottest_day_temp": {
+          "baseline": 2,
+          "final": 3,
+          "live": 2,
+          "target": 5
+        },
+        "total_precip_in": {
+          "baseline": 15,
+          "final": 3,
+          "live": 2,
+          "target": 5
+        }
+      }
+    },
+    {
+      "eligible": false,
+      "failure_reasons": [
+        "annual_avg_temp:baseline valid years 13 < 20",
+        "annual_avg_temp:target valid years 5 < 6",
+        "annual_avg_temp:live valid years 1 < 2",
+        "total_precip_in:baseline valid years 13 < 20",
+        "total_precip_in:target valid years 5 < 6",
+        "total_precip_in:live valid years 1 < 2",
+        "hottest_day_temp:baseline valid years 13 < 20",
+        "hottest_day_temp:target valid years 5 < 6",
+        "hottest_day_temp:live valid years 1 < 2",
+        "cdd:baseline valid years 13 < 20",
+        "cdd:target valid years 5 < 6",
+        "cdd:live valid years 1 < 2"
+      ],
+      "station_id": "USW00093807",
+      "stratum": "south_east",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 13,
+          "final": 4,
+          "live": 1,
+          "target": 5
+        },
+        "cdd": {
+          "baseline": 13,
+          "final": 4,
+          "live": 1,
+          "target": 5
+        },
+        "hottest_day_temp": {
+          "baseline": 13,
+          "final": 4,
+          "live": 1,
+          "target": 5
+        },
+        "total_precip_in": {
+          "baseline": 13,
+          "final": 4,
+          "live": 1,
+          "target": 5
+        }
+      }
+    },
+    {
+      "eligible": false,
+      "failure_reasons": [
+        "annual_avg_temp:baseline valid years 18 < 20",
+        "total_precip_in:target valid years 0 < 6",
+        "total_precip_in:live valid years 0 < 2",
+        "total_precip_in:final valid years 0 < 3",
+        "hottest_day_temp:baseline valid years 18 < 20",
+        "cdd:baseline valid years 18 < 20"
+      ],
+      "station_id": "USC00318500",
+      "stratum": "south_east",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 18,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "cdd": {
+          "baseline": 18,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "hottest_day_temp": {
+          "baseline": 18,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "total_precip_in": {
+          "baseline": 28,
+          "final": 0,
+          "live": 0,
+          "target": 0
+        }
+      }
+    },
+    {
+      "eligible": true,
+      "failure_reasons": [],
+      "station_id": "USC00090140",
+      "stratum": "south_east",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 21,
+          "final": 3,
+          "live": 3,
+          "target": 6
+        },
+        "cdd": {
+          "baseline": 21,
+          "final": 3,
+          "live": 3,
+          "target": 6
+        },
+        "hottest_day_temp": {
+          "baseline": 21,
+          "final": 3,
+          "live": 3,
+          "target": 6
+        },
+        "total_precip_in": {
+          "baseline": 27,
+          "final": 3,
+          "live": 3,
+          "target": 6
+        }
+      }
+    },
+    {
+      "eligible": true,
+      "failure_reasons": [],
+      "station_id": "USW00012843",
+      "stratum": "south_east",
+      "valid_years": {
+        "annual_avg_temp": {
+          "baseline": 28,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "cdd": {
+          "baseline": 28,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "hottest_day_temp": {
+          "baseline": 28,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        },
+        "total_precip_in": {
+          "baseline": 28,
+          "final": 4,
+          "live": 3,
+          "target": 7
+        }
+      }
+    }
+  ],
+  "status": "not_validated"
+}
