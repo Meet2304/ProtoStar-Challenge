@@ -135,3 +135,12 @@ What insights say about v0.9 (reward +0.93, within_noise):
 4. `control:mean10` beats v0.9 on CDD (+0.29) and CDD departures are too large (best scaling 0.72, honest +0.26): blend
    mean10 in for CDD, or shrink.
 5. Precipitation equals climatology and no control beats it: low priority.
+
+## 7. Diagnostic runs (from main `60bbde5`, `evaluation/REWARD.md` "Diagnostic runs")
+
+`uv run python scripts/line.py score --diagnostic --name <name> ...` seals the run as `diagnostic:<name>`. It is scored and
+labelled normally (`official` if it qualifies), MLflow tags it `line.role=diagnostic`, `reward.py score` and insights
+report it, and `reward.py ladder` lists it as `diagnostic (<verdict>)` and **never promotes it**. Rules: declare each
+diagnostic in the plan before running it; never score a model you might adopt with `--diagnostic`; if an ablation turns out
+to be the better model, re-score it without the flag as a candidate version. Pre-declared development ablations (at most 4
+per version) may therefore be run officially with this flag.
