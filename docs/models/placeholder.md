@@ -259,3 +259,18 @@ backtests that include these years, so the gain is flattered. The average halves
 tie in practice), but by the time it is compared the kept version is v0.5, and its 1997 skill is lower than v0.5's. The
 boosted member alone is slightly better than the ensemble at 1983 and 1990, so combining it with v0.5 is a single later
 change worth one run.
+
+## Placeholder_v0.6 (2026-11-08)
+
+**Status: not kept (exploratory, uses features-v1).** Built on v0.5. Change: CDD warming rate = temperature rate x
+`days_ge_65_mean_30y` (features-v1, as of each pseudo-origin), with the regression response where that is missing. Run
+`20261108T142211Z-ac2d86649e`, clean commit `6abc96f`.
+
+| Final skill | Headline | 1983 | 1990 | 1997 |
+|---|---:|---:|---:|---:|
+| v0.5 (kept) | +0.0083 | +0.0027 | -0.0235 | +0.0458 |
+| v0.6 | +0.0056 | +0.0042 | -0.0324 | +0.0452 |
+
+Only CDD changes (+0.0154 / -0.0616 / +0.0307 against +0.0096 / -0.0261 / +0.0333). The physics response is larger than
+the regression one (mean CDD W at 1990: 86 against 60 degree-days), so it amplifies the 1990 overshoot. Headline lower, not
+kept. This is more evidence that the warming term is too large at 1990, not that the CDD response is wrong.
