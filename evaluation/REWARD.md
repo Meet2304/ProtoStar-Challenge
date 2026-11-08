@@ -51,6 +51,15 @@ The ladder replays every official run on the locked suite in time order, startin
 This is the Ladder mechanism (Blum & Hardt, 2015): many agents retrying the same three folds cannot
 push the bar up on noise, because only clear wins move it.
 
+### Diagnostic runs (pre-declared ablations and probes)
+
+Score an ablation or probe with `line.py score --diagnostic --name <name> ...`. Its sealed name becomes
+`diagnostic:<name>`, chosen **before** scoring, and the role cannot be changed afterwards. The run is scored, labelled
+(`official` if it qualifies), synced with the MLflow tag `line.role=diagnostic`, and reported by `reward.py score`
+and the insights. **It never enters the ladder**: `reward.py ladder` lists it as `diagnostic (<verdict>)` and it
+cannot become champion. Declare the role in the plan before running. A model you might adopt must be scored
+without the flag; re-score it as a candidate if a diagnostic turns out to be the better model.
+
 **Optimise in this order:** the verdict first, then the 90% interval's lower bound, then the reward.
 A higher point estimate that stays `within_noise` should not be reported as an improvement.
 
