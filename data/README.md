@@ -299,3 +299,153 @@ No model is fitted, no assessment labels are read, and no skill improvement is
 claimed by this station. Consumers must declare these release assets and score
 their models with `line.py score`. Ocean currents, solar cycles and climate-model
 projections were intentionally excluded from this implementation.
+
+## Global radiative forcing (`enhance-v3`)
+
+**Use: historical forecast-input candidates, exploratory, not gate-eligible.**
+Requested by the deep-learning station for a forcing-aware model. This cumulative
+release retains the unchanged city and ocean tables from `enhance-v2` and adds
+annual global effective radiative forcing (ERF), in watts per square meter
+(`W m-2`). ERF describes the change in net energy flow after rapid atmospheric
+adjustments, before the surface-temperature response. It is not observed surface
+temperature, Earth energy imbalance, or a future climate projection.
+
+### Sources and publication dates
+
+1. **Primary complete series: IPCC AR6 WGI Chapter 7 historical best-estimate
+   ERF**, assessment published **2021**. Author Chris Smith's IPCC repository
+   data revision is **2021-08-12 16:34:15 UTC**, commit
+   `32ca11dc8a90f9eddee23686e08bff7a88f11783`:
+   https://github.com/IPCC-WG1/Chapter-7/tree/32ca11dc8a90f9eddee23686e08bff7a88f11783.
+   The upstream file is `data_output/AR6_ERF_1750-2019.csv`; **only its prefix
+   through 2018 was acquired**. Historical forcing dataset documentation:
+   https://github.com/IPCC-WG1/Chapter-7. Scientific assessment: Forster et al.
+   (2021), *The Earth's Energy Budget, Climate Feedbacks, and Climate
+   Sensitivity*, IPCC AR6 WGI Chapter 7,
+   https://doi.org/10.1017/9781009157896.009.
+   Repository license: MIT, copyright Chris Smith 2020; full notice retained in
+   `forcing/sources/AR6_LICENSE.txt`. Cite both the assessment and author dataset.
+2. **Separate pre-2019 reference: IPCC AR5 WGI Annex II Table AII.1.2**, assessment
+   published **2013**, historical ERF **1750–2011**. The author-curated CSV used
+   by the FaIR v1.3 project is pinned to its **2018-01-08 17:11:44 UTC** revision,
+   commit `fcd941dc9729d16cb1df81758214bc34b20884dc`:
+   https://github.com/OMS-NetZero/FAIR/blob/fcd941dc9729d16cb1df81758214bc34b20884dc/fair/ancil/cmip5_annex2_forcing.csv.
+   Original assessment:
+   https://www.ipcc.ch/site/assets/uploads/2017/09/WG1AR5_AnnexII_FINAL.pdf.
+   Redistribution source and method: Smith et al. (2018), *FAIR v1.3*, published
+   June 18, 2018, https://doi.org/10.5194/gmd-11-2273-2018.
+   The FaIR repository's Apache-2.0 notice is retained in
+   `forcing/sources/AR5_FAIR_LICENSE.txt`; retain IPCC and FaIR attribution.
+
+**2012–2018 decision:** no clean pre-2019, fully historical, all-component
+extension was identified in this search. GISS's CMIP5 documentation explicitly
+warns that forcing after 2000/2005 includes RCP extrapolations
+(https://data.giss.nasa.gov/modelforce/). Those values were not used as observed
+history. We use the homogeneous, later-published **AR6 series for all 1750–2018**,
+including 2012–2018, rather than splice assessments with different forcing
+definitions and baselines. The AR5 series remains separate for sensitivity work.
+No extrapolated forcing, RCP/SSP scenario or future weather is supplied.
+
+### Acquisition and processing
+
+`code/enhance_forcing.py` requests HTTP byte ranges from the pinned AR6 file.
+The numeric CSV's sequential years and field counts determine conservative range
+sizes. Requests stop at the end of the complete 2018 record. This acquired bytes
+**0–101710 inclusive** of the 102046-byte upstream file; the 2019 record was
+not requested. A server that ignores byte ranges is rejected from its headers,
+before its response body is consumed. A test checks that no request crosses a
+synthetic final permitted row. Only the 1750–2018 prefix is cached or released.
+The complete AR5 reference is a closed historical file ending in 2011.
+
+Exact URLs, source commits, data revision timestamps, retrieval time, byte bounds,
+ETag, source hashes and license hashes are saved in
+`forcing/sources/acquisition.json` and root `provenance.json`. The downloaded
+prefix's SHA256 is
+`e0edc9113276a231c81547cef0a3d0214026d17810bd95ff74287427e5bae700`.
+The unmodified AR5 CSV SHA256 is
+`059432ff3ffda9947fdee18a8b9718a7bf351088e04c7faa5b1f24eecf63f33c`.
+
+Processing only renames component columns, computes explicitly documented sums,
+and cuts rows by origin. No time interpolation, smoothing, normalization,
+forecasting or fitting to station temperatures occurs. Source anthropogenic
+forcing uses the 1750 convention; natural components retain their published
+background offsets. In particular, **do not assume volcanic or solar forcing
+must equal zero in the 1750 row**. Do not align AR5 and AR6 by treating their
+absolute natural-forcing offsets as identical.
+
+Main columns, all `W m-2`, except integer `year`:
+
+| Column | Meaning |
+|---|---|
+| `wmghg_erf_wm2` | Sum of CO2, CH4, N2O and other well-mixed greenhouse gases |
+| `co2_erf_wm2`, `ch4_erf_wm2`, `n2o_erf_wm2`, `other_wmghg_erf_wm2` | Individual greenhouse-gas groups |
+| `tropospheric_aerosol_erf_wm2` | Sum of aerosol-radiation and aerosol-cloud interactions |
+| `aerosol_radiation_erf_wm2`, `aerosol_cloud_erf_wm2` | The two aerosol contributions |
+| `volcanic_erf_wm2` | Published volcanic/stratospheric-aerosol forcing |
+| `solar_erf_wm2` | Published solar forcing |
+| `other_anthropogenic_erf_wm2` | Ozone, stratospheric water, contrails, BC on snow and land-use contributions |
+| `anthropogenic_total_erf_wm2`, `natural_total_erf_wm2`, `total_erf_wm2` | Published aggregate totals |
+
+The smaller individual components are also present. Aggregate columns overlap
+their components: **do not sum every column**. Validation checks greenhouse-gas
+and aerosol grouping, anthropogenic closure, natural closure, and overall closure
+against the source to numerical tolerance. The schema describes every mapping.
+
+### Origin files, design resource and assets
+
+Run `uv run python scripts/line.py pull enhance-v3` in the consuming worktree.
+Read only declared assets from `data/processed/releases/enhance-v3/`.
+
+- `forcing/origin-O/annual.csv`, for **O = 1983, 1990, 1997, 2004, 2011, 2018**:
+  exactly one row per year from 1750 through O, no later forcing value.
+- `forcing/design-to-1982/annual.csv`: complete primary series through 1982 for
+  the explicitly requested design screen, with 233 rows.
+- `forcing/design-to-1982/ar5-reference.csv`: separate pre-2019 AR5 design
+  reference through 1982, preserving its source column names and units.
+- `assets/forcing-evaluation.json`: six origin-scoped asset declarations.
+- `assets/forcing-design-to-1982.json` and
+  `assets/forcing-ar5-design-to-1982.json`: design-scope declarations.
+
+Templates conservatively use `kind: weather_input`, `information_end_year: O`,
+`origins: [O]`, `time_column: year` and `time_format: year`. This enforces temporal
+bounds even though forcings are external drivers. Use the applicable forcing
+declarations in the model's own asset manifest; combine them with any other
+inputs rather than silently replacing an existing manifest. The source snapshots
+are provenance, not permission to read all years inside a forecast worker.
+
+`load_forcing_for_origin()` checks release hashes, the selected origin and the
+active fold cutoff. The full 1982 design file is not origin-clean for a forecast
+made in 1915: an earlier design screen must construct its own earlier cuts and
+fit transformations using that screen's training information. The provided
+1982 declaration intentionally cannot be bound to an earlier-origin worker.
+Every forcing after the active origin, including future volcanic events, must
+be forecast or marginalized by the training model itself.
+
+### Eligibility judgment and reproducibility
+
+**Not gate-eligible / not official.** Greenhouse gases and solar/volcanic drivers
+are physically external, but that does not establish information independence
+of their reconstructed historical estimates. AR6 is a 2021 retrospective
+assessment; aerosol/cloud and volcanic reconstructions are not verified as
+using only information available before each historical origin. AR5 is pre-2019
+but likewise retrospective for the early design eras. Merely dropping later
+rows does not resolve the calibration/vintage issue. This station therefore
+publishes `enhance-v3` without `--gate-eligible`. A later source publication date
+is disclosed explicitly, and does not become hidden by the year column.
+
+This is a covariate experiment, not proof of the cause of the champion's errors.
+No model was trained, no target or protected assessment partition was read, and
+no predictive gain is claimed. Forecast and submission eligibility still require
+the team's source review. Score subsequent models with `line.py score` and keep
+their exploratory labels.
+
+```powershell
+uv run python code/enhance_forcing.py --acquire-only
+uv run python code/enhance_forcing.py --offline
+uv run python code/enhance_forcing.py --validate outputs/enhancement/forcing-v3
+uv run python -m unittest discover -s code -p 'test_enhance_*.py' -v
+```
+
+An offline rebuild can use the released `forcing/sources/` as `--cache`, a pulled
+`enhance-v2` as `--upstream`, and a **new** `--output` directory. Never overwrite
+an immutable release. Code and provenance were prepared by Codex (GPT-6.1-sol).
