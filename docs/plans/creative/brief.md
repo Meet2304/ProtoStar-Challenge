@@ -118,6 +118,16 @@ Lessons so far (details in `docs/models/placeholder.md`, `docs/plans/placeholder
 7. **Risks and fallbacks**, compute budget, and dependencies (new packages, new data releases).
 8. **Tracking:** every scored run goes to MLflow via `line.py sync`; name the metrics to watch.
 
+## 5b. Current champion (2026-11-08, after plan A's first runs)
+
+The ladder champion is **`Placeholder_v1.2`** (run `20261108T180515Z-c2ea877eff`): the 30-year average plus a median-centred
+city-minus-neighbours local term and a 60-year relative offset (plan A). Reward +1.268 final points; against average30
++1.268, 90% [+0.59, +1.94], better at 3/3 origins; per metric temperature +1.54, precipitation +0.20, hottest day +0.14,
+CDD +3.19; by origin 1983 +0.02 / 1990 +2.48 / 1997 +1.31. `Placeholder_v1.1` promoted before it (+1.025);
+`Placeholder_v1.3` (v1.1 + a national warm increment) scored +1.720 but was `within_noise` against v1.2 (better only at
+1997). Any new version is compared with the champion recorded just before it is scored. These development numbers are
+reused evidence for any design that sees them, and must be disclosed as such.
+
 ## 6. Insights and the loop rule (from main `7d3889f`, `evaluation/INSIGHTS.md`)
 
 `line.py score` now prints, after the reward, the top 6 ranked findings (also `uv run python code/evaluation/insights.py

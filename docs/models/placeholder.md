@@ -316,7 +316,7 @@ precipitation -0.14, hottest day +0.02, CDD +2.74. v1.3's national gap N was -0.
 
 - **First promotions of the series.** The ladder champion moved from `control:average30` to v1.1 and then to v1.2. Every v0.x
   version had been `within_noise` (best P 0.84).
-- **v1.3** beats v1.2 on the bootstrap (P 0.99) but wins only 1990 of the three origins, so it fails the 2-of-3 guard. Against
+- **v1.3** beats v1.2 on the bootstrap (P 0.99) but wins only 1997 of the three origins (1983 -0.37 against +0.02, 1990 +2.43 against +2.48, 1997 +3.11 against +1.31), so it fails the 2-of-3 guard. Against
   average30 it is +1.720 (90% [+0.94, +2.54]) and against v1.1 it would promote (+0.696, 2/3). It goes to the integrator as a
   disclosed alternative, not a recommendation (plan section 4.3, step 7).
 - **Next under the plan:** v1.2 is champion after v1.3, so the conditional v1.4 (v1.2 + the same frozen increment) runs, after
