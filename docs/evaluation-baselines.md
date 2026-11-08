@@ -34,7 +34,9 @@ mirrored to **MLflow** so the team can see progress over time.
    uv run mlflow ui --backend-store-uri sqlite:///outputs/mlflow/mlflow.db
    ```
 
-The first run after a code change also builds the control panel (a few minutes); later runs reuse it.
+The first run after a code change also builds the control panel (a few minutes); later runs reuse it. The default
+panel profile is `full` (all seven controls + combo + nested). If `ridge_pooled` or `starter_rf` ever break, add
+`--profile A` to use only the five simple controls + combo + nested.
 
 ## The control panel (`controls-v1`)
 
@@ -71,7 +73,8 @@ with `uv run python scripts/run_controls.py`.
   G1 beats the 30-year average; G2 beats the best control; G3 no metric worse than −0.02 skill;
   G4 beats combo on average, on at least 2 of 3 origins, and does not lose on 1997 (the origin closest to 2018).
 
-The full scorecard, including climate zones and cities with station changes, is in
+The full scorecard, including six geographic zones (a latitude/longitude split, not a climate classification) and
+cities with station changes, is in
 `outputs/evaluation/scorecards/<run_id>.json` and in MLflow.
 
 ## Rules that keep the numbers honest
@@ -110,6 +113,48 @@ The full scorecard, including climate zones and cities with station changes, is 
 | `scripts/mlflow_sync.py` | backfills MLflow |
 | `tests/test_controls_panel.py` | tests for all of the above |
 
-## First results
+## First results (control panel `controls-v1`, development origins)
 
-<!-- RESULTS -->
+Built on 2026-11-08 at commit `d63347e`, protocol `audited-inputs-v5`, suite
+`f2a07d24bded…` (`outputs/evaluation/suite-v3-r5`), profile `full`. Panel file:
+`outputs/evaluation/controls/f2a07d24bded3db23024847598f4624b1caa2d2ce30539b6686ad3c476e531e5/development/official/panel-full.json`.
+Skill is final-analogue (leads 4–7) unless marked live; 0 = the 30-year average, positive is better.
+
+| Entry | Role | Headline | Live | Avg temp | Precip | Hottest day | CDD | 1983 | 1990 | 1997 |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| average30 | control (denominator) | +0.000 | +0.000 | +0.000 | +0.000 | +0.000 | +0.000 | +0.000 | +0.000 | +0.000 |
+| nested | incumbent | −0.007 | −0.009 | −0.008 | +0.000 | −0.021 | +0.003 | −0.004 | −0.015 | +0.000 |
+| **mean10** | **best control** | −0.009 | +0.005 | +0.021 | −0.034 | −0.040 | +0.018 | −0.010 | −0.035 | +0.018 |
+| combo | incumbent (submission method) | −0.013 | +0.013 | −0.019 | +0.000 | +0.000 | −0.034 | −0.037 | −0.029 | +0.026 |
+| ridge_pooled | control | −0.023 | −0.001 | −0.040 | −0.016 | −0.022 | −0.012 | −0.058 | +0.001 | −0.010 |
+| blend | control | −0.052 | −0.009 | −0.019 | −0.073 | −0.082 | −0.034 | −0.064 | −0.086 | −0.007 |
+| trend30 | control | −0.122 | −0.037 | −0.093 | −0.135 | −0.141 | −0.118 | −0.141 | −0.163 | −0.060 |
+| starter_rf | control | −0.265 | −0.189 | −0.309 | −0.349 | −0.227 | −0.173 | −0.191 | −0.307 | −0.296 |
+| persistence | control | −0.375 | −0.429 | −0.517 | −0.480 | −0.223 | −0.279 | −0.314 | −0.553 | −0.257 |
+
+Sanity gates passed: `average30` skill is below 1e-9 everywhere, and the three organizer references match the
+suite's prebuilt baselines (the panel records them as byte-identical on this suite; the gate itself compares
+values within 1e-6).
+
+**What this says.**
+
+- **The 30-year average is very hard to beat on these periods.** No control and neither incumbent has a positive
+  headline on the 1983/1990/1997 origins (forecast years 1984–2004). Gains of a few hundredths of skill are the
+  scale we are working at.
+- **Recency helps where warming is strong, and hurts elsewhere.** `mean10` and combo gain on average temperature
+  and CDD at the 1997 origin (+0.018 and +0.026 overall), and combo has the best *live* skill (+0.013). They lose on
+  the earlier origins. The README's backtest (8-year windows from origins 1986/1994/2002/2010, Score clipped per
+  window) showed combo positive in every window. This panel uses different origins and scores only the final-analogue
+  leads 4–7 with unclipped skill, and combo comes out slightly negative on two of three. The spread between origins is
+  as large as the differences between methods. Neither view is "the" answer for 2019–2025, so read every new model
+  per origin, not only by its mean.
+- **No evaluated method beats the average on precipitation or hottest-day temperature in these three periods.** This does not establish that those outcomes are unpredictable.
+- **Naive ML is a weak control.** The starter random forest is far below the average (−0.26), and pooled ridge is
+  slightly below it (−0.02). Any ML model we propose should at least clear `ridge_pooled` and `mean10`.
+- **Combo vs the gates:** combo would fail G1 and G2 on these origins. On its own that is not a reason to drop it:
+  three reused periods are weak evidence, and combo's strength shows on the most recent origin and in live skill.
+  It does show why another declared historical assessment on 2004/2011 can inform a decision; those years also remain reused evidence.
+
+Run IDs (all `20261108T…`): average30 `102320Z-e925f9acca`, persistence `102326Z-2de9f58382`, trend30
+`102333Z-504c820bed`, mean10 `102341Z-68b6362630`, blend `102348Z-b5e41fc876`, ridge_pooled `102355Z-c8c32ad881`,
+starter_rf `102419Z-fd1251f02d`, combo `102520Z-bbe55897c7`, nested `102526Z-6326cbdea0`.

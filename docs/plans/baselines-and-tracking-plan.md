@@ -1,6 +1,6 @@
 # Plan: standard control baselines, characteristic scorecard and MLflow tracking
 
-Status: **draft v4, for council review** (Sol + Grok). Author: Claude Code (Claude Opus 5.5), 2026-11-08.
+Status: **approved (Sol 91, Grok 94) and implemented** (commit `d63347e`). Author: Claude Code (Claude Opus 5.5), 2026-11-08.
 Review history is in section 11 (v1: Grok 74; v2: Sol 83, Grok 80; v3: Sol 87, Grok 84). Deadline: the challenge closes
 **2026-11-10 23:59 ET**, so the plan is tiered (A must ship, B deferrable, C stretch).
 
@@ -235,7 +235,8 @@ history**, not untouched evidence. Every attempt is in the existing access ledge
 ## 8. Tests
 
 - Controls: deterministic (two runs, identical bytes); full finite grid; refuse rows after origin; keyword-only method.
-- Real-data checks (skip without the raw cache): `|average30 skill| < 1e-9`; three references byte-identical.
+- Real-data checks (skip without a local suite-v3): `|average30 skill| < 1e-9`; three references within 1e-6 of
+  the prebuilt baselines (byte identity is recorded in the panel for information, not tested).
 - `ridge_pooled` boundary (unit tests on `ridge_features` and the target builder): perturbing any year > t leaves
   pseudo-origin t's features and ref_t unchanged; perturbing year t changes them; perturbing year t+k changes only
   that example's target, by exactly the perturbation; perturbing years in (t, t+k) or (t+k, O] changes neither.
@@ -340,3 +341,15 @@ logs intrinsic metrics only.
 - Section 0 lists all four scripts; `starter_rf`'s 50-row fallback stated; `damped_trend` formula flagged for
   re-derivation before `controls-v2`; best-control tie direction (alphabetically first) and panel profiles stated
   in section 5.
+
+**Final council scores: Sol 91 (v4), Grok 94 (v4.2). Approved for implementation.** Grok r5 had no critical
+issues. Its claim that `reference_bytes_identical` would be false on suite-v3 is contradicted by the real r5 panel
+(`suite-v3-r5`, commit `d63347e`), which records `true` for all three references; the gate compares values anyway.
+Queued (Python is frozen for the evaluator's Opus audit; not yet applied):
+1. `eval_model.py describe`: print leave-one-out and the resampling range in raw skill, not ×100 points.
+2. MLflow test: also assert the `control_set` param and the scorecard CSV artifact.
+3. A future `controls-v2` backfill should read the control set from the sealed run (e.g. a panel stamp) rather
+   than the live `CONTROL_SET` constant.
+
+**First results.** On the development origins nothing beats the 30-year average on headline (best control `mean10`
+−0.009; combo −0.013, though +0.026 at 1997). See `docs/evaluation-baselines.md`.
