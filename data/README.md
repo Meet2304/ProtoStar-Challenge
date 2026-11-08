@@ -449,3 +449,39 @@ uv run python -m unittest discover -s code -p 'test_enhance_*.py' -v
 An offline rebuild can use the released `forcing/sources/` as `--cache`, a pulled
 `enhance-v2` as `--upstream`, and a **new** `--output` directory. Never overwrite
 an immutable release. Code and provenance were prepared by Codex (GPT-6.1-sol).
+
+### Measured greenhouse-gas add-on: screened and deferred
+
+The training station subsequently requested a cheap, potentially official
+concentration-only alternative. A source/provenance review on 2026-11-08 found
+useful pre-2019 observations, but did not establish an official route for all
+requested historical origins. No concentration dataset was downloaded or
+released for this request; `enhance-v3` remains unchanged.
+
+The [Law Dome NOAA archive](https://www.ncei.noaa.gov/access/metadata/landing-page/bin/iso?id=noaa-icecore-9959)
+is a legitimate pre-2019 source: the underlying MacFarling Meure et al. paper
+was published on 2006-07-21, and the archive citation is dated 2010-07-16
+(DOI `10.25921/g6kd-k189`). It covers ice-core, firn-air and Cape Grim records
+of CO2, CH4 and N2O through 2006. However, its metadata documents calibration
+corrections, dating revisions using 2004 information, and gas-age spreads across
+multiple years. A measured concentration assigned an old atmospheric year is
+therefore not automatically information that was available at that year's
+forecast origin. Those records are also not direct annual global measurements.
+
+The [NOAA atmospheric concentration change log](https://www.gml.noaa.gov/ccgg/trends/trends_log.html)
+documents retrospective changes to measurement selection, reference-gas scales
+and early records. In particular, it describes recalculation of historical data
+in 2011, changed background selection in 2017, and a further scale update in
+2021. Downloading today's file and dropping later rows would not produce a
+verified pre-2019 vintage or a verified vintage for each origin.
+
+**Eligibility call for the proposed file alone: not certified gate-eligible.**
+This is not a judgment that measured concentrations can never qualify. To make
+that case, locate and pin suitable archived vintages, establish which
+measurements and dating/calibration information each origin may use, and build
+any interpolation or splice separately within each origin. A pre-2019
+publication date alone does not certify the 1982 design cut or the 1983/1990
+folds. The needed archive and processing audit goes beyond a cheap add-on, so
+the user's explicit skip option was taken. The shipped AR6/AR5 experiment stays
+available; no new release, gate flag, evaluation default or champion status was
+changed as a result of this review.
