@@ -69,7 +69,7 @@
   ],
   "guide": "evaluation/TEAM_GUIDE.md",
   "guide_status": "draft; final audit acceptance pending",
-  "goal_status": "active",
+  "goal_status": "paused_by_user",
   "passing_condition": "latest independently reviewed final implementation score > 92/100",
   "tests": {
     "total": 197,
@@ -77,5 +77,22 @@
     "passed": 193,
     "command": "python -m unittest discover -s tests -v",
     "ci": "https://github.com/Meet2304/ProtoStar-Challenge/actions/runs/42475483353"
+  },
+  "stop_instruction": "Finish current step, commit it, and stop (2026-11-08)",
+  "current_checkpoint": "reports/evaluation-checkpoint-paused.md",
+  "new_external_cohort": {
+    "selected": 48,
+    "eligible": 33,
+    "strata": 6,
+    "scores_opened": false,
+    "record": "evaluation/independent/v2-acquisition-manifest.json"
+  },
+  "checkpoint_workspace_tests": {
+    "total": 236,
+    "passed": 233,
+    "skipped": 3,
+    "seconds": 310.234,
+    "includes_untracked_cleaning_tests": true,
+    "real_data_opt_in": false
   }
 }
