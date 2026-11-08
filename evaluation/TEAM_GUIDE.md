@@ -21,9 +21,10 @@ uv run python code/evaluate.py verify
 uv run python code/evaluate.py baselines
 ```
 
-On a fresh clone, run `uv run python code/evaluate.py prepare` once before
-`verify`. The suite already exists on this machine. Existing suites are never
-overwritten.
+On a fresh clone, run `uv run python scripts/line.py get-suite` once before
+`verify`, and do not run `prepare`: a rebuilt suite holds the same data under a
+different ID, so its runs cannot be compared with the team's. Setup and logging
+are in the [team MLflow guide](../docs/team-mlflow-guide.md).
 
 ## Test a teammate's model
 

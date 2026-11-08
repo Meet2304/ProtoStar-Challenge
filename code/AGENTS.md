@@ -96,6 +96,7 @@ uv run python code/check_submission.py     # same checks the challenge Space run
 
 ## Working rules
 
+- **Assembly line.** Before any task, run `uv run python scripts/line.py status` and follow `.claude/skills/assembly-line/SKILL.md`. Every agent follows that file, whichever tool it runs in.
 - **Guard every weather input in code.** Call `assert_no_post_cutoff()` from `code/common.py` on every weather
   table before it is used. It raises `DataRuleViolation` if any row is dated after 2018. Do not remove, weaken or bypass it.
 - **No model selection on 2019–2025.** Choose and tune models only with backtests on years up to 2018

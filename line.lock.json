@@ -1,0 +1,11 @@
+{
+  "current_evaluator": "eval-v1",
+  "evaluators": {
+    "eval-v1": "f5d2def5641ce60504df03f34df159f85ebb05545b484e5ccded571eb7a744a4"
+  },
+  "line_started_utc": "20261108T104759Z",
+  "mlflow_uri": "http://127.0.0.1:5000",
+  "releases": {},
+  "schema_version": 1,
+  "suite_id": "4029caa1fb85cd376baf677e5d89549655684044aac68b6b3efb368eb6e46872"
+}
