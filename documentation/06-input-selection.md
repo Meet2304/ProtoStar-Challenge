@@ -4,6 +4,10 @@ Cleaning only earns its place if it predicts the **official** labels better. Thi
 backtest that decides the default input per metric (`<metric>_input` in `annual_clean.parquet`) and its result. Plan
 reference: §5 and §10.
 
+**Applies to `clean-v0` only.** Its folds run to 2018, which is past the forecast origins the evaluator uses, so `clean-v1`
+leaves `<metric>_input` out ([page 09](09-per-origin.md)). The training station picks an input per metric through the
+harness instead, on the development origins only.
+
 ## Design
 
 - **Everything is rebuilt per origin from data ≤ the origin:** QC statistics and decisions, fragments, fills, station

@@ -5,6 +5,10 @@ airport), the record can jump although the climate did not — and a trend fitte
 The adjustment puts old readings on the level of the station in use at the end year. **Inputs only:** the official
 labels keep the jumps, as the 2019–2025 answers will. Plan reference: §4 H1–H4.
 
+In `clean-v1` the end year is the forecast origin: only changes up to the origin exist, windows and placebo calibration
+stop there, and old readings are levelled to the station in use at that origin. Adjusted values therefore differ between
+origins by design. Steps applied (Tmax / Tmin): 43 / 62 at 1983, 41 / 59 at 1990 and 1997, 41 / 63 at 2004, 43 / 61 at 2011.
+
 ## H1 Difference series with a fixed reference
 
 For a city, a variable (annual QC `Avg Tmax`, `Avg Tmin`) and a change cluster: the reference is the

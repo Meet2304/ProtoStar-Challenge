@@ -10,6 +10,7 @@ builds are git-ignored.
 | `city_info.csv` | One row per city: ID, name, location | `python code/prepare_data.py` | Yes |
 | `raw/` | The challenge dataset, exactly as downloaded (all four subsets, ~50 MB) | `uv run python scripts/01_download_data.py` | No |
 | `processed/` | The cleaned dataset (`annual_clean`, `coverage_clean`, `stations_clean`, `daily_clean` parquet files, QC logs, backtest results, `manifest.json`); see [`documentation/07-outputs.md`](../documentation/07-outputs.md) | `uv run python scripts/02_clean_data.py` | No |
+| `processed/releases/clean-v1/` | The line's current cleaned dataset: one folder per forecast origin (1983, 1990, 1997, 2004, 2011), each built only from data up to that origin; see [`documentation/09-per-origin.md`](../documentation/09-per-origin.md) | `uv run python scripts/line.py pull`; rebuilt by `uv run python scripts/03_clean_per_origin.py` | No |
 | `qc/daily_outlier_decisions.csv` | Review file for the 424 isolated daily outliers: the evidence, the automatic action and an optional human `final_action` (with `decided_on` and `evidence_year`) | Written and updated by `scripts/02_clean_data.py`; human entries are kept on rerun | Yes |
 
 Anything the submission code reads must be a tracked file listed in this card (move it out of `processed/`).

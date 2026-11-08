@@ -3,6 +3,9 @@
 Everything is written by `scripts/02_clean_data.py` to `data/processed/` (git-ignored; rebuild with the script). The
 only tracked file it writes is the review file `data/qc/daily_outlier_decisions.csv`.
 
+`clean-v1` has the same tables under `data/processed/releases/clean-v1/origin-YYYY/`, with rows only through that origin,
+no `<metric>_input*` columns, and the Warm/Cold and Wet Days indices blank at 1983. Differences: [page 09](09-per-origin.md).
+
 ## Files
 
 | File | Rows | Content |

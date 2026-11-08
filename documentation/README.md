@@ -13,6 +13,16 @@ uv run python scripts/02_clean_data.py --skip-backtest   # reuse the saved choic
 uv run python -m unittest tests.test_cleaning  # 17 acceptance tests on synthetic data (seconds)
 ```
 
+## Which cleaned dataset to use
+
+| Release | Built by | Use it for |
+|---|---|---|
+| **`clean-v1`** (current, gate-eligible) | `scripts/03_clean_per_origin.py`: one dataset per forecast origin, each from data up to that origin ([page 09](09-per-origin.md)) | everything scored on the assembly line: fetch it with `line.py pull`, read `data/processed/releases/clean-v1/origin-YYYY/` |
+| `clean-v0` (not gate-eligible) | `scripts/02_clean_data.py`: the whole record through 2018 at once | exploration only: thresholds, outliers and station steps were fitted with later years in view, so runs on it are `exploratory` |
+
+Pages 01–07 describe the cleaning steps, which are the same in both. Where they say "through 2018", "the end year" or
+"chosen on data ≤ 1985", `clean-v1` applies the same step with the origin as the end year.
+
 ## Pages
 
 | Page | Subset / topic | What is in it |
@@ -36,7 +46,7 @@ uv run python -m unittest tests.test_cleaning  # 17 acceptance tests on syntheti
 | daily | repeated precipitation | 1,566 runs; 131 ≥ 0.10 in; 1 on days that were observed dry at ≥ 2 neighbours | **deleted** 2 days (Ely 1898-08-08/09); the rest kept with a reason |
 | daily | outliers | 4,185 readings with robust \|z\| ≥ 5; 89.9 % confirmed by a neighbour; 424 isolated | **deleted** 1 (Greenville-Spartanburg 2018-04-28 Tmin 1.2 °F); 423 kept with reasons; review file + plots |
 | daily | 2018 decimals | 47 % of 2018 Tmax, 57 % of Tmin have a decimal (°F↔°C conversion) | **kept** (the 2019–2025 answers use the same conversion) |
-| daily | missing days | 416,164 empty rows, plus gaps | **filled** for inputs only (normal + neighbours' anomaly; chosen on data ≤ 1985) |
+| daily | missing days | 416,164 empty rows, plus gaps | **filled** for inputs only (normal + neighbours' anomaly; chosen on data ≤ 1985 in `clean-v0`, on data ≤ each origin in `clean-v1`) |
 | annual_indices | ±inf sentinels, 935 zero-precipitation rows (932 fully missing) | rows with every day missing | **NaN** under the official 10-day rule |
 | annual_indices | detached record fragments | short blocks (< 10 years) cut off by > 20 empty years | **dropped** in QC/inputs (6 temperature, 6 precipitation blocks; 29,989 readings); long blocks kept and flagged |
 | annual_indices | percentages count missing days as "not warm" | Warm Days 8.5 % with 0 missing days, 0.9 % with > 100 | **rescaled exactly** to % of valid days |
@@ -56,8 +66,11 @@ The 2019–2025 answers are computed from the raw station record, errors include
 2. **QC values** (`<metric>_qc`): label + the exact effect of the repairs. Inputs only.
 3. **Model inputs** (`<metric>_homog`, `_fill`, `_nbfill`, …, and the chosen `<metric>_input`): filled, adjusted or
    infilled variants. The default per metric is chosen by the backtest, where the official labels are a candidate.
+   `clean-v1` has the variants but no `<metric>_input`: the training station picks per metric through the harness.
 
 ## Result of the input selection (page 06)
+
+This table is `clean-v0`'s. Its backtests run to 2018, so these picks must not be carried over to a per-origin model.
 
 | Metric | Shipped `<metric>_input` | Why |
 |---|---|---|

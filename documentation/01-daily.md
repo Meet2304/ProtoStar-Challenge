@@ -85,7 +85,9 @@ matrices (61,361 × 210) with a record mask (each city's first to last day). Eve
   end year, on a 365-day index where 29 Feb shares 28 Feb's slot, 31-day circular smoothing, ≥ 10 years of data per
   slot) plus an anomaly. Precipitation uses ratios to the normal. Only years with ≤ 30 missing days are filled.
 - **Choice of anomaly, made once on data ≤ 1985** (before every backtest origin): 300 non-overlapping 30-day blocks
-  in 1956–1985 with ≥ 25 observed days were hidden at once and refilled.
+  in 1956–1985 with ≥ 25 observed days were hidden at once and refilled. The table below is that choice. `clean-v1`
+  repeats it per origin on the 30 years ending at the origin, and every origin picked the same method for both
+  temperature and precipitation: normal + neighbour anomaly.
 
   | Method | Block mean temperature error (°F) | Block CDD error | Block rain error (in) |
   |---|---:|---:|---:|
