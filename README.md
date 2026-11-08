@@ -66,6 +66,7 @@ The starter beats the 30-year average on CDD only: lag features carry year-to-ye
 - **What they did:** read the challenge rules and submission template; set up the repository layout, `AGENTS.md` / `CLAUDE.md`, the data-rule guard, `prepare_data.py`, `starter_model.py` (from the challenge's starter code) and the backtest; drafted this README and the data card. Downloaded only the challenge training dataset (data up to 2018).
 - **What a person reviewed:** <TODO: e.g., all model code, the data-rule guard, the backtest results, the final numbers>
 - **Agent instructions file:** [`code/AGENTS.md`](code/AGENTS.md) (also loaded through `AGENTS.md` and `CLAUDE.md` at the repository root).
+- **Additional exploration:** OpenAI Codex (GPT-6.1 Terra) prepared `notebooks/Achintya/05_multi_window_validation.ipynb` to compare existing approaches across historical windows. Its code and findings await team review and do not alter the submission pipeline.
 
 ## Policy Idea
 

@@ -176,6 +176,9 @@ numpy==2.5.4
     #   scikit-learn
     #   scipy
     #   skops
+    #   xgboost
+nvidia-nccl-cu13==2.32.3 ; sys_platform == 'linux'
+    # via xgboost
 opentelemetry-api==1.45.2
     # via
     #   fastapi
@@ -270,6 +273,7 @@ scipy==1.18.1
     #   mlflow
     #   scikit-learn
     #   skops
+    #   xgboost
 skops==0.16.0
     # via mlflow
 smmap==5.0.3
@@ -332,6 +336,8 @@ werkzeug==3.1.9
     # via
     #   flask
     #   flask-cors
+xgboost==3.4.1
+    # via protostar-challenge
 xxhash==4.0.2
     # via datasets
 yarl==1.25.1
