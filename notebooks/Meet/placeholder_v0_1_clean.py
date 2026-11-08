@@ -26,11 +26,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from common import METRICS, assert_no_post_cutoff, thirty_year_mean, wide
 from sklearn.ensemble import HistGradientBoostingRegressor
 from sklearn.linear_model import HuberRegressor
 from sklearn.preprocessing import StandardScaler
-
-from common import METRICS, assert_no_post_cutoff, thirty_year_mean, wide
 
 MODEL_NAME = "Placeholder_v0.1_clean"
 
@@ -275,7 +274,7 @@ class Members:
             column[np.isnan(column)] = fill
         return X
 
-    def fit(self, X: np.ndarray, y: np.ndarray) -> "Members":
+    def fit(self, X: np.ndarray, y: np.ndarray) -> Members:
         self.medians = np.nanmedian(X, axis=0)
         if self.members in ("ensemble", "lin"):
             imputed = self._impute(X)

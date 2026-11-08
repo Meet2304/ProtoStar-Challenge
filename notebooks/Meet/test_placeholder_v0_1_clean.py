@@ -19,14 +19,19 @@ import pandas as pd
 HERE = Path(__file__).resolve().parent
 sys.path[:0] = [str(HERE), str(HERE.parents[1] / "code")]
 
-import placeholder_v0_1  # noqa: E402
-import placeholder_v0_1_clean as model  # noqa: E402
-import test_placeholder_v0_1 as base  # noqa: E402
-from common import METRICS  # noqa: E402,F401
-from evaluation.adapters import reference  # noqa: E402
+import placeholder_v0_1
+import placeholder_v0_1_clean as model
+import test_placeholder_v0_1 as base
+from common import METRICS
+from evaluation.adapters import reference
 
 base.model = model
-from test_placeholder_v0_1 import Forecasts, Geography, InformationBoundary, SelectionRule  # noqa: E402,F401
+from test_placeholder_v0_1 import (  # noqa: F401
+    Forecasts,
+    Geography,
+    InformationBoundary,
+    SelectionRule,
+)
 
 ORIGIN, CITIES, COORDS = base.ORIGIN, base.CITIES, base.COORDS
 
