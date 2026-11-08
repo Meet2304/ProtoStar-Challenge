@@ -293,13 +293,16 @@ def sync_runs(runs, only=None, echo=print):
 
     lock = read_lock()
     client = mlflow_client(lock)
-    counts = {"official": 0, "exploratory": 0, "legacy": 0, "failed": 0, "incomplete": 0}
+    counts = {"official": 0, "exploratory": 0, "legacy": 0, "failed": 0, "incomplete": 0, "pre_fingerprint": 0}
     paths = [Path(only) / "run.json"] if only else sorted(Path(runs).glob("*/run.json"))
     for path in paths:
         try:
             meta = read_json(path)
             if meta.get("status") != "complete":
                 counts["incomplete"] += 1
+                continue
+            if "run_fingerprint" not in meta:  # first harness format (schema 1): the mirror cannot identify it
+                counts["pre_fingerprint"] += 1
                 continue
             log_run(path.parent, client)
             run = find_tagged(client, experiment_name(meta), FINGERPRINT_TAG, meta["run_fingerprint"])
@@ -509,7 +512,8 @@ def findings(lock=None, check_mlflow=True):
             missing = 0
             for path in runs.glob("*/run.json"):
                 meta = json.loads(path.read_text(encoding="utf-8"))
-                missing += meta.get("status") == "complete" and meta.get("run_fingerprint") not in known
+                fingerprint = meta.get("run_fingerprint")
+                missing += meta.get("status") == "complete" and fingerprint is not None and fingerprint not in known
             if missing:
                 out.append(("D9", f"{missing} sealed run(s) are missing from MLflow.", "`line.py sync`"))
         except Exception as exc:
