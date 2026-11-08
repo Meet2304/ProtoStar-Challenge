@@ -1,7 +1,7 @@
 # Plan: improving the Placeholder series (v0.3 onward)
 
-Status: **revised after Grok review (44/100); see section 5.** Author: Claude Code (Claude Opus 5.5), 2026-11-08. Owner: training station. Deadline: challenge
-closes 2026-11-10 23:59 ET. Current kept version: `Placeholder_v0.1`. Results: `docs/models/placeholder.md`.
+Status: **revised after Grok review (44/100); see section 5. Versions v0.3-v0.9 trained; see section 6.** Author: Claude Code (Claude Opus 5.5), 2026-11-08. Owner: training station. Deadline: challenge
+closes 2026-11-10 23:59 ET. Current kept version: `Placeholder_v0.5` (was `Placeholder_v0.1` when this plan was written). Results: `docs/models/placeholder.md`.
 
 ## 0. Where we are
 
@@ -68,3 +68,25 @@ Three reused periods cannot prove an improvement. The likely ceiling is low beca
 Adopted: the regional slope uses 30 years, not 50 (the 50-year slope is cooling or flat on these origins), floored at 0; W is applied outside the gate; W covers only temperature and CDD, with CDD through a response estimated from the data; extrapolation from the mean valid year; averaging neighbours' slopes; the stricter keep rule.
 
 Declined, with reasons: (a) dropping the median removal: Grok's concern depended on the wrong-sign 50-year W, and removing era-wide means is the direct fix for the diagnosed cooling bias; it is tested as a v0.3 ablation. (b) Dropping v0.4, v0.5 and v0.7: the project owner asked for every model to be trained; each still has to pass the keep rule. v0.5's combo method was chosen on backtests that include these development years, so a v0.5 gain is flattered, and this is reported with its result. (c) Removing adaptation between versions: the owner asked for it; a change only ever applies to the next version, never to a scored one, and is recorded here.
+
+## 6. Outcome (2026-11-08)
+
+All runs on suite-v3 development origins, eval-v1, each from a clean commit. Headline = mean unclipped final skill.
+
+| Version | Built on | Headline | 1983 | 1990 | 1997 | Label | Kept? |
+|---|---|---:|---:|---:|---:|---|---|
+| v0.3 warming + city departure | v0.1 | +0.0079 | +0.0251 | -0.0386 | +0.0374 | official | yes |
+| v0.4 steadier gate | v0.3 | +0.0017 | +0.0108 | -0.0432 | +0.0376 | official | no |
+| v0.5 50/50 with combo | v0.3 | +0.0083 | +0.0027 | -0.0235 | +0.0458 | official | **yes (current)** |
+| v0.7 boosted member only | v0.3 | +0.0093 | +0.0268 | -0.0364 | +0.0374 | official | no (1997 below v0.5) |
+| v0.6 physics CDD | v0.5 | +0.0056 | +0.0042 | -0.0324 | +0.0452 | exploratory | no |
+| v0.8 station covariates | v0.5 | +0.0089 | +0.0037 | -0.0227 | +0.0457 | exploratory | no (1997 -0.0002) |
+| v0.9 v0.5 + boosted only | v0.5 | +0.0093 | +0.0031 | -0.0211 | +0.0458 | official | no (1997 -0.000004) |
+
+Screening gates (`scripts/eval_model.py` logic on the sealed runs): v0.5 passes G1-G4 and beats combo on all three origins
+(+0.0401, +0.0051, +0.0201). It is the first version of the series to pass every gate. v0.9 also passes all four and is
+better than v0.5 at 1983 and 1990, but the keep rule is applied mechanically and its 1997 skill is lower by 4e-6.
+
+Candidate for the integrator: `Placeholder_v0.5`, run `20261108T141546Z-d0ac8f8b36`, commit `2192a12`. Next step belongs to
+the integrator: freeze it and run the one-shot assessment on 2004 and 2011. The plan's caveats stand: every development year
+has been reused, and v0.5's gain over v0.3 is flattered because combo was chosen on overlapping years.
