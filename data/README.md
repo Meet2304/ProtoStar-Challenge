@@ -9,7 +9,8 @@ builds are git-ignored.
 | `annual_valid.csv` | Curated yearly metrics, read by the forecasting code | `python code/prepare_data.py` | Yes |
 | `city_info.csv` | One row per city: ID, name, location | `python code/prepare_data.py` | Yes |
 | `raw/` | The challenge dataset, exactly as downloaded (all four subsets, ~50 MB) | `uv run python scripts/01_download_data.py` | No |
-| `processed/` | Scratch data built from `raw/` | Later scripts | No |
+| `processed/` | The cleaned dataset (`annual_clean`, `coverage_clean`, `stations_clean`, `daily_clean` parquet files, QC logs, backtest results, `manifest.json`); see [`documentation/07-outputs.md`](../documentation/07-outputs.md) | `uv run python scripts/02_clean_data.py` | No |
+| `qc/daily_outlier_decisions.csv` | Review file for the 424 isolated daily outliers: the evidence, the automatic action and an optional human `final_action` (with `decided_on` and `evidence_year`) | Written and updated by `scripts/02_clean_data.py`; human entries are kept on rerun | Yes |
 
 Anything the submission code reads must be a tracked file listed in this card (move it out of `processed/`).
 
@@ -66,6 +67,33 @@ uvx hf download CMU-OSPO/protostar-climate-train-to-2018 --repo-type dataset --r
 
 - [x] Every file marked "Forecast input" is weather data up to 2018-12-31, or data that does not respond to the weather. (`prepare_data.py` and `common.load_valid_annual()` stop if a row is dated after 2018.)
 - [x] No 2019–2025 data that responds to the weather is used. (None is in this folder.)
+
+## Internal evaluation data
+
+The [evaluation platform](../evaluation/README.md) reads the pinned raw
+`annual_indices` parquet through 2018, preserving source precision, and uses the
+tracked `city_info.csv` city list. It writes versioned historical train/target
+files, evaluator labels, reference errors and prediction artifacts under
+`outputs/evaluation/` (git-ignored). These are derived from the same CC0 source
+and have the same units. Each suite manifest records the source revision,
+source/city-file SHA256, fold configuration, scoring-code hash and every derived
+file hash. Labels cover only historical seven-year windows ending by 2018.
+No external weather observations were added. NOAA GHCN-Daily catalog metadata
+was researched as a public source; its observations were not downloaded.
+
+The version-2 default declares development origins 1983/1990/1997 and gated
+assessment origins 2004/2011. All periods are labeled `reused_historical`;
+assessment freezes do not establish untouched evidence retroactively. Each
+worker's supported loaders enforce its origin as well as the 2018 ceiling.
+The default nested selector derives inner training/validation splits only from
+the provided outer history and saves the full selection record. New suites
+preserve all source precision and the documented scoring mask; previous
+version-1 suites remain immutable development artifacts.
+
+Evaluation labels are **analysis only**; each model's forecast inputs are its
+origin-specific `train.csv`. Keep the exact suite with any archived run used as
+evidence. The dated source and pipeline are described in
+`evaluation/upstream/manifest.json` and `evaluation/README.md`.
 
 ## Citation
 

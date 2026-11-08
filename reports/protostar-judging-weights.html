@@ -1,0 +1,27 @@
+<section id="protostar-rubric" data-viz-composition aria-label="Official ProtoStar judging rubric weights">
+  <div data-viz-container></div>
+  <script type="application/json" data-viz-chart>
+    {
+      "id": "protostar-rubric-chart",
+      "title": "What the judges weigh",
+      "description": "Official rubric checked November 7, 2026. Forecast accuracy informs value and creativity; it is not a separate points bonus.",
+      "height": 360,
+      "spec": {"type": "pie", "category": "criterion", "value": "weight", "innerRadius": 0.65, "showValues": true, "showLegend": true, "valueFormat": {"style": "percent", "maximumFractionDigits": 0}},
+      "columns": ["criterion", "weight"],
+      "rows": [
+        ["Reuse and extensibility", 0.25],
+        ["Integration", 0.20],
+        ["Reproducibility and openness", 0.20],
+        ["Scientific or societal value", 0.15],
+        ["Ecosystem feedback", 0.15],
+        ["Technical creativity", 0.05]
+      ]
+    }
+  </script>
+  <p><a href="https://huggingface.co/spaces/CMU-OSPO/protostar-challenge-climate-risk-intelligence/blob/main/config.py">Source: organizers' current rubric</a></p>
+</section>
+<script type="module">
+  import { mountChart } from "https://persistent.oaistatic.com/plugins/visualize/charts/1.1.6/element.js";
+  const root = document.getElementById("protostar-rubric");
+  mountChart(root.querySelector("[data-viz-container]"), JSON.parse(root.querySelector("[data-viz-chart]").textContent));
+</script>
