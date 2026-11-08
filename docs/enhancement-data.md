@@ -29,3 +29,54 @@ is a weather observation. A failed validation prevents publication.
 For forecast trials, the features and training stations must declare the release
 as an asset and use `line.py score`; this station has not trained or scored a model.
 Do not open protected assessment labels to investigate these inputs.
+
+## `enhance-v2`: ocean-temperature candidates and the static table
+
+```powershell
+uv run python scripts/line.py pull enhance-v2
+```
+
+This cumulative handoff contains the same fixed city facts plus three ERSSTv5
+regional temperature indices: Niño 3.4, a North Pacific box, and a North Atlantic
+box. Each has an absolute SST and a per-origin anomaly. The latter two are not
+the official PDO or AMO indices. No observations later than December 2018 are
+retained. Definitions, units and bounds are in the data card and released schema.
+
+Use the origin-specific loader rather than an all-years table:
+
+```python
+from pathlib import Path
+from enhance_ocean import load_ocean_for_origin
+
+history = load_ocean_for_origin(
+    Path("data/processed/releases/enhance-v2"), origin=1983, frequency="monthly"
+)
+```
+
+Supported origins are every year from 1979 to 2018. The loader verifies the file
+hash and both its row cutoff and normalization cutoff. A trainer predicting a
+future year cannot look up that year's observed index: it must forecast the
+future ocean state, marginalize its uncertainty, or use only the origin-time
+history. These files are historical inputs, not future scenario predictions.
+
+`enhance-v2` is **exploratory and not gate-eligible**. A modern reconstructed SST
+record has not been certified to exclude later information in its reconstruction
+at early historical origins. Do not describe origin-specific row slicing as a
+complete solution to source-vintage leakage. `enhance-v1` remains the eligible
+static-only option. The integrator owns the decision on official gated use.
+
+The release points to `enhance-v1` as upstream. Pull that release too when full
+structural source snapshots are needed. Offline rebuilds must write a new output
+directory and leave the immutable releases untouched.
+
+## Operational findings
+
+- The MLflow server responds with HTTP 401 without station credentials. Local
+  immutable releases remain valid and pullable; mirroring is pending authenticated
+  `line.py sync`. No credentials are saved in code or data.
+- The USGS point endpoint sometimes times out; batched 3DEP requests provide a
+  documented alternative. Some source acquisition dates are malformed, so their
+  raw strings are retained and normalized dates are explicitly unknown.
+- NCSS can select the next monthly coordinate when an end date falls near it.
+  Exact month-start bounds plus returned-date validation prevent retained
+  post-cutoff observations. The rejected probe is documented in the data card.
