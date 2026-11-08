@@ -1,0 +1,2 @@
+# Preserve downloaded reference snapshots exactly: manifest hashes cover bytes.
+evaluation/upstream/** -text

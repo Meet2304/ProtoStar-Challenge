@@ -1,0 +1,32 @@
+{
+  "space": "CMU-OSPO/protostar-challenge-climate-risk-intelligence",
+  "revision": "44b8ec9fcb6d4ad6243e14c5f72dc831d79d2ce6",
+  "retrieved_on": "2026-11-07",
+  "files": {
+    "scoring.py": {
+      "url": "https://huggingface.co/spaces/CMU-OSPO/protostar-challenge-climate-risk-intelligence/resolve/44b8ec9fcb6d4ad6243e14c5f72dc831d79d2ce6/scoring.py",
+      "sha256": "066de39a0697fccae304e54e4f94f5e943592c972618b6efc0569a16f69f396d"
+    },
+    "config.py": {
+      "url": "https://huggingface.co/spaces/CMU-OSPO/protostar-challenge-climate-risk-intelligence/resolve/44b8ec9fcb6d4ad6243e14c5f72dc831d79d2ce6/config.py",
+      "sha256": "0e7cea3226d87869bd2e02ad9d548d71ded35b2c8be1d041108f7b44aa458374"
+    },
+    "utils.py": {
+      "url": "https://huggingface.co/spaces/CMU-OSPO/protostar-challenge-climate-risk-intelligence/resolve/44b8ec9fcb6d4ad6243e14c5f72dc831d79d2ce6/utils.py",
+      "sha256": "55ceb09ad3b5d91d874ba27de27191b4c95e47422d6633dea7fc4e753d2657ae"
+    },
+    "content/data.md": {
+      "url": "https://huggingface.co/spaces/CMU-OSPO/protostar-challenge-climate-risk-intelligence/resolve/44b8ec9fcb6d4ad6243e14c5f72dc831d79d2ce6/content/data.md",
+      "sha256": "369e0ff3f5922ac7d9734db1aad1279e624cede7c141f0c7c300520af0f02782"
+    },
+    "content/about.md": {
+      "url": "https://huggingface.co/spaces/CMU-OSPO/protostar-challenge-climate-risk-intelligence/resolve/44b8ec9fcb6d4ad6243e14c5f72dc831d79d2ce6/content/about.md",
+      "sha256": "70c205911563557d0027255b7e3880913f0187d03d31dc285a4b9972bf14f5a9"
+    },
+    "LICENSE": {
+      "url": "https://huggingface.co/spaces/CMU-OSPO/protostar-challenge-climate-risk-intelligence/resolve/44b8ec9fcb6d4ad6243e14c5f72dc831d79d2ce6/LICENSE",
+      "sha256": "6b68a3077f520139a176518c7c92a401187b5d9cb9031e90565c9862a75b4e6f"
+    }
+  },
+  "adaptation": "code/evaluation/official_score.py contains unchanged ScoringError and score AST nodes; replaces network/config imports with local constants."
+}

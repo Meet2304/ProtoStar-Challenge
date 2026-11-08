@@ -3,6 +3,7 @@
 Every script in code/ imports from here, so the data rule is enforced in one place.
 """
 
+import os
 from pathlib import Path
 
 import numpy as np
@@ -35,17 +36,40 @@ MIN_VALID_YEARS = 10
 
 
 class DataRuleViolation(RuntimeError):
-    """Raised when weather data dated after 2018-12-31 reaches the pipeline."""
+    """Raised when weather data exceeds the challenge or active forecast origin."""
+
+
+def effective_cutoff_year() -> int:
+    """The competition cutoff can only be tightened by an evaluation worker.
+
+    Read on every call, not at import time: adapter imports must obey the active
+    fold too. Invalid contexts fail closed. This is an accidental-leakage guard,
+    not an OS sandbox against an adapter deliberately changing its environment.
+    """
+    value = os.environ.get("PROTOSTAR_FOLD_CUTOFF")
+    if value is None:
+        return CUTOFF_YEAR
+    try:
+        origin = int(value)
+    except ValueError as exc:
+        raise DataRuleViolation("invalid PROTOSTAR_FOLD_CUTOFF") from exc
+    if str(origin) != value or not 1 <= origin <= CUTOFF_YEAR:
+        raise DataRuleViolation("fold cutoff must be an integer year no later than 2018")
+    return origin
 
 
 def assert_no_post_cutoff(df: pd.DataFrame, year_col: str = "Year", source: str = "input") -> None:
     """Stop if any weather row is dated after the cutoff. Call this on every weather input."""
     years = pd.to_numeric(df[year_col], errors="coerce")
-    late = years > CUTOFF_YEAR
+    if years.isna().any() or not np.isfinite(years).all() or (years % 1 != 0).any():
+        raise DataRuleViolation(f"{source}: weather years must be finite integers")
+    cutoff = effective_cutoff_year()
+    late = years > cutoff
     if late.any():
         raise DataRuleViolation(
-            f"{source}: {int(late.sum())} rows dated after {CUTOFF_YEAR}-12-31 "
-            f"(max year {int(years.max())}). Weather inputs must stop at 2018-12-31."
+            f"{source}: {int(late.sum())} rows dated after {cutoff}-12-31 "
+            f"(max year {int(years.max())}). Active forecast cutoff is {cutoff}-12-31; "
+            "the challenge ceiling remains 2018-12-31."
         )
 
 

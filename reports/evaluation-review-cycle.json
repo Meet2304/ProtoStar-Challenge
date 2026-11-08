@@ -1,0 +1,64 @@
+{
+  "objective": "Fresh independent Opus score strictly above 92/100, followed by a short team guide",
+  "minimum_passing_integer_score": 93,
+  "rubric": {
+    "rule_scoring_fidelity": 30,
+    "statistical_validation_test_design": 30,
+    "implementation_robustness": 20,
+    "reproducibility_provenance": 10,
+    "team_usability": 10
+  },
+  "reviews": [
+    {
+      "round": 1,
+      "model": "claude-opus-5-5",
+      "report": "reports/evaluation-review-claude-opus.md",
+      "score": 70
+    },
+    {
+      "round": 2,
+      "model": "claude-opus-5-5",
+      "report": "reports/evaluation-review-opus-round-2.md",
+      "status": "cancel_requested; obsolete source snapshot; no score accepted"
+    },
+    {
+      "round": 3,
+      "model": "claude-opus-5-5",
+      "report": "reports/evaluation-review-opus-round-3.md",
+      "status": "completed",
+      "source_manifest": "reports/evaluation-reviewed-source-round-3.json",
+      "score": 81
+    },
+    {
+      "round": 4,
+      "model": "claude-opus-5-5",
+      "report": "reports/evaluation-review-opus-round-4.md",
+      "status": "implementation validated locally; cross-platform CI and independent review pending",
+      "source_manifest": "reports/evaluation-reviewed-source-round-4.json"
+    }
+  ],
+  "reviewed_source_fingerprint": "183071fffe6bd8a6878a3c0b6773c9a9f96317d02ab075450ac970b2c3958326",
+  "known_open_evidence": [
+    {
+      "issue": "Opus round3 I1-I10 and practical accidental-read guard",
+      "fix_state": "implemented audited-runtime-v4; 120 full checks plus 3 bundle checks pass; independent re-audit pending",
+      "record": "reports/evaluation-opus-round-3-fixes.md"
+    }
+  ],
+  "completion_requirements": [
+    "Latest independent Opus report explicitly scores >92 using original rubric",
+    "Latest reviewed source matches final runtime implementation",
+    "Evidence-backed actionable issues resolved or explicitly assessed as remaining limits",
+    "Relevant automated and end-to-end model workflows pass",
+    "No post-2018 observed weather introduced or official submission consumed",
+    "Short guide finalized with tested commands and honest reliability limits"
+  ],
+  "guide": "evaluation/TEAM_GUIDE.md",
+  "guide_status": "draft; final audit acceptance pending",
+  "goal_status": "active",
+  "passing_condition": "latest independently reviewed final implementation score > 92/100",
+  "tests": {
+    "passed": 123,
+    "command": "python -m unittest discover -s tests -v"
+  }
+}

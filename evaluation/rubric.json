@@ -1,0 +1,45 @@
+{
+  "source_revision": "44b8ec9fcb6d4ad6243e14c5f72dc831d79d2ce6",
+  "scale": [
+    1,
+    5
+  ],
+  "criteria": [
+    {
+      "key": "reuse",
+      "label": "Demonstrated Reuse & Extensibility",
+      "weight": 25,
+      "description": "Meaningful use or rigorous attempted reuse of ProtoStar artifacts; useful extension, diagnosis, or recommendation for future researchers. Evidence about discovery and reuse friction is scored under Feedback to the Ecosystem, not here."
+    },
+    {
+      "key": "interop",
+      "label": "Interoperability & Integration",
+      "weight": 20,
+      "description": "Successful combination or portability across repositories, institutions, agencies, environments, or domains, or rigorous evidence showing why integration fails; value and limits of common standards and machine-actionable formats."
+    },
+    {
+      "key": "reproducibility",
+      "label": "Reproducibility & Openness",
+      "weight": 20,
+      "description": "Ability for others to reproduce the work using provided materials; for submissions declared in advance as negative results, a well-documented attempt that isolates why reproduction is not possible with the available artifact, its metadata, or its documented environment. Recommendations arising from that finding are scored under Feedback to the Ecosystem, not here."
+    },
+    {
+      "key": "value",
+      "label": "Scientific, Research, or Societal Value",
+      "weight": 15,
+      "description": "Useful knowledge, new research capability, improved decision-making, or meaningful public benefit."
+    },
+    {
+      "key": "feedback",
+      "label": "Feedback to the Ecosystem",
+      "weight": 15,
+      "description": "Specific, actionable evidence about barriers, failed reuse or reproduction, metadata issues, licensing, documentation, infrastructure, policy, or other opportunities for improvement."
+    },
+    {
+      "key": "creativity",
+      "label": "Technical Creativity",
+      "weight": 5,
+      "description": "Novel methods, AI approaches, technical solutions, or combinations of resources that advance the goals of the challenge."
+    }
+  ]
+}

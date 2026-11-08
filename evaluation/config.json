@@ -1,0 +1,14 @@
+{
+  "schema_version": 3,
+  "origins": [1983, 1990, 1997, 2004, 2011],
+  "development_origins": [1983, 1990, 1997],
+  "assessment_origins": [2004, 2011],
+  "history_status": "reused_historical",
+  "horizon": 7,
+  "live_leads": [1, 2, 3],
+  "final_leads": [4, 5, 6, 7],
+  "baseline_window": 30,
+  "min_valid_years": 10,
+  "max_missing_days": 10,
+  "seed": 42
+}

@@ -103,7 +103,7 @@ uv run python code/check_submission.py     # same checks the challenge Space run
   2019–2025 observations counts as using the answers, even if they never enter the model.
 - **Compare with the baselines.** Score every new model per metric against the reference forecasts
   (last year repeated, 30-year average, 30-year linear trend) with the official validity rule.
-- **The live leaderboard is not a tuning signal.** Do not submit variants just to compare their live scores.
+- **Team policy: the live leaderboard is not a tuning signal.** Do not submit variants just to compare their live scores. This is the team's stricter policy; the official FAQ separately prohibits selecting models against public observed answers.
 - **Pretrained models:** record the name, version and training-data cutoff in the README.
 - **Downloads:** say what you downloaded, from where and up to which date. Put external sources in
   `data/README.md` and the README's *Data* section, marked "Forecast input" or "Analysis only".
