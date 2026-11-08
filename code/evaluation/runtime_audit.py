@@ -12,6 +12,7 @@ import json
 import os
 from pathlib import Path
 import sys
+from functools import wraps
 from urllib.parse import urlsplit, unquote
 
 
@@ -40,7 +41,7 @@ class RuntimeAudit:
     Paths except source_pins' project-relative POSIX keys are absolute.
     """
 
-    def __init__(self, context, *, input_files, asset_files=()):
+    def __init__(self, context, *, input_files, asset_files=(), sender=None):
         if context.get("schema_version") != 1:
             raise ValueError("unsupported worker runtime context")
         self.root = _path(context["project_root"])
@@ -73,6 +74,8 @@ class RuntimeAudit:
         self.active = False
         self.inspecting = False
         self.import_report = None
+        self.sender = sender
+        self.audit_paths = {self.output / name for name in ("io_audit.json", "imported_source.json", "runtime_receipt.json")}
 
     def check_network(self, operation):
         if not self.active or self.inspecting:
@@ -108,14 +111,30 @@ class RuntimeAudit:
         except (OSError, ValueError):
             return
         operation = "write" if writing else "read"
-        if path in self.inputs or path in self.assets:
+        if writing and path in self.audit_paths:
+            decision, reason = "deny", "parent_owned_audit_artifact"
+        elif path in self.inputs or path in self.assets:
             decision, reason = ("deny", "immutable_supplied_input") if writing else ("allow", "supplied_input")
         elif path in self.pins or (path.suffix.casefold() == ".pyc" and self._module_path(path) in self.pins):
             decision, reason = ("deny", "immutable_pinned_source") if writing else ("allow", "pinned_source")
         elif _inside(path, self.output):
             decision, reason = "allow", "own_origin_output"
         elif any(_inside(path, root) for root in self.environment):
-            return  # Installed library imports/resources; package versions are bound separately.
+            # Package and stdlib resources are authorized by the installed
+            # environment binding. Other files in e.g. .venv/cache are visible
+            # as unreviewed inputs instead of silently inheriting that trust.
+            lower_parts = {part.casefold() for part in path.parts}
+            package = bool(lower_parts & {"site-packages", "dist-packages"})
+            standard = path.suffix.casefold() in {".py", ".pyc", ".pyd", ".so", ".dll"}
+            interpreter_zip = any(path == root / f"python{sys.version_info.major}{sys.version_info.minor}.zip"
+                                  for root in self.environment)
+            if interpreter_zip and writing:
+                self._record(path, "write", "deny", "immutable_interpreter_archive")
+                raise RuntimeAuditError("worker blocked modification of interpreter archive")
+            standard = standard or interpreter_zip
+            if package or standard:
+                return
+            decision, reason = "allow", "environment_nonpackage_path"
         elif any(_inside(candidate, root) for candidate in (path, lexical)
                  for root in [self.root, *self.protected]):
             decision, reason = "deny", "undeclared_protected_path"
@@ -130,6 +149,18 @@ class RuntimeAudit:
     def _record(self, path, operation, decision, reason):
         key = (str(path), operation, decision, reason)
         self.events[key] = self.events.get(key, 0) + 1
+        if self.sender is not None:
+            self.sender({"type": "event", "event": {"path": key[0], "operation": operation,
+                         "decision": decision, "reason": reason}})
+
+    def _mutation_path(self, value, dir_fd=None):
+        # Relative dir_fd addressing could otherwise be checked against cwd
+        # while mutating an entirely different directory. Refuse this less
+        # common form rather than pretending a portable fd resolver exists.
+        if dir_fd is not None and dir_fd != -1 and not Path(os.fsdecode(value)).is_absolute():
+            self._record("<dir_fd>", "write", "deny", "relative_dir_fd_not_supported")
+            raise RuntimeAuditError("worker mutation tripwire blocked relative dir_fd operation")
+        self.check_path(value, writing=True)
 
     def _hook(self, event, args):
         if not self.active or self.inspecting:
@@ -137,6 +168,46 @@ class RuntimeAudit:
         if event in {"socket.connect", "socket.getaddrinfo", "socket.gethostbyname", "socket.gethostbyaddr",
                      "socket.sendto", "urllib.Request"}:
             self.check_network(event)
+        if event in {"subprocess.Popen", "os.system", "os.posix_spawn", "os.spawn"}:
+            self._record("<subprocess>", event, "deny", "subprocess_disabled")
+            raise RuntimeAuditError("worker subprocess tripwire blocked process launch")
+        if event in {"shutil.copyfile", "shutil.copytree"}:
+            self.check_path(args[0])
+            self.check_path(args[1], writing=True)
+            return
+        if event == "shutil.rmtree":
+            self._mutation_path(args[0], args[1] if len(args) > 1 else None)
+            return
+        if event == "sqlite3.connect":
+            target = args[0]
+            if isinstance(target, os.PathLike):
+                target = os.fspath(target)
+            if target != ":memory:":
+                if isinstance(target, str) and target.startswith("file:"):
+                    target = unquote(urlsplit(target).path)
+                # Connections can create/modify databases; treating them as
+                # writes preserves immutable supplied assets too.
+                self.check_path(target)
+                self.check_path(target, writing=True)
+            return
+        if event in {"os.remove", "os.rmdir", "os.mkdir", "os.chmod", "os.utime", "os.truncate"}:
+            value = args[0]
+            if isinstance(value, int):
+                self._record("<descriptor>", "write", "deny", "descriptor_mutation_not_supported")
+                raise RuntimeAuditError("worker mutation tripwire blocked descriptor mutation")
+            fd_index = {"os.remove": 1, "os.rmdir": 1, "os.mkdir": 2, "os.chmod": 2, "os.utime": 3}.get(event)
+            self._mutation_path(value, args[fd_index] if fd_index is not None and len(args) > fd_index else None)
+            return
+        if event in {"os.rename", "os.link", "os.symlink"}:
+            if event == "os.symlink":
+                # Resolving a relative symlink against cwd instead of its
+                # destination would misstate the target. Models do not need
+                # symlinks to produce forecast artifacts.
+                self._record("<symlink>", "write", "deny", "symlink_creation_disabled")
+                raise RuntimeAuditError("worker mutation tripwire blocked symlink creation")
+            self._mutation_path(args[0], args[2] if len(args) > 2 else None)
+            self._mutation_path(args[1], args[3] if len(args) > 3 else None)
+            return
         if event != "open":
             return
         raw = args[0]
@@ -152,6 +223,16 @@ class RuntimeAudit:
         # entry points, but before any model code can capture those entry points.
         from evaluation.native_io import install_native_guards
         install_native_guards(self)
+        # Windows copy2 can call CopyFile2 without CPython's copyfile/open
+        # events. Guard these ordinary stdlib entry points as well as events.
+        import shutil
+        for name in ("copy", "copy2", "copyfile", "copytree", "copystat", "copymode", "move"):
+            original = getattr(shutil, name)
+            def guarded(source, destination, *args, _original=original, _name=name, **kwargs):
+                self.check_path(source, writing=_name == "move")
+                self.check_path(destination, writing=True)
+                return _original(source, destination, *args, **kwargs)
+            setattr(shutil, name, wraps(original)(guarded))
         sys.dont_write_bytecode = True
         self.active = True
         sys.addaudithook(self._hook)
@@ -207,9 +288,9 @@ class RuntimeAudit:
 
     def finalize(self):
         report = self.inspect_imports()
-        self.output.mkdir(parents=True, exist_ok=True)
         # Stop recording the evaluator's own final artifact writes.
         self.active = False
+        self.output.mkdir(parents=True, exist_ok=True)
         events = [{"path": key[0], "operation": key[1], "decision": key[2], "reason": key[3], "count": count}
                   for key, count in sorted(self.events.items())]
         io_report = {"schema_version": 1, "status": "failed" if any(e["decision"] == "deny" for e in events) else "verified",
@@ -218,7 +299,12 @@ class RuntimeAudit:
                                "External OS paths, existing descriptors, unwrapped/native internals, subprocesses and "
                                "interpreter manipulation remain outside this trusted-team tripwire; not an OS sandbox."}
         for name, value in (("io_audit.json", io_report), ("imported_source.json", report)):
-            (self.output / name).write_text(json.dumps(value, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+            if self.sender is not None:
+                self.sender({"type": "report", "name": name, "report": value})
+            else:
+                # Standalone synthetic worker tests retain file receipts. The
+                # production parent always requires the inherited pipe.
+                (self.output / name).write_text(json.dumps(value, indent=2, allow_nan=False) + "\n", encoding="utf-8")
         if report["violations"]:
             paths = ", ".join(item["path"] for item in report["violations"])
             raise RuntimeAuditError(f"imported source is undeclared, changed or unreadable: {paths}")

@@ -16,7 +16,7 @@ from pathlib import Path
 from common import ROOT
 from evaluation.assets import fingerprint_assets, verify_asset_binding
 
-PROTOCOL_VERSION = "audited-inputs-v5"
+PROTOCOL_VERSION = "parent-audited-v6"
 SELECTION_RULE = "equal_fold_mean_final_unclipped_skill"
 
 
@@ -190,6 +190,8 @@ def create_freeze(suite, output, adapter=None, params=None, baseline=None,
             raise ValueError("--from-run requires a completed current-protocol development run")
         if previous["suite_id"] != manifest["suite_id"] or previous["source_pins"] != source_pins(root):
             raise ValueError("development run suite/source differs from the current workspace")
+        if any(s.get("requires_review") for s in previous.get("runtime_input_summary", {}).values()):
+            raise ValueError("development run has undeclared external inputs; declare them and rerun before freezing")
         if any(v is not None for v in (adapter, baseline, prediction_dir, assets)) or params:
             raise ValueError("--from-run supplies the model settings; do not also override them")
         arguments = arguments_from_spec(previous["model_spec"], root)
@@ -285,8 +287,16 @@ def log_assessment_access(suite, record, run_id):
              "protocol_version": PROTOCOL_VERSION,
              "freeze_id": record["freeze_id"], "suite_id": record["suite_id"],
              "origins": record["assessment_origins"], "history_status": record["history_status"]}
+    from evaluation.exposure import cohort_from_manifest
+    from evaluation.core import read_json
+    event.update(cohort_from_manifest(read_json(Path(suite) / "manifest.json"), record["assessment_origins"]))
     path = folder / f"{run_id}-{uuid.uuid4().hex[:8]}.json"
     with path.open("x", encoding="utf-8") as stream:
+        json.dump(event, stream, indent=2)
+        stream.write("\n")
+    registry = Path(suite).parent / "assessment_access_registry"
+    registry.mkdir(exist_ok=True)
+    with (registry / path.name).open("x", encoding="utf-8") as stream:
         json.dump(event, stream, indent=2)
         stream.write("\n")
     return path

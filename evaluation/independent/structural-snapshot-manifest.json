@@ -1,0 +1,46 @@
+{
+  "selection_sha256": "2a3da7755f1a4870097ee11dfea07d82c64f19cd2b265853d5bb5d06feef5efc",
+  "files": [
+    {
+      "original_path": "outputs/independent-v1/metadata/inventory.txt",
+      "archive": "evaluation/independent/snapshots/00-inventory.txt.gz",
+      "sha256": "3d7378c3ecad6841340b47392f10b391c42a5f47369765e6bb032704d2301125",
+      "archive_sha256": "2afbabdd7390ee2352956152213f072122a3f5ec5d3953af60df80affac5d4ba",
+      "bytes": 36402100,
+      "compressed_bytes": 4594483
+    },
+    {
+      "original_path": "outputs/independent-v1/metadata/stations.txt",
+      "archive": "evaluation/independent/snapshots/01-stations.txt.gz",
+      "sha256": "437ee87f0343bcad408a492cf7a02163fb69255364c541b4006d5d76055d0dc3",
+      "archive_sha256": "15eca614e3039be52442bb14a3afc5a6a53d88eeed8161702baff65525da5312",
+      "bytes": 11441526,
+      "compressed_bytes": 2634371
+    },
+    {
+      "original_path": "data/city_info.csv",
+      "archive": "evaluation/independent/snapshots/02-city_info.csv.gz",
+      "sha256": "b46552f8bb118ca6914510e8b4e7250da8d59b304d22cfa9a68547fb4f5017e0",
+      "archive_sha256": "5cc655fd279902bfa026f2905ee5bf8fbc497bb1097f4951f41c010f9a43db4e",
+      "bytes": 8353,
+      "compressed_bytes": 3832
+    },
+    {
+      "original_path": "data/raw/.cache/huggingface/download/city_info/train-00000-of-00001.parquet.metadata",
+      "archive": "evaluation/independent/snapshots/03-train-00000-of-00001.parquet.metadata.gz",
+      "sha256": "77dffc3ee8ca1c8de66bc697d76d156bde647152850f12a113a7406236271f84",
+      "archive_sha256": "2b83853563b0a8f02a5cb0d1edc6395e59324a9947e48ec7c15f6679473b6acd",
+      "bytes": 128,
+      "compressed_bytes": 108
+    },
+    {
+      "original_path": "data/raw/city_info/train-00000-of-00001.parquet",
+      "archive": "evaluation/independent/snapshots/04-train-00000-of-00001.parquet.gz",
+      "sha256": "6b71424c7c30a1b8027ba47a92ccb9aab8553147950af491538ea0912bbb955d",
+      "archive_sha256": "26d74566f18f865888cd8600a5efbc2cd0420418e165c3252d389fc7835fdf7e",
+      "bytes": 21703,
+      "compressed_bytes": 15361
+    }
+  ],
+  "notes": "Structural metadata and exclusion inputs only; no weather observations downloaded. Archives preserve exact bytes, including cache metadata, for reproducible replay without depending on mutable catalogs or checkout line endings."
+}

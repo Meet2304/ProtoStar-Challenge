@@ -78,7 +78,7 @@ def exercise_asset_cli(fixture):
     shell(["git", "-c", "user.name=Evaluation Test", "-c", "user.email=evaluation@example.invalid",
            "-c", "commit.gpgsign=false", "commit", "-qm", "Docs only"])
     shell(cli + ["run", "--name", "asset-assessment", "--phase", "assessment", "--freeze", str(freeze)])
-    ledger = fixture / "outputs/evaluation/suite-v3/assessment_access"
+    ledger = fixture / "outputs/evaluation/suite-v3-r5/assessment_access"
     accesses = len(list(ledger.glob("*.json")))
     assert accesses == 1
     baseline_freeze = fixture / "outputs/baseline-freeze.json"

@@ -24,7 +24,7 @@ class WorkerRuntimeAuditTests(unittest.TestCase):
         self.base = Path(self.temp.name)
         self.root = self.base / "project"
         for name in ("common.py", "evaluation/__init__.py", "evaluation/assets.py",
-                     "evaluation/runtime_audit.py", "evaluation/native_io.py", "evaluation/worker.py"):
+                     "evaluation/runtime_audit.py", "evaluation/native_io.py", "evaluation/audit_transport.py", "evaluation/worker.py"):
             destination = self.root / "code" / name
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(PROJECT / "code" / name, destination)

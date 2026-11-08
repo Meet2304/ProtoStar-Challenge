@@ -303,6 +303,8 @@ def forecast(train, targets, origin, seed):
             build_fold(annual, ["A", "B"], 2011)
 
 
+@unittest.skipUnless(os.environ.get("PROTOSTAR_RUN_REAL_DATA_TESTS") == "1",
+                     "real-data tests require explicit PROTOSTAR_RUN_REAL_DATA_TESTS=1; may read reserved years")
 class PublishedReferenceTests(unittest.TestCase):
     """No downloads in tests; use the already-present pinned cache when available."""
     @unittest.skipUnless((ROOT / "data/raw/annual_indices/train-00000-of-00001.parquet").exists(), "pinned raw cache unavailable")
