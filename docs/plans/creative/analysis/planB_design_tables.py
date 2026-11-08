@@ -129,6 +129,24 @@ def hl(w):
     return out
 
 
+def v03_cdd_warming_rate(t):
+    """v0.3's CDD rate (placeholder_v0_5.warming_rates): temp rate x response, each a self+15 mean floored at 0.
+    Response = per-city OLS slope of CDD on annual mean temperature over t-29..t (>= 15 paired years)."""
+    temp = C.window(T["annual_avg_temp"], Y0, t - 29, t, t)
+    cdd = C.window(T["cdd"], Y0, t - 29, t, t)
+    rate = C.drift_slope(T["annual_avg_temp"], Y0, t, NB)
+    ok = ~np.isnan(temp) & ~np.isnan(cdd)
+    n = ok.sum(1)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        xm = np.where(ok, temp, 0).sum(1) / n
+        ym = np.where(ok, cdd, 0).sum(1) / n
+        dx = np.where(ok, temp - xm[:, None], 0.0)
+        dy = np.where(ok, cdd - ym[:, None], 0.0)
+        resp = np.where(n >= 15, (dx * dy).sum(1) / (dx ** 2).sum(1), np.nan)
+    resp = np.maximum(np.nan_to_num(C.nanmean(np.column_stack([resp, resp[NB]]), 1)), 0.0)
+    return rate * resp
+
+
 def e3_e5():
     cache = C.RhoCache()
     sc = {m: Scorer() for m in METRICS}
@@ -146,6 +164,8 @@ def e3_e5():
             if m in ("annual_avg_temp", "cdd"):
                 s_city, xm = C.ols_slope(w30, np.arange(t - 29, t + 1, dtype=float)[None, :])
                 s_reg = C.drift_slope(M, Y0, t, NB)
+                if m == "cdd":
+                    v03_cdd_rate = v03_cdd_warming_rate(t)
                 W0, _ = C.core_W(M, Y0, t, rho, 0.0, m, NBS, NB)
                 W1, _ = C.core_W(M, Y0, t, rho, 1.0, m, NBS, NB)
                 kap = C.KAPPA[m]
@@ -165,8 +185,13 @@ def e3_e5():
                 y = target(M, t + h)
                 keep = ~np.isnan(y) & ~np.isnan(r)
                 c = {"ref30": r, "mean10": m10}
-                if m in ("annual_avg_temp", "cdd"):
+                if m == "annual_avg_temp":
                     c["v0.3 W (OLS-30 floored, from window centre)"] = r + np.nan_to_num(s_reg * (t + h - xm))
+                if m == "cdd":
+                    # proxy: the regional CDD slope used directly (what r1-r3 labelled "v0.3 W")
+                    c["direct regional CDD-slope proxy (not v0.3)"] = r + np.nan_to_num(s_reg * (t + h - xm))
+                    # actual v0.3/v0.5 CDD warming: floored regional temperature rate x floored regional CDD-on-temperature response
+                    c["v0.3 W actual (temp rate x CDD response)"] = r + np.nan_to_num(v03_cdd_rate * (t + h - xm))
                     tc = np.where(np.isnan(s_city), r, C.nanmean(w30, 1) + s_city * (t + h - xm))
                     c["combo blend"] = 0.5 * m10 + 0.5 * np.where(np.isnan(tc), r, tc)
                     c["r1 local linear trend, slope floored"] = r + np.nan_to_num(lv + np.maximum(sl, 0) * h - cbar_llt)

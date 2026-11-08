@@ -61,6 +61,16 @@ T21G = derive(T21, annual_avg_temp={"gate_rel": True})                          
 T24 = derive(T23, hottest_day_temp={"W": "hot"})                                           # v2.4 hottest-day level
 T24G = derive(T23G, hottest_day_temp={"W": "hot"})
 T25G = derive(T24G, total_precip_in={"W": "prcp"})
+# r4 order (plan section 5.3): assembly fix -> hottest-day level -> precipitation -> core / core-only -> departure learner
+R21 = derive(V20, hottest_day_temp={"W": "hot"})                                           # v2.1 hottest-day level
+R22 = derive(R21, total_precip_in={"W": "prcp"})                                           # v2.2 precipitation base
+R23 = derive(R21, annual_avg_temp={"W": "core"}, cdd={"W": "core"})                       # v2.3 core on parent v2.1
+R24 = derive(R21, annual_avg_temp={"W": "core", "cw": 0.0, "learn": False},
+             cdd={"W": "core", "cw": 0.0, "learn": False})                                 # v2.4 core-only on parent v2.1
+R23P = derive(R22, annual_avg_temp={"W": "core"}, cdd={"W": "core"})                      # branch: core on parent v2.2
+R24P = derive(R22, annual_avg_temp={"W": "core", "cw": 0.0, "learn": False},
+              cdd={"W": "core", "cw": 0.0, "learn": False})                                # branch: core-only on parent v2.2
+D03 = derive(R21, annual_avg_temp={"dep": True, "gate_rel": True})                         # v2.5 on the v0.3-W branch
 T25 = derive(T24, total_precip_in={"W": "prcp"})                                           # v2.5 precipitation base
 # r2-order configurations, kept as diagnostics
 V21 = derive(V20, total_precip_in={"W": "prcp"})
@@ -71,7 +81,7 @@ V24B = derive(V23, hottest_day_temp={"W": "hot"})
 V25A = derive(V24A, **{m: {"cw": 0.0} for m in MET})
 V25B = derive(V24B, **{m: {"cw": 0.0} for m in MET})
 CONFIGS = {"v05": None, "v20": V20, "t21": T21, "t22": T22, "t23": T23, "t24": T24, "t25": T25,
-           "t21g": T21G, "t23g": T23G, "t24g": T24G, "t25g": T25G,
+           "t21g": T21G, "t23g": T23G, "t24g": T24G, "t25g": T25G, "r21": R21, "r22": R22, "r23": R23, "r24": R24, "r23p": R23P, "r24p": R24P, "d03": D03,
            "v21": V21, "v22": V22, "v23": V23, "v24a": V24A, "v24b": V24B, "v25a": V25A, "v25b": V25B}
 DEP_NAMES = [f"dep{k}" for k in range(15)] + ["dep5", "dep15", "slope_diff", "sd30"]
 
@@ -318,6 +328,8 @@ for O in OUTER:
         pred, rec = P.run_forecast(tr, tg, O, 42, coords.loc[CITIES])[0], {}
     else:
         pred, rec = forecast(O)
+    # full prediction frame on the target grid (training-only output; used by the skip-rule check in the replay)
+    pred.sort_values(KEY).to_csv(OUT / f"{args.config}-{O}-pred.csv", index=False, float_format="%.12g")
     rows = truth[truth.scored.astype(bool)].merge(pred, on=KEY, how="left", validate="one_to_one")
     assert rows.predicted_value.notna().all() and rows.year.max() <= CUTOFF
     rows["absolute_error"] = (rows.predicted_value - rows.actual_value).abs()

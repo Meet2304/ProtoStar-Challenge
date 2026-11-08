@@ -80,7 +80,7 @@ def mlp_ensemble(Xf, yf, Xv, yv, Xall, yall, Xte):
     z = lambda v: np.clip(v / ys, -CLIP, CLIP)  # noqa: E731
     preds, epochs = [], []
     with threadpool_limits(1):
-        for seed in range(SEEDS):
+        for seed in range(42, 42 + SEEDS):     # the declared deployment seeds 42-46
             new = lambda: MLPRegressor(hidden_layer_sizes=(32, 16), alpha=1e-2, learning_rate_init=1e-3, random_state=seed)  # noqa: E731
             m = new(); best, best_ep, bad = np.inf, 1, 0
             for ep in range(1, MAX_EPOCHS + 1):

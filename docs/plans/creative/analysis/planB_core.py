@@ -138,8 +138,12 @@ def steady_gain(rho):
 def fixed_gain_level(c, K, drift):
     """Level at the last column of a window c (n, T) with constant gain K and known drift.
 
-    Initial level at column 0 = drift-adjusted mean of the window's valid values; then for each column:
-    L += drift (after column 0); if observed, L += K (y - L). No observation ever gets weight > K.
+    Initial level at column 0 = drift-adjusted mean of the window's n valid values; then for each column:
+    L += drift (after column 0); if observed, L += K (y - L). The innovation gain is K at every update, but an
+    observation also enters through the initial mean, so its total weight in L_t is
+        K (1 - K)^a + (1 - K)^n / n,   a = number of valid observations after it.
+    The maximum is the last observation's K + (1 - K)^n / n, increasing in K and decreasing in n; with K <= K_ss(0.25)
+    and n >= MIN_WINDOW_OBS = 10 it is at most 0.391097019 (planB_gain_check.py verifies this numerically).
     Rows with fewer than MIN_WINDOW_OBS valid values or fewer than MIN_RECENT_OBS in the last RECENT_YEARS
     columns return NaN (fallback F2)."""
     n, T = c.shape

@@ -29,7 +29,8 @@ names = args.configs.split(",")
 if args.against and args.against not in names:
     names = [args.against] + names
 
-runs = {c: pd.concat([pd.read_csv(p, dtype={"city_id": str}) for p in sorted(OUT.glob(f"{c}-*.csv"))]) for c in names}
+runs = {c: pd.concat([pd.read_csv(p, dtype={"city_id": str}) for p in sorted(OUT.glob(f"{c}-[0-9][0-9][0-9][0-9].csv"))])
+        for c in names}
 for r in runs.values():
     assert r.year.max() <= CUTOFF
 origins = sorted(runs[names[0]].origin.unique())
