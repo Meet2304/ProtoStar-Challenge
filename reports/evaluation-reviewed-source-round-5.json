@@ -1,0 +1,129 @@
+{
+  "protocol": "audited-inputs-v5",
+  "review_commit": "d63347e787445ed7c90d0c0fee5623a7e96798a9",
+  "runtime_source_fingerprint": "5a59a1a39d73fe89b19ba1f117707825d5f956e86fecacc3232b1612a2213879",
+  "runtime_sources": {
+    "code/check_submission.py": "b10d2bb354e7406532dfce5cf5057d1af050389496b59d72ce792c92451235a6",
+    "code/combo_model.py": "4d35efd1858e5405d9d2d63783db7f151bce15a94804194cf3143c66ec315e7b",
+    "code/common.py": "9ef821f6fb82a02d304b0f5f6f2d65f1aa7c7f0d98eb3c3f5acc7daf8bcd4f3f",
+    "code/evaluate.py": "9d660037447d795938d3e849c8084e46f9dd5a9aadcec551fc3dc1fb57f24ae1",
+    "code/evaluation/__init__.py": "b7cbae1207d784d35bd16f0627bd45a798f652a1b988186a496228b322566352",
+    "code/evaluation/adapters.py": "2be8564374c94bf2236248412e68dea03c5124dd4224a5d0769f206e8c98a24d",
+    "code/evaluation/assets.py": "900ffb084c7297daba23695143bea4de322e5719aa610c3fbd2b07ec5907dc2a",
+    "code/evaluation/controls.py": "9f8fa95e33ba0e9037c169dcb75d2786a6d5b1ef40942aa0ededefb847e83755",
+    "code/evaluation/core.py": "675b762bb774448a30caed890aa40c1e6c7ac12fc0626c9501d38e9ec510aa37",
+    "code/evaluation/diagnostic_bundle.py": "7ee3b9810b1c2fdcdd2ea63c89fff6104fcac611b687eaacd3696fc0059c1aca",
+    "code/evaluation/native_io.py": "73f875289727f4038e7b89d922d6319988192c6fab457a6b7c6989aef29cda96",
+    "code/evaluation/nested.py": "2f64bea5a6a218bd90d010832f41c8f50518b7dfdd4efaa4878a25129e8b2b16",
+    "code/evaluation/official_score.py": "a610f9bf4787c035fc711c473beaf37549bcbbce3470b3c34fcfb9621393163a",
+    "code/evaluation/panel.py": "f3f066becb75a64013c421fd7ba68a13fa7b7eb8d68845e837bd298f04bf5a34",
+    "code/evaluation/phase_policy.py": "73e2273dba40bdcf3a3a14ea53d80866012fad1186e759a543bf673140b2ecc7",
+    "code/evaluation/protocol.py": "ca49cce67643e2de3f117a2dc755ad0db66e86805417dbca46dc685f2b01e54e",
+    "code/evaluation/quality_diagnostics.py": "5c551c9a7508f15a022f5730121dfb1d0ad4a6ca2bd5da146cde277a935edb4c",
+    "code/evaluation/report.py": "de88c77b8e4251fd3c18c703552170b979549f318f81841f3933ab542a3f6392",
+    "code/evaluation/runtime_audit.py": "11492fac22abba8c42e3b7b1c1b3b0204fb259ebcecb6be14cdfdc0444f4d24c",
+    "code/evaluation/scorecard.py": "55d451b9236904736f309d89c58433d5a99451c4ad00409d3a6cc344b414bf7e",
+    "code/evaluation/suite_identity.py": "87f342a09e38931f750c2a914af6af87b35cdbf889c0c46c8cfea425b2add113",
+    "code/evaluation/tracking.py": "c2f8ff76af02628bbd4350b79fa04a52e074fdfe48e2bd7a8ce73e7a783eb6be",
+    "code/evaluation/worker.py": "33b8a91747ef50fb51c89219961c46269277c8ebdc39f1562328273ab997b676",
+    "code/prepare_data.py": "6934418b0d04da91dc0996f4a6209b1bf567e9da1be6a1d815605d08d5d48978",
+    "code/requirements.txt": "549cceecf8d811e5558a34ccc97b5fc5f117216dcf9688812e89028f20a68c9e",
+    "code/starter_model.py": "31360c71f32ed3fc0e1f0fc640b6edeea7d9cc6c5dae18866380b1b3b899f539",
+    "pyproject.toml": "5810512d90f9e7cd4f5bbb19918b0c4b1413d1c1b2229f62b27b8c614a92c9c1",
+    "requirements.txt": "9cdf78ed36a6b1ae0559c582f9b7762e850f35eb11ca2822fdeb241a7aef0824",
+    "src/protostar_challenge/__init__.py": "e29ac4f2fe9d7814f73b3aede61934a555b4f55edf935a24c8f42a5d4af3c1a8",
+    "src/protostar_challenge/config.py": "0b865c5db20089a6f89014138a32d66a0e0a5c1a0924edee40a3d659ff3bdc99",
+    "uv.lock": "2c5b30a366152f250ae7e0787e8f6a6598d2fcc34df8eef7e3093fc4cfbd2ae4"
+  },
+  "acceptance_files": {
+    ".github/workflows/evaluation.yml": "2b3cfa6e0ccbfcecfd714d98682502ce9af59eebb30918520f1f678b68479a28",
+    "evaluation/config.json": "4bf91eec1867179352b3abe38a0711771f61fa029aa34f3e06e45dcbb64ccf52",
+    "evaluation/no-assets.json": "7a56800b8f8039afd10433ce0eb123434fb46469568641d8d15a332b3b673432",
+    "scripts/_harness.py": "151dee20e7843d0354daabc3985f32202c42a0efab061f0e570525e4c23017e6",
+    "scripts/eval_model.py": "7d66525b4ae9220870484f63dd21a9d4332225116576d1837f10ed3fca8a5a61",
+    "scripts/mlflow_sync.py": "96cb0360d1caac48789cc8a14ab70ab3809bf48fc2b40d0af33c6643ad620fd0",
+    "scripts/run_controls.py": "c805db1e669cdead4dc4063030df56abe9d54101e6caa2fa8ad94bed4942c69f",
+    "tests/ci_suite_identity.py": "423d25d39fcd0d2582956dc9748041548ea357c5aa9aa91d3f0902962e7cb1ac",
+    "tests/test_asset_classification.py": "38e2c48a0419457a0b2162ec7616acbd85df8cad7b23d21eba62d49d3938854c",
+    "tests/test_asset_workflow.py": "c2426a8851a613f13a2b8f47ae358cbf13702cd9bb2ad27963931724a547615d",
+    "tests/test_assets.py": "d72f458fa5420306c1b92c4c415b4468030a71b4d64baf80370e54501186b75c",
+    "tests/test_controls_panel.py": "273adc06482369a2ca1175ac5a5bd6110ce5a8ad0999dc76a567b8e06449611a",
+    "tests/test_diagnostic_bundle.py": "c0a7ac4b9b056f24d2e2d8d202c61ddf72c9c182d80b28b6b245bb73a5d67b6d",
+    "tests/test_evaluation.py": "dbaaa2d0a384a3688d01942d520ce426adaf4e19cf5b646162ac3cea23ba5fdf",
+    "tests/test_exposure_report.py": "e18c383c2e14eb2b8be572384a8d957ebe50d1d28ef1884807c152d510f1ce0e",
+    "tests/test_native_io.py": "9bef652a0d5dbcc1637976078fbdf6aceb8864da6bc516e7262af24c95a4bf96",
+    "tests/test_nested_evaluation.py": "1296ec37a3e54df158b20fcb6ee78331279bf57732f7068d90fcb221a7901167",
+    "tests/test_opus_fixes.py": "099628b96b1a01732a9edbaa87e876340bff5dc3ad6f4eb743e92d32c0d31edd",
+    "tests/test_protocol_v4.py": "95468930d2776f9bb232aa0576635db8e77b7519f4a589fe5cf1acbb87a63cd4",
+    "tests/test_quality_diagnostics.py": "f38f6c847ab16c98bff72d5f04aeeaf9f18ea40f3d636fa006d604d4b2f760bb",
+    "tests/test_round4_fixes.py": "f113f6456cf4d57440237d3c5202e3d9d1247fd91b32f8477d5beb0385d2b468",
+    "tests/test_runtime_audit.py": "3e4cae069885c8086aab475091d9fcce4550b42c3680a338bcc983e5e31fcdbb",
+    "tests/test_suite_portability.py": "75a2b6f400f835e57f6a36d2253e42a7c45aecb91f5f1ac4e38af6a8ac340663"
+  },
+  "ci": {
+    "url": "https://github.com/Meet2304/ProtoStar-Challenge/actions/runs/42471119448",
+    "status": "success",
+    "tests_each_os": 164,
+    "skipped_each_os": 3,
+    "portable_fixture_identity": "6fed3d07a445cd4a22d0d3a9ac54c030b33ada6e3d312b157240764d3cb4333e"
+  },
+  "fresh_evidence": {
+    "suite": "outputs/evaluation/suite-v3-r5",
+    "suite_id": "f2a07d24bded3db23024847598f4624b1caa2d2ce30539b6686ad3c476e531e5",
+    "panel": "outputs/evaluation/controls/f2a07d24bded3db23024847598f4624b1caa2d2ce30539b6686ad3c476e531e5/development/official/panel-full.json",
+    "verified_runs": [
+      {
+        "entry": "average30",
+        "run_id": "20261108T102320Z-e925f9acca",
+        "run_fingerprint": "ea6dae16ada06ac61a69c31ffeb4cfd087ff112d09dbd4ae0f93d4f4ad6b2e0b"
+      },
+      {
+        "entry": "persistence",
+        "run_id": "20261108T102326Z-2de9f58382",
+        "run_fingerprint": "2bff29234838822c1f40f537d75129b81ddc3c05e267e57ec8f7ca4b96fb8872"
+      },
+      {
+        "entry": "trend30",
+        "run_id": "20261108T102333Z-504c820bed",
+        "run_fingerprint": "6f0dbd089c5bca7b128d9c49ef7005512955f4fbc5e233337c0aa3c5b88419fa"
+      },
+      {
+        "entry": "mean10",
+        "run_id": "20261108T102341Z-68b6362630",
+        "run_fingerprint": "41239418dee9a40024544e2ab19c4dfae97bd195f2c1a4846401d1de8ff48ccb"
+      },
+      {
+        "entry": "blend",
+        "run_id": "20261108T102348Z-b5e41fc876",
+        "run_fingerprint": "803c4cc78b93c443e4f7f15fbd9d9705307dbe9beb7fa734c815948ddbdea52a"
+      },
+      {
+        "entry": "ridge_pooled",
+        "run_id": "20261108T102355Z-c8c32ad881",
+        "run_fingerprint": "8d0dc11b3368da4a496dc4c5c4fb0ef0281b62c2e3e4436a1b6695200156423a"
+      },
+      {
+        "entry": "starter_rf",
+        "run_id": "20261108T102419Z-fd1251f02d",
+        "run_fingerprint": "acd03a0233fc913ea47b3531d23fdd8d1be8287751f20199595a88f798db54e3"
+      },
+      {
+        "entry": "combo",
+        "run_id": "20261108T102520Z-bbe55897c7",
+        "run_fingerprint": "8b1c99a1738be1a2223f7b5612f733321918ed43b1b69a54d24ab4ff3bb0e885"
+      },
+      {
+        "entry": "nested",
+        "run_id": "20261108T102526Z-6326cbdea0",
+        "run_fingerprint": "e2b2134e2934d9cd802d97845d490b21e96d455f89c9bee2c3861b9a498c74c2"
+      }
+    ],
+    "mlflow_complete_panel_mirrors": 9,
+    "guide_command_run": "20261108T102629Z-270490f3c3",
+    "diagnostics": "outputs/evaluation/diagnostics/20261108T102526Z-6326cbdea0/ff5effa8d3874a61acae86307d213a6f",
+    "freeze_without_assessment": "outputs/evaluation/freezes/nested-v5-review.json"
+  },
+  "submission_sha256": "2c9b61dae823ce2e576cdbef685e5e6c54b0ad2deee11c15ee654ce885ce4091",
+  "real_assessment_access_count": 0,
+  "scope": "Integrated committed evaluator including controls/panel/scorecard/MLflow and their adapter allowlist. Notebook training source remains user-owned, outside reviewed core; unrelated workspace edits are recorded in each run."
+}
