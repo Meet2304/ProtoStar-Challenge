@@ -171,20 +171,26 @@ def _locked_suite():
     return read_json(path).get("suite_id") if path.is_file() else None
 
 
+def _classifier():
+    """line.py's own label (official / exploratory / legacy, reasons) for a sealed run's metadata."""
+    try:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("_line", ROOT / "scripts/line.py")
+        line = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(line)
+        lock = line.read_lock()
+    except Exception as exc:  # pragma: no cover - line.py always ships with the repo
+        raise RewardError(f"cannot classify runs: {exc}") from exc
+    return lambda meta: line.classify(meta, lock)
+
+
 def candidates(runs=RUNS, official_only=True):
-    """Complete development runs on the locked suite, oldest first; official ones when line.py is importable."""
+    """Complete development runs on the locked suite, oldest first. Only official runs can be champion."""
     suite = _locked_suite()
     classify = None
     if official_only:
-        try:
-            import importlib.util
-            spec = importlib.util.spec_from_file_location("_line", ROOT / "scripts/line.py")
-            line = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(line)
-            lock = line.read_lock()
-            classify = lambda meta: line.classify(meta, lock)[0]  # noqa: E731
-        except Exception as exc:  # pragma: no cover - line.py always ships with the repo
-            raise RewardError(f"cannot classify runs: {exc}") from exc
+        label = _classifier()
+        classify = lambda meta: label(meta)[0]  # noqa: E731
     found = []
     for path in sorted(Path(runs).glob("*/run.json")):
         meta = read_json(path)
@@ -286,10 +292,15 @@ def main(argv=None):
     against = _resolve(args.against, args.runs) if args.against else current_champion(args.runs)
     result = None if against.resolve() == run.path.resolve() else compare(run, Run(against), args.samples)
     score_out = summary(run)
+    label, reasons = _classifier()(run.meta)
+    score_out.update(label=label, label_reasons=reasons, can_become_champion=label == "official")
     if args.json:
         print(json.dumps({"score": score_out, "comparison": result}, indent=2))
     else:
         print(explain(score_out, result))
+        if label != "official":
+            print(f"  LABEL: {label.upper()} ({'; '.join(reasons)}). The verdict is informative only: "
+                  "this run cannot become champion.")
     return 0
 
 

@@ -65,3 +65,27 @@ The champion is still `control:average30`. Placeholder v0.3–v0.9 score +0.17 t
 all `within_noise` (P(better) 0.56–0.84). v0.9's gain is all temperature, CDD and hottest day
 (precipitation equals climatology), and it loses on the 1990 origin (−2.1). On the live analogue, v0.3–v0.9
 are clearly better (≈ +2.2 to +3.1, P = 1.00 for v0.9).
+
+## Enhanced inputs: `enhance-v2` is the default (from 2026-11-08)
+
+At the enhancement station's request, newer models that use external context default to **`enhance-v2`**
+(enhancement commit `4c4317e`). It contains static city facts (elevation, coast distance, WorldCover land cover) and the ERSSTv5 Niño 3.4,
+North Pacific and North Atlantic SST indices, with per-origin anomalies, January 1950 to December 2018.
+
+```bash
+uv run python scripts/line.py pull enhance-v2      # canonical, hash-checked copy in data/processed/releases/enhance-v2/
+uv run python scripts/line.py score --name Placeholder_vX --adapter <file.py:forecast> --assets evaluation/enhance-v2-assets.json
+```
+
+- [`enhance-v2-assets.json`](enhance-v2-assets.json) declares `static/city_static.csv` (static context) and
+  `ocean/origin-O/{annual,monthly}.csv` as weather inputs with `information_end_year = O`, scoped to their
+  own origin. It covers 1983, 1990 and 1997, plus 2004 and 2011 so a freeze can reuse it. Declaring them does
+  not open the assessment. A model with its own weights or settings copies these entries into its manifest.
+- Every run pins the release per file: the asset binding stores each file's SHA-256, and `line.py` matches the
+  canonical `data/processed/releases/enhance-v2/` paths to the release to tag the run's lineage. Bind
+  those paths, not the friendly `enhanced/` copy, which the line does not recognise as a release.
+- **Runs that use `enhance-v2` are `exploratory`** (`enhance-v2 is not gate-eligible`). The ERSSTv5
+  reconstruction vintage is not certified for every early origin. They get a reward and a verdict, which
+  `reward.py score` labels as informative, but they **cannot become champion**. `enhance-v1` (static facts only)
+  is gate-eligible if a model needs only static context and must stay official.
+- Nothing about the targets, scoring arithmetic, sealed runs or assessment policy changes.
