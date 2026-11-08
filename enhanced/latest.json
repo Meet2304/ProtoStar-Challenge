@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "release_id": "enhance-v2",
+  "release_manifest_sha256": "cf8dcd6caabf5f3bbdaa0905022fb6237ef8d8c1eadc079ffbcd4f14f55e4aef",
+  "source_git_commit": "4c4317ef81e94b964194eca6a5b69fdb728873a6",
+  "directory": "enhanced/enhance-v2",
+  "canonical_asset_directory": "data/processed/releases/enhance-v2",
+  "upstream": ["enhance-v1"],
+  "gate_eligible": false,
+  "default_for_new_model_inputs": true,
+  "evaluation_usage": "exploratory",
+  "eligibility_note": "Ocean reconstruction/calibration provenance has not been certified for each historical origin. Preserve this flag in evaluation; use the separate enhance-v1 release when only gate-eligible structural facts are required."
+}
