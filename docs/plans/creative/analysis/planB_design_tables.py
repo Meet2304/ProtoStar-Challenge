@@ -192,6 +192,7 @@ def e3_e5():
                     c["direct regional CDD-slope proxy (not v0.3)"] = r + np.nan_to_num(s_reg * (t + h - xm))
                     # actual v0.3/v0.5 CDD warming: floored regional temperature rate x floored regional CDD-on-temperature response
                     c["v0.3 W actual (temp rate x CDD response)"] = r + np.nan_to_num(v03_cdd_rate * (t + h - xm))
+                if m in ("annual_avg_temp", "cdd"):   # r4 had these under the CDD branch only (Sol, r4 review)
                     tc = np.where(np.isnan(s_city), r, C.nanmean(w30, 1) + s_city * (t + h - xm))
                     c["combo blend"] = 0.5 * m10 + 0.5 * np.where(np.isnan(tc), r, tc)
                     c["r1 local linear trend, slope floored"] = r + np.nan_to_num(lv + np.maximum(sl, 0) * h - cbar_llt)

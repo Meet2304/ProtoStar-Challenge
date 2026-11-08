@@ -158,7 +158,7 @@ def fixed_gain_level(c, K, drift):
     return np.where(enough, L, np.nan)
 
 
-def core_W(M, y0, t, rho, phi, metric, nbs, nb):
+def core_W(M, y0, t, rho, phi, metric, nbs, nb, kappa=None):
     """Correction W (cities x 7 leads) for annual_avg_temp, cdd (with drift phi) or hottest_day_temp (phi ignored).
     Returns (W, n_F2). rho None -> fallback F1 (all zeros)."""
     n = M.shape[0]
@@ -175,16 +175,17 @@ def core_W(M, y0, t, rho, phi, metric, nbs, nb):
     W = np.zeros((n, 7))
     ok = np.isfinite(L) & np.isfinite(cbar) & np.isfinite(r)
     for h in LEADS:
-        w = KAPPA[metric] * (L - cbar + p * d * h)
+        w = (KAPPA[metric] if kappa is None else kappa) * (L - cbar + p * d * h)
         W[:, h - 1] = np.where(ok & np.isfinite(w), w, 0.0)
     return W, int((~ok & np.isfinite(r)).sum())
 
 
-def precip_W(M, y0, t):
+def precip_W(M, y0, t, weight=PRCP_WEIGHT):
+    """weight = share of the all-history mean (0.5 in the plan; the prcp-w75 diagnostic uses 0.25)."""
     hist = window(M, y0, y0, t, t)
     n_all = (~np.isnan(hist)).sum(1)
     r = ref30(M, y0, t)
-    w = np.where((n_all >= PRCP_MIN_YEARS) & np.isfinite(r), PRCP_WEIGHT * (nanmean(hist, 1) - r), 0.0)
+    w = np.where((n_all >= PRCP_MIN_YEARS) & np.isfinite(r), weight * (nanmean(hist, 1) - r), 0.0)
     return np.repeat(np.nan_to_num(w)[:, None], 7, axis=1)
 
 

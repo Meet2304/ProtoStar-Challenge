@@ -14,6 +14,12 @@ E3/E5 annual_avg_temp: skill vs ref30, pseudo-origins 1915-1976, leads 4-7 (targ
 method                                                                                                             
 mean10                                       +0.009163          17/31  +0.044800          22/31  +0.027485    39/62
 v0.3 W (OLS-30 floored, from window centre)  -0.049453          20/31  -0.006208          13/31  -0.027219    33/62
+combo blend                                  -0.032126          15/31  +0.037738          20/31  +0.003793    35/62
+r1 local linear trend, slope floored         -0.003970          18/31  +0.031280          21/31  +0.014153    39/62
+core level, no drift, kappa 1                -0.004321          13/31  +0.052049          23/31  +0.024661    36/62
+core level, no drift, kappa 0.5              +0.001273          13/31  +0.032151          26/31  +0.017148    39/62
+core level + drift (phi 1), kappa 1          -0.041326          20/31  +0.046789          21/31  +0.003977    41/62
+core level + drift (phi 1), kappa 0.5        +0.013565          20/31  +0.030581          25/31  +0.022313    45/62
 
 E3/E5 total_precip_in: skill vs ref30, pseudo-origins 1915-1976, leads 4-7 (targets <= 1983)
                                            1915-1945 1915-1945 wins  1946-1976 1946-1976 wins        all all wins

@@ -1,16 +1,19 @@
-"""Plan B r4, E8 policy replay: apply the plan's version policy (section 4.3 and the section 5.3 tree) to the
-retrospective folds, including rejected versions, conditional versions and the skip rule.
+"""Plan B r5, E9: full policy replay on the retrospective folds (plan sections 4.3 and 5.3), including the
+section 4.3.5 diagnostic rescues, conditional versions and the frame-level skip rule.
 
 usage: uv run python docs/plans/creative/analysis/planB_e8_replay.py [--out DIR]
-Needs the row-error and prediction files written by planB_e8_nested.py for the configurations it visits; it stops
-with a message if one is missing. Champion analogue starts as average30 (its errors are the baseline errors);
-the carried-forward version starts as v0.5 (config v05). Comparisons use reward.py's arithmetic (2,000 city draws,
-seed 20261108) with the promote rule adapted to 5 origins: wins >= 4 of 5 (ceil(2/3 x 5)).
+Configurations are named "<parent>+<mod>..." (planB_e8_nested.MODS). A configuration with no stored run is computed
+on demand by calling planB_e8_nested.py. Champion analogue starts as average30; carried-forward version as v0.5.
+Comparisons use reward.py arithmetic (2,000 city draws, seed 20261108); promote needs P >= 0.95, >= 4/5 origin
+wins (ceil(2/3 x 5)), live not clearly worse, every metric >= -2 points.
+Rescue order when several diagnostics qualify: those that would promote first, then the higher 90% lower bound
+against the champion, then the higher reward, then declaration order. At most one rescue per version.
 """
 from __future__ import annotations
 
 import argparse
 import math
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -18,6 +21,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+HERE = Path(__file__).resolve().parent
 CUTOFF = 1983
 METRICS = ["annual_avg_temp", "total_precip_in", "hottest_day_temp", "cdd"]
 SPLITS = ["live", "final"]
@@ -26,22 +30,26 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--out", default=str(Path(tempfile.gettempdir()) / "planB_e8"))
 OUT = Path(ap.parse_args().out)
 AVG = "average30"
+# stored runs whose settings equal a composed name (same derive() changes, same evaluator)
+ALIAS = {"v20+hot": "r21", "v20+hot+prcp": "r22", "v20+hot+core": "r23", "v20+hot+coreonly": "r24",
+         "v20+hot+dep": "d03", "v20+hot+prcp+core": "r23p", "v20+hot+prcp+coreonly": "r24p",
+         "v20+hot+prcpw25": "r21+prcpw25"}
 
 
-def rows(c):
-    files = sorted(OUT.glob(f"{c}-[0-9][0-9][0-9][0-9].csv"))
-    if not files:
-        sys.exit(f"missing E8 run for configuration {c!r}: run planB_e8_nested.py {c}")
-    r = pd.concat([pd.read_csv(p, dtype={"city_id": str}) for p in files])
-    assert r.year.max() <= CUTOFF
-    return r
+def canon(c):
+    return ALIAS.get(c, c)
 
 
-def preds(c):
-    files = sorted(OUT.glob(f"{c}-[0-9][0-9][0-9][0-9]-pred.csv"))
-    if not files:
-        sys.exit(f"missing prediction frames for {c!r}: rerun planB_e8_nested.py {c}")
-    return pd.concat([pd.read_csv(p, dtype={"city_id": str}).assign(origin=int(p.name.split("-")[1])) for p in files])
+def files(c, suffix=""):
+    return sorted(OUT.glob(f"{canon(c)}-[0-9][0-9][0-9][0-9]{suffix}.csv"))
+
+
+def ensure(c):
+    if c in (AVG,) or files(c):
+        return
+    print(f"  ... computing {c} with planB_e8_nested.py", flush=True)
+    subprocess.run([sys.executable, "-W", "ignore", str(HERE / "planB_e8_nested.py"), canon(c), "--out", str(OUT)],
+                   check=True, stdout=subprocess.DEVNULL)
 
 
 CACHE = {}
@@ -49,9 +57,10 @@ CACHE = {}
 
 def mats(c):
     if c not in CACHE:
-        r = rows("v05" if c == AVG else c)
-        g = r.groupby(["city_id", "origin", "split", "metric"])[["absolute_error", "baseline_absolute_error"]].sum()
-        CACHE[c] = g
+        ensure(c)
+        r = pd.concat([pd.read_csv(p, dtype={"city_id": str}) for p in files(c)])
+        assert r.year.max() <= CUTOFF
+        CACHE[c] = r.groupby(["city_id", "origin", "split", "metric"])[["absolute_error", "baseline_absolute_error"]].sum()
     return CACHE[c]
 
 
@@ -84,82 +93,98 @@ def compare(c, champ):
     by_origin = d[0, :, 1]
     metric = 100 * s[0, :, 1, :].mean(axis=0)
     p = float((fin[1:] > 0).mean())
-    checks = {"final": p >= 0.95 and fin[0] > 0, "origins": int((by_origin > 0).sum()) >= NEED,
+    checks = {"final": bool(p >= 0.95 and fin[0] > 0), "origins": int((by_origin > 0).sum()) >= NEED,
               "live": float((live[1:] < 0).mean()) < 0.95, "floor": float(metric.min()) >= -2}
     return {"delta": float(fin[0]), "lo": float(np.quantile(fin[1:], 0.05)), "p": p, "wins": int((by_origin > 0).sum()),
             "checks": checks, "promote": all(checks.values()), "by_origin": by_origin}
 
 
 def bound_and_reward(c, champ):
-    if c == champ:
-        return 0.0, 0.0
-    r = compare(c, champ)
-    return r["lo"], r["delta"]
+    return (0.0, 0.0) if c == champ else (compare(c, champ)["lo"], compare(c, champ)["delta"])
 
 
 def identical_frames(a, b):
-    pa, pb = preds(a).sort_values(["origin"] + KEY), preds(b).sort_values(["origin"] + KEY)
-    same_grid = pa[["origin"] + KEY].reset_index(drop=True).equals(pb[["origin"] + KEY].reset_index(drop=True))
-    return same_grid and np.array_equal(pa.predicted_value.to_numpy(), pb.predicted_value.to_numpy())
+    ensure(a); ensure(b)
+    pa = pd.concat([pd.read_csv(p, dtype={"city_id": str}) for p in files(a, "-pred")]).sort_values(KEY)
+    pb = pd.concat([pd.read_csv(p, dtype={"city_id": str}) for p in files(b, "-pred")]).sort_values(KEY)
+    return (len(pa) == len(pb) and pa[KEY].reset_index(drop=True).equals(pb[KEY].reset_index(drop=True))
+            and np.array_equal(pa.predicted_value.to_numpy(), pb.predicted_value.to_numpy()))
 
 
 state = {"champion": AVG, "carried": "v05"}
-log = []
+LOG = []
 
 
-def step(version, config, parent, skip_check=False):
-    if skip_check and identical_frames(config, parent):
-        log.append((version, config, parent, "skipped: prediction frames identical to the parent", None))
-        return False
-    r = compare(config, state["champion"])
-    champ_before = state["champion"]
+def judge(c):
+    """Rules 1-2 of plan 4.3 against the current champion, without changing state."""
+    r = compare(c, state["champion"])
     if r["promote"]:
-        state["champion"] = state["carried"] = config
-        decision = "KEPT (promote; new champion)"
+        return "promote", r
+    lo_k, d_k = bound_and_reward(state["carried"], state["champion"])
+    return ("carry" if r["lo"] > lo_k and r["delta"] > d_k else "no"), r
+
+
+def apply(c, outcome):
+    if outcome == "promote":
+        state["champion"] = state["carried"] = c
+    elif outcome == "carry":
+        state["carried"] = c
+
+
+def step(version, config, parent, diags=(), skip_check=False):
+    """Decide the version, then judge its diagnostics against the state AFTER that decision (plan 4.3.5).
+    Returns the carried-forward configuration, which is the parent of the next version."""
+    champ = state["champion"]
+    if skip_check and identical_frames(config, parent):
+        outcome, r = "skipped (frames identical)", None
     else:
-        lo_k, d_k = bound_and_reward(state["carried"], state["champion"])
-        if r["lo"] > lo_k and r["delta"] > d_k:
-            state["carried"] = config
-            decision = f"carried forward (lo {r['lo']:+.3f} > {lo_k:+.3f}, delta {r['delta']:+.3f} > {d_k:+.3f})"
-        else:
-            decision = f"not carried (needs lo > {lo_k:+.3f} and delta > {d_k:+.3f})"
-    log.append((version, config, parent, decision, (champ_before, r)))
-    return state["carried"] == config
+        outcome, r = judge(config)
+    LOG.append((version, config, champ, outcome, r))
+    if outcome in ("promote", "carry"):
+        apply(config, outcome)
+    champ = state["champion"]
+    qualified = []
+    for k, (dname, dconf) in enumerate(diags):
+        o, rd = judge(dconf)
+        LOG.append((f"  diagnostic {dname}", dconf, champ, f"diagnostic: would {o}", rd))
+        if o in ("promote", "carry"):
+            qualified.append((o != "promote", -rd["lo"], -rd["delta"], k, dname, dconf))
+    if qualified:
+        dname, dconf = sorted(qualified)[0][4:]
+        outcome2, r2 = judge(dconf)            # re-scored without the flag: same model, same numbers here
+        LOG.append((f"{version.split()[0]}r rescue of {dname}", dconf, champ, outcome2, r2))
+        apply(dconf, outcome2)
+    return state["carried"]
 
 
-# ---------------------------------------------------------------- the r4 tree (plan section 5.3)
-P = "v05"
-if not step("v2.0 assembly fix", "v20", P):
-    sys.exit("v2.0 not carried forward: plan B stops here (every later version needs the corrected gate)")
-P = "v20"
-P = "r21" if step("v2.1 hottest-day level", "r21", P) else P
-prcp_cfg = {"r21": "r22", "v20": "v21"}[P]
-P = prcp_cfg if step("v2.2 precipitation base", prcp_cfg, P) else P
-core_cfg = {"r22": "r23p", "r21": "r23", "v21": "v22", "v20": "t21"}[P]
-core_only_cfg = {"r22": "r24p", "r21": "r24", "v21": "v23", "v20": "t22"}[P]
-if step("v2.3 regional core", core_cfg, P):
-    P = core_cfg
-elif step("v2.4 core-only (conditional)", core_only_cfg, P):
-    P = core_only_cfg
-dep_cfg = {"r21": "d03"}.get(P)
-if dep_cfg is None:
-    sys.exit(f"no E8 configuration declared for the departure learner on parent {P!r}")
-P = dep_cfg if step("v2.5 temperature departure learner", dep_cfg, P, skip_check=True) else P
+# ---------------------------------------------------------------- the tree (plan section 5.3)
+P = step("v2.0 assembly fix", "v20", "v05")
+if P != "v20":
+    sys.exit("v2.0 not carried forward: plan B stops")
+P = step("v2.1 hottest-day level", P + "+hot", P, diags=[("hot-k1", P + "+hotk1")])
+P = step("v2.2 precipitation base", P + "+prcp", P, diags=[("prcp-w75", P + "+prcpw25")])
+P2 = P
+P = step("v2.3 regional core", P2 + "+core", P2, diags=[("core-phi0", P2 + "+core+phi0"), ("core-phi1", P2 + "+core+phi1")])
+core_dropped = False
+if P == P2:
+    P = step("v2.4 core-only (conditional)", P2 + "+coreonly", P2)
+    core_dropped = P == P2
+P3 = P
+P = step("v2.5 departure learner", P3 + "+dep", P3, skip_check=True,
+         diags=[("dep-absgate", P3 + "+depabs"), ("gate-only", P3 + "+gaterel")])
+P4 = P
 
-print(f"origins {list(map(int, origins))}, {len(cities)} cities, promote needs P >= 0.95, wins >= {NEED}/{len(origins)}, "
+print(f"origins {list(map(int, origins))}, {len(cities)} cities; promote: P >= 0.95, wins >= {NEED}/{len(origins)}, "
       "live not clearly worse, metric floor -2")
-for version, config, parent, decision, info in log:
-    if info is None:
-        print(f"  {version:38s} [{config} on {parent}] {decision}")
+for name, conf, champ, outcome, r in LOG:
+    if r is None:
+        print(f"{name:34s} [{canon(conf)}] {outcome}")
         continue
-    champ, r = info
-    print(f"  {version:38s} [{config} on {parent}] vs champion {champ}: delta {r['delta']:+.4f} 90% lo {r['lo']:+.3f} "
-          f"P {r['p']:.3f} wins {r['wins']}/{len(origins)} checks {r['checks']} -> {decision}")
-end = state["carried"]
-fin = compare(end, AVG)
-vs05 = compare(end, "v05")
-print(f"\nENDPOINT (policy-replayed): {end}; champion analogue {state['champion']}")
-print(f"  vs average30: {fin['delta']:+.4f} points, 90% lo {fin['lo']:+.3f}, P {fin['p']:.3f}, wins {fin['wins']}/{len(origins)}, "
-      f"by origin {' / '.join(f'{v:+.2f}' for v in fin['by_origin'])}")
-print(f"  vs v0.5:      {vs05['delta']:+.4f} points, 90% lo {vs05['lo']:+.3f}, P {vs05['p']:.3f}, wins {vs05['wins']}/{len(origins)}, "
-      f"by origin {' / '.join(f'{v:+.2f}' for v in vs05['by_origin'])}")
+    print(f"{name:34s} [{canon(conf)}] vs {canon(champ)}: delta {r['delta']:+.6f} lo {r['lo']:+.6f} P {r['p']:.3f} "
+          f"wins {r['wins']}/{len(origins)} live {r['checks']['live']} floor {r['checks']['floor']} -> {outcome}")
+print(f"\ncore dropped: {core_dropped}; P3 = {canon(P3)}; P4 (parent of the v2.6 rehearsal) = {canon(P4)}")
+for label, c in (("CHAMPION", state["champion"]), ("CARRIED-FORWARD", state["carried"])):
+    a, b = compare(c, AVG), compare(c, "v05")
+    print(f"{label} {canon(c)}: vs average30 {a['delta']:+.6f} (90% lo {a['lo']:+.3f}, P {a['p']:.3f}, wins {a['wins']}/5, "
+          f"by origin {' / '.join(f'{v:+.2f}' for v in a['by_origin'])}); vs v0.5 {b['delta']:+.6f} "
+          f"(lo {b['lo']:+.3f}, wins {b['wins']}/5)")

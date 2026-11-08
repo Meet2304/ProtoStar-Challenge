@@ -85,13 +85,40 @@ CONFIGS = {"v05": None, "v20": V20, "t21": T21, "t22": T22, "t23": T23, "t24": T
            "v21": V21, "v22": V22, "v23": V23, "v24a": V24A, "v24b": V24B, "v25a": V25A, "v25b": V25B}
 DEP_NAMES = [f"dep{k}" for k in range(15)] + ["dep5", "dep15", "slope_diff", "sd30"]
 
+# r5: composable modifiers, so the policy replay can build any version or diagnostic as "<parent>+<mod>[+<mod>...]".
+TC = ("annual_avg_temp", "cdd")
+MODS = {
+    "hot": lambda s: derive(s, hottest_day_temp={"W": "hot"}),                                  # v2.1
+    "hotk1": lambda s: derive(s, hottest_day_temp={"W": "hot", "kappa": 1.0}),                 # diagnostic hot-k1
+    "prcp": lambda s: derive(s, total_precip_in={"W": "prcp"}),                                # v2.2
+    "prcpw25": lambda s: derive(s, total_precip_in={"W": "prcp", "prcp_w": 0.25}),             # diagnostic prcp-w75
+    "core": lambda s: derive(s, **{m: {"W": "core"} for m in TC}),                             # v2.3
+    "coreonly": lambda s: derive(s, **{m: {"W": "core", "cw": 0.0, "learn": False} for m in TC}),  # v2.4
+    "phi0": lambda s: derive(s, **{m: {"phi_fixed": 0.0} for m in TC}),                        # diagnostic core-phi0
+    "phi1": lambda s: derive(s, **{m: {"phi_fixed": 1.0} for m in TC}),                        # diagnostic core-phi1
+    "dep": lambda s: derive(s, annual_avg_temp={"dep": True, "gate_rel": True}),               # v2.5
+    "depabs": lambda s: derive(s, annual_avg_temp={"dep": True, "gate_rel": False}),           # diagnostic dep-absgate
+    "gaterel": lambda s: derive(s, annual_avg_temp={"gate_rel": True}),                        # diagnostic gate-only
+}
+
+
+def resolve(name):
+    base, *mods = name.split("+")
+    s = CONFIGS[base]
+    for mod in mods:
+        if s is None:
+            raise SystemExit("v05 cannot take modifiers")
+        s = MODS[mod](s)
+    return s
+
+
 ap = argparse.ArgumentParser()
-ap.add_argument("config", choices=sorted(CONFIGS))
+ap.add_argument("config", help="a CONFIGS name, optionally followed by +modifiers (see MODS)")
 ap.add_argument("--origins", default="1948,1955,1962,1969,1976")
 ap.add_argument("--out", default=str(Path(tempfile.gettempdir()) / "planB_e8"))
 ap.add_argument("--anchor-step", type=int, default=C.ANCHOR_STEP, choices=(5, 10))
 args = ap.parse_args()
-SET = CONFIGS[args.config]
+SET = resolve(args.config)
 OUTER = [int(x) for x in args.origins.split(",")]
 OUT = Path(args.out)
 
@@ -135,10 +162,10 @@ def W_at(tables, t, phi):
             elif mode == "v03":
                 out[m] = v03_W(tables, t, m)
             elif mode == "prcp":
-                out[m] = C.precip_W(M, y0, t)
+                out[m] = C.precip_W(M, y0, t, SET[m].get("prcp_w", C.PRCP_WEIGHT))
             else:
                 rho = RHO.get(m, M, y0, t, NBS, y0)
-                out[m] = C.core_W(M, y0, t, rho, phi, m, NBS, NEIGH)[0]
+                out[m] = C.core_W(M, y0, t, rho, phi, m, NBS, NEIGH, kappa=SET[m].get("kappa"))[0]
         W_CACHE[key] = out
     return W_CACHE[key]
 
@@ -265,6 +292,10 @@ def select_phi(F):
     core = [m for m in MET if SET[m]["W"] == "core"]
     if not core:
         return 0.0, None
+    fixed = {SET[m].get("phi_fixed") for m in core}
+    if fixed != {None}:
+        assert len(fixed) == 1, "phi_fixed must be shared by the core metrics"
+        return float(fixed.pop()), {"fixed": True}
     if F in PHI:
         return PHI[F]
     sk = {p: [] for p in PHI_GRID}

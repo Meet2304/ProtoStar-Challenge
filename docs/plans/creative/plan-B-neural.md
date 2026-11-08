@@ -1,13 +1,35 @@
 # Plan B: a regional state-space core with a gated city-departure learner
 
-**Summary.** Plan B extends the Placeholder series in the order the chronological evidence supports. The first step fixes the lambda gate so it judges the forecast it deploys (v2.0). Next come a half-weight regional level for the hottest day (v2.1) and a longer-memory precipitation base (v2.2). Only then does the plan test its experimental parts: a regional Kalman local-level core for temperature and CDD (v2.3, with a core-only fallback v2.4), a city-departure learner (v2.5), and a deferred MLP member (v2.6). The core runs one numpy filter per metric over each city's neighbourhood (the city plus its 15 nearest cities). Its signal-to-noise ratio comes from a bounded maximum-likelihood fit on years up to each pseudo-origin, and it runs at a fixed gain. A drift term phi is used only when inner origins before the outer origin show that it helped. I replayed the actual version policy on five retrospective outer origins (1948-1976, all targets ≤ 1983), including rejected versions, the conditional branch and the skip rule. It keeps v2.0 and v2.1 (both promote against the champion analogue), rejects precipitation by a hair (lower bound −0.005), rejects the core and core-only, and carries the departure learner forward without promoting it. The champion endpoint (v2.1) scores +2.20 final points against the 30-year average (90% [+1.67, +2.71], 4/5 origins) and +0.73 against v0.5 (90% [+0.62, +0.86], better at all 5 origins). Without the 1962 fold it keeps +0.52 over v0.5 (lower bound +0.39). Every version is official and reads no feature release. Every number is reproducible from `docs/plans/creative/analysis/planB_*.py`.
+**Summary.** **What survives is not a neural model.** Plan B's surviving path is a regional statistical / state-space hybrid anchored on the 30-year average, with shrunk corrections. That overlaps plan A's direction. Plan B's neural part (the MLP member) is unproven and does not run on the replayed path, so this plan is not established neural diversification. The version order follows the chronological evidence:
+1. v2.0 fixes the lambda gate so it judges the forecast it deploys.
+2. v2.1 adds a fixed-gain Kalman regional level for the hottest day.
+3. v2.2 adds a longer-memory precipitation base.
+4. Then the experiments: a regional local-level core with gated drift for temperature and CDD (v2.3, with a core-only fallback v2.4), a city-departure learner (v2.5) and an MLP member (v2.6).
 
-Status: draft r4
+Each version has 1-2 pre-declared diagnostics. I replayed the whole policy on five retrospective outer origins (1948-1976, all targets ≤ 1983): rejected versions, the conditional branch, the frame-level skip rule, and the diagnostic rescues with their effect on later parents (E9).
+- **Kept:** v2.0 and v2.1 promote against the champion analogue.
+- **Rescued:** the hottest day's `hot-k1` diagnostic (kappa 1) is carried forward, and v2.2 then promotes on top of it.
+- **Rejected:** the core and core-only (`CORE_DROPPED`).
+- **v2.5:** its `gate-only` diagnostic beats the departure learner, so the departure target is not carried and v2.6 does not run.
 
-Author: strategy planner B (Kiro, Claude Opus 5.5). r1-r3 2026-11-08 (Sol: 71, 85, 88); r4 2026-11-08. Family: neural and probabilistic temporal models trained globally across cities.
+The **champion endpoint** is v2.2 on the rescued parent: +2.5532 final points against the 30-year average (90% [+1.96, +3.11], 4/5 origins) and +1.0885 against v0.5 (90% [+0.87, +1.32], better at all 5 origins). Without the 1962 fold it keeps +0.69 over v0.5 (lower bound +0.47). Every version is official, reads no feature release, and is reproducible from `docs/plans/creative/analysis/planB_*.py`.
+
+Status: draft r5
+
+Author: strategy planner B (Kiro, Claude Opus 5.5). r1-r4 2026-11-08 (Sol: 71, 85, 88, 89); r5 2026-11-08. Family: neural and probabilistic temporal models trained globally across cities.
 Scope: plan and analysis scripts only. No adapter was implemented or scored, nothing was committed, and no development or assessment run was opened. The only sealed-run read was `reward.py score` on v0.5's run (E7).
 
 ---
+
+## Changes in r5
+
+| # | Item | How it is handled |
+|---|---|---|
+| 1 | Replay the diagnostic rescues | `planB_e8_replay.py` now runs every declared diagnostic and applies §4.3.5. The parents that follow, the configurations built on them (computed on demand) and the rehearsal ancestry all come from the replay. **Rule (made precise in r5):** after each version's decision, its diagnostics are judged against the state *after* that decision, by rules 1-2. If several qualify, the order is: one that would promote first, then the higher 90% lower bound against the champion, then the higher reward, then declaration order. At most one rescue per version. The rescue is re-scored without the flag as `v2.<n>r`. **Sol's counterexample is reproduced exactly:** `prcp-w75` on v2.1 gives +0.060626, lower bound +0.017973, P 0.987, 5/5, which under r4's wording would promote to a +2.2600 endpoint. Under the r5 rule the path changes earlier: `hot-k1` beats the promoted v2.1 (+0.271834 against v2.1, lower bound +0.166987, 3/5) and is carried forward. v2.2 on that parent then promotes, and `prcp-w75` no longer qualifies. **Corrected endpoint:** champion v2.2 at +2.553192 against average30 and +1.088468 against v0.5. *Refinement note:* r4's wording ignored diagnostics of versions that promoted. I changed that after this retrospective replay showed `hot-k1` beating a promoted v2.1, to match brief §7 ("if an ablation turns out to be the better model, re-score it"). It is a design choice made on data ≤ 1983. The r4-wording endpoint (+2.2600) is also reported. |
+| 2 | Temperature E3 rows | Fixed in `planB_design_tables.py`: the combo, local-linear-trend and core rows had been placed under the CDD branch in r4. The regenerated `planB_design_tables.txt` prints every temperature row the plan quotes, with values identical to the plan's table. |
+| 3 | Gate-only comparator for v2.5 | New diagnostic `gate-only`: v2.5's relative gate without the departure target. On the replayed parent: gate-only +0.075393 (lower bound +0.030224, 2/5); the departure learner +0.044980 (lower bound +0.002302, 1/5); `dep-absgate` +0.054366. Departure learning against gate-only: −0.0304 (90% [−0.08, +0.02]). **The v2.5 "gain" is the gate change, not departure learning.** The replay rescues gate-only as v2.5r. |
+| 4 | v2.6 when v2.5 is not carried | v2.6 runs only if the carried-forward P4 contains the departure learner, i.e. v2.5 itself was kept or carried. If v2.5 is rejected, skipped, or replaced by a rescue without the departure target, v2.6 is **not run**: it would bundle two unproven changes. In E9, P4 = v2.5r (gate-only), so v2.6 is not run. When it does run, its rehearsal configuration is `derive(P4, annual_avg_temp={"mlp": True})`, and P4 then already holds `dep` and `gate_rel`. |
+| — | Summary | States that the surviving path is a regional statistical / state-space hybrid anchored on average30 with shrinkage, that it overlaps plan A, and that the neural part is unproven. |
 
 ## Changes in r4
 
@@ -41,7 +63,9 @@ Scripts live in `docs/plans/creative/analysis/`. Run each with `uv run python <s
 | `planB_e8_nested.py CONFIG` | E8 row errors, full prediction frames, `CONFIG-checks.json` (15-60 s per origin) |
 | `planB_e8_boot.py CONFIGS --against X` | bootstrap, spatial blocks, leave-one-origin-out |
 | `planB_e8_replay.py` → `planB_e8_replay.txt` | E9, the policy replay |
-| `planB_e8_checks.json`, `planB_e8_summary.txt` | recorded E8 outputs for all 25 configurations |
+| `planB_e8_checks.json`, `planB_e8_summary.txt` | recorded E8 outputs for all 43 configurations |
+
+Configurations are named `<parent>+<modifier>...` (`MODS` in `planB_e8_nested.py`): `hot`, `hotk1`, `prcp`, `prcpw25`, `core`, `coreonly`, `phi0`, `phi1`, `dep`, `depabs`, `gaterel`. `r21` = `v20+hot`, `r22` = `v20+hot+prcp`, and so on (aliases in `planB_e8_replay.py`).
 
 **Evidence status.** E1-E6 informed the design on the same years E8 uses, so E8/E9 are **retrospective**, not independent. Nothing overlaps the development targets (1984-2004). A rerun of v2.0 gave byte-identical row files at the three origins compared (1962, 1969, 1976).
 
@@ -66,7 +90,7 @@ Scripts live in `docs/plans/creative/analysis/`. Run each with `uv run python <s
 | core level + drift phi 1, kappa 1 | +0.003977 | 41 | −0.007748 | 39 |
 | core level + drift phi 1, kappa 0.5 | +0.022313 | 45 | +0.021573 | 42 |
 
-In 1915-1945: temperature v0.3 W −0.049453 against the no-drift level −0.004321; CDD actual v0.3 +0.010117 against the half level −0.001406. The constants (kappa temp 1.0, CDD 0.5) were fixed in r1 and are not re-tuned.
+Every row is regenerated by the committed script (`planB_design_tables.txt`; r5 fixed the temperature rows that r4's script had placed under the CDD branch). In 1915-1945: temperature v0.3 W −0.049453 against the no-drift level −0.004321; CDD actual v0.3 +0.010117 against the half level −0.001406. The constants (kappa temp 1.0, CDD 0.5) were fixed in r1 and are not re-tuned.
 
 **rho by anchor.** Temperature 0.0000 (1920) → 0.0149 (1935) → 0.0210 (1975). CDD 0.037-0.061, hottest day 0.019-0.026 (from 1935). Precipitation 0.006-0.032. Anchors before 1905 return "too few series" (fallback F1).
 
@@ -83,37 +107,52 @@ In 1915-1945: temperature v0.3 W −0.049453 against the no-drift level −0.004
 
 **E7. v0.5's development reward** (read-only): +0.834, 90% [−0.603, +2.308], P 0.81, sd 0.890. Origins +0.27 / −2.35 / +4.58.
 
-**E8. Configurations of the r4 tree** (fully nested, chronological; 208 cities; `reward.py` arithmetic, 2,000 city draws, seed 20261108). Script names are in brackets.
+**E8. Configurations** (fully nested, chronological; 208 cities; `reward.py` arithmetic, 2,000 city draws, seed 20261108). Columns: vs average30 | 90% interval | live | origins won | by origin 1948 / 1955 / 1962 / 1969 / 1976 | metric points temp / prcp / hot / cdd | vs v0.5 (90%), origins won.
 
-| Version (config) | vs average30 | 90% | sd | live | wins | by origin 1948 / 1955 / 1962 / 1969 / 1976 | metric pts temp / prcp / hot / cdd | vs v0.5 (90%), wins |
-|---|---:|---|---:|---:|---:|---|---|---|
-| v0.5 (`v05`) | +1.4647 | [+0.93, +1.97] | 0.32 | +2.49 | 4/5 | +0.06 / +2.12 / +7.40 / +0.18 / −2.44 | +2.37 / 0 / +0.32 / +3.17 | — |
-| v2.0 (`v20`) | +1.6955 | [+1.19, +2.18] | 0.31 | +2.69 | 4/5 | +0.05 / +2.12 / +7.40 / +0.08 / −1.17 | +2.59 / 0 / +0.34 / +3.85 | +0.23 [+0.16, +0.31], 1/5 |
-| v2.1 (`r21`) | +2.1994 | [+1.67, +2.71] | 0.32 | +3.00 | 4/5 | +0.33 / +2.27 / +9.00 / +0.89 / −1.50 | +2.59 / 0 / +2.35 / +3.85 | +0.73 [+0.62, +0.86], 5/5 |
-| v2.2 (`r22`) | +2.2814 | [+1.73, +2.81] | 0.33 | +3.10 | 4/5 | +0.49 / +2.32 / +9.06 / +1.02 / −1.49 | +2.59 / +0.33 / +2.35 / +3.85 | +0.82 [+0.68, +0.96], 5/5 |
-| v2.3 on v2.1 (`r23`) | +2.3327 | [+1.76, +2.89] | 0.35 | +3.18 | 3/5 | +0.04 / +2.59 / +12.00 / −0.07 / −2.89 | +3.20 / 0 / +2.35 / +3.78 | +0.87 [+0.67, +1.06], 2/5 |
-| v2.4 on v2.1 (`r24`) | +1.7205 | [+1.39, +2.05] | 0.20 | +1.89 | 3/5 | −0.17 / +0.76 / +8.46 / +0.74 / −1.19 | +2.87 / 0 / +2.35 / +1.66 | +0.26 [−0.18, +0.70], 3/5 |
-| v2.5 on v2.1 (`d03`) | +2.2444 | [+1.72, +2.75] | 0.32 | +3.06 | 4/5 | +0.33 / +2.27 / +8.95 / +1.16 / −1.50 | +2.77 / 0 / +2.35 / +3.85 | +0.78 [+0.65, +0.91], 5/5 |
+| Version (config) | vs avg30 | 90% | live | wins | by origin | metric pts | vs v0.5 |
+|---|---:|---|---:|---:|---|---|---|
+| v0.5 (`v05`) | +1.4647 | [+0.93, +1.97] | +2.49 | 4/5 | +0.06 / +2.12 / +7.40 / +0.18 / −2.44 | +2.37 / 0 / +0.32 / +3.17 | — |
+| v2.0 (`v20`) | +1.6955 | [+1.19, +2.18] | +2.69 | 4/5 | +0.05 / +2.12 / +7.40 / +0.08 / −1.17 | +2.59 / 0 / +0.34 / +3.85 | +0.23 [+0.16, +0.31], 1/5 |
+| v2.1 (`v20+hot` = `r21`) | +2.1994 | [+1.67, +2.71] | +3.00 | 4/5 | +0.33 / +2.27 / +9.00 / +0.89 / −1.50 | +2.59 / 0 / +2.35 / +3.85 | +0.73 [+0.62, +0.86], 5/5 |
+| v2.1r (`v20+hotk1`) | +2.4713 | | | 4/5 vs v2.0 | | hot +3.44 | |
+| **v2.2 on v2.1r (`v20+hotk1+prcp`)** | **+2.5532** | **[+1.96, +3.11]** | +3.00 | 4/5 | +0.68 / +2.30 / +10.10 / +1.70 / −2.02 | +2.59 / +0.33 / +3.44 / +3.85 | **+1.0885 [+0.87, +1.32], 5/5** |
+| v2.5r gate-only (`v20+hotk1+prcp+gaterel`) | +2.6286 | [+2.03, +3.20] | +3.15 | 4/5 | +0.68 / +2.36 / +10.43 / +1.70 / −2.02 | +2.89 / +0.33 / +3.44 / +3.85 | +1.1639 [+0.94, +1.39], 5/5 |
+| r4-wording endpoint (`r21+prcpw25`) | +2.2600 | [+1.72, +2.77] | +3.07 | 4/5 | +0.43 / +2.31 / +9.06 / +0.97 / −1.47 | +2.59 / +0.24 / +2.35 / +3.85 | +0.7953 [+0.67, +0.92], 5/5 |
 
-Branch configurations for parents the policy did not reach (`v21`, `t21`, `t22`, `v22`, `v23`, `r23p`, `r24p`) are recorded in `planB_e8_summary.txt`. `r23p` and `r24p` are the core and core-only on parent v2.2.
+(v2.1r's total is v2.0 + 0.7758, from the paired comparison `v20+hotk1` vs `v20`.) The core, core-only, phi and departure configurations on every parent the replay visited are in `planB_e8_replay.txt` and `planB_e8_summary.txt`. For temperature and CDD their deltas are identical across parents (for example the core +0.133316 and core-only −0.478913), because each metric's forecast depends only on its own settings.
 
-**E9. Policy replay** (`planB_e8_replay.py`; champion analogue starts at average30, carried-forward version at v0.5; promote needs P ≥ 0.95, ≥ 4/5 origin wins, live not clearly worse, every metric ≥ −2):
+**E9. Full policy replay** (`planB_e8_replay.py` → `planB_e8_replay.txt`). The champion analogue starts at average30 and the carried-forward version at v0.5. Promote needs P ≥ 0.95, ≥ 4/5 origin wins, live not clearly worse and every metric ≥ −2. Each diagnostic is judged after its version's decision (§4.3.5).
 
-| Step | Compared with (champion) | Δ | 90% lower | P | wins | Decision |
+| Step [config] | vs champion | Δ | 90% lower | P | wins | Decision |
 |---|---|---:|---:|---:|---:|---|
-| v2.0 assembly fix | average30 | +1.6955 | +1.189 | 1.000 | 4/5 | **kept** (promote) |
-| v2.1 hottest-day level | v2.0 | +0.5039 | +0.410 | 1.000 | 4/5 | **kept** (promote) |
-| v2.2 precipitation base | v2.1 | +0.0819 | −0.005 | 0.938 | 5/5 | not carried (needs lower bound > 0) |
-| v2.3 regional core | v2.1 | +0.1333 | −0.006 | 0.942 | 2/5 | not carried |
-| v2.4 core-only (conditional, ran) | v2.1 | −0.4789 | −0.882 | 0.027 | 1/5 | not carried; `CORE_DROPPED` |
-| v2.5 departure learner (skip check: frames differ) | v2.1 | +0.0450 | +0.002 | 0.956 | 1/5 | **carried forward** (not promoted: 1/5 origins) |
-| v2.6 MLP | — | — | — | — | — | not replayed (deferred; §5.3 rehearsal first) |
+| v2.0 [`v20`] | average30 | +1.695493 | +1.189 | 1.000 | 4/5 | **kept** (promote) |
+| v2.1 [`v20+hot`] | v2.0 | +0.503926 | +0.410 | 1.000 | 4/5 | **kept** (promote) |
+| · diagnostic `hot-k1` [`v20+hotk1`] | v2.1 | +0.271834 | +0.167 | 1.000 | 3/5 | would carry → **v2.1r carried forward** |
+| v2.2 [`v20+hotk1+prcp`] | v2.1 | +0.353772 | +0.220 | 1.000 | 4/5 | **kept** (promote) |
+| · diagnostic `prcp-w75` [`v20+hotk1+prcpw25`] | v2.2 | −0.021312 | −0.064 | 0.201 | 1/5 | does not qualify |
+| v2.3 core [`…+core`] | v2.2 | +0.133316 | −0.006 | 0.942 | 2/5 | not carried |
+| · diagnostics `core-phi0` / `core-phi1` | v2.2 | +0.133316 / +0.062942 | −0.006 / −0.061 | 0.942 / 0.805 | 2/5 / 1/5 | do not qualify |
+| v2.4 core-only [`…+coreonly`] | v2.2 | −0.478913 | −0.882 | 0.027 | 1/5 | not carried → `CORE_DROPPED` |
+| v2.5 departure learner [`…+dep`] (frames differ) | v2.2 | +0.044980 | +0.002 | 0.956 | 1/5 | carried forward |
+| · diagnostic `dep-absgate` | v2.2 | +0.054366 | +0.021 | 0.995 | 1/5 | would carry |
+| · diagnostic `gate-only` [`…+gaterel`] | v2.2 | +0.075393 | +0.030 | 0.996 | 2/5 | would carry; higher lower bound → **v2.5r carried forward** |
+| v2.6 MLP | — | — | — | — | — | not run (P4 has no departure learner; §5.3) |
 
-**Endpoints.** Champion: v2.1 = `r21`. Against average30: +2.1994, 90% [+1.67, +2.71], 4/5. Against v0.5: +0.7347, 90% [+0.62, +0.86], 5/5. Carried-forward parent: v2.5 = `d03`. Against average30: +2.2444, 90% lower +1.720, 4/5. Against v0.5: +0.7797, 90% lower +0.647, 5/5. v2.5's gain over v2.1 (+0.27 at 1969, −0.05 at 1962) comes from its gate closing the parent's temperature learner at 1969 (lambda 0.75 → 0), not from learning city offsets. The replay therefore treats it as a parent, not as progress.
+**Endpoints.**
+- **Champion:** v2.2 = `v20+hotk1+prcp` (v2.0 + full-weight hottest-day level + precipitation base). Against average30: **+2.553192**, 90% [+1.96, +3.11], 4/5. Against v0.5: **+1.088468**, 90% [+0.87, +1.32], 5/5.
+- **Carried forward (not kept):** v2.5r = gate-only. Against average30: +2.628584, lower bound +2.032. Against v0.5: +1.163861. It is not a promotion and not departure learning. It changes temperature's lambda selection (0 / 0.5 / 0.5 / 0.75 / 0 by origin against the parent's 0 / 0 / 0 / 0.75 / 0). Departure learning against gate-only: −0.0304 (90% [−0.08, +0.02]).
+- **Under r4's rescue wording** (diagnostics only for rejected versions), the endpoint would be `r21+prcpw25`, Sol's +2.2600.
 
-**Robustness of the champion endpoint (report-only, §4.5).** Without 1962: +0.50 against average30 (lower −0.02) and +0.52 against v0.5 (lower +0.39). The lowest other leave-one-out is +2.18 (without 1955). Spatial-block bootstrap (42 blocks of 5° × 5°): against average30 [+1.35, +2.92], against v0.5 [+0.53, +0.91]. r3's fixed endpoint, by contrast, kept only +0.02 over v0.5 without 1962.
+**Robustness of the champion endpoint (report-only, §4.5).**
+- Leave one origin out: without 1962, +0.67 against average30 (lower +0.09) and +0.69 against v0.5 (lower +0.47). The lowest other leave-one-out is +2.62 (without 1955).
+- Spatial-block bootstrap (42 blocks of 5° × 5°): against average30 [+1.59, +3.38], against v0.5 [+0.72, +1.39].
+- The 1976 fold still loses −2.02 against average30.
 
-**Deterministic checks** (`planB_e8_checks.json`). v2.1's lambdas by outer origin: hottest 0.25 / 0.5 / 0 / 0.25 / 0, temperature 0 except 0.75 at 1969, CDD and precipitation 0. Outer phi is 0 wherever the core is present (0.25 at 1948 for the core-only configurations). rho is at its lower bound only at anchors 1905-1920. Sol reproduced r3's numbers exactly; r4 adds configurations and does not change any r3 configuration.
+**Deterministic checks** (`planB_e8_checks.json`).
+- The champion's lambdas by outer origin are all 0, except temperature 0.75 and hottest day 0.25 at 1969. Runtime 16-22 s per origin.
+- Outer phi is 0 wherever the core is present (0.25 at 1948 for core-only).
+- rho is at its lower bound only at anchors 1905-1920.
+- r5 changed no configuration that r3/r4 reported: `planB_core` only gained optional `kappa`/`weight` arguments, with defaults unchanged. Sol's r4 reproduction still holds for those rows.
 
 ---
 
@@ -123,7 +162,7 @@ Branch configurations for parents the policy did not reach (`v21`, `t21`, `t22`,
 
 `forecast = assemble(settings, base, combo, W, shift, lambda)` (§3.2). The pieces, in order of evidence:
 1. **A corrected gate** (v2.0).
-2. **Simple regional bases** for the weak-signal metrics: a half-weight fixed-gain regional level for the hottest day, and a longer-memory climatology for precipitation.
+2. **Simple regional bases** for the weak-signal metrics: a fixed-gain regional level for the hottest day (declared at kappa 0.5; the replay carries its kappa-1 diagnostic), and a longer-memory climatology for precipitation.
 3. **Experimental:**
    - the regional local-level core with chronologically gated drift for temperature and CDD;
    - a city-departure learner;
@@ -131,8 +170,8 @@ Branch configurations for parents the policy did not reach (`v21`, `t21`, `t22`,
 
 ### 1.2 Why it suits the data (justified only from history available at each origin)
 
-- **Regional signal, heavy noise (E1, E2).** The predictable part at leads 4-7 is a regional level plus slow city departures. Regional hottest-day levels persist (national lag 3 +0.47). That is why the hottest-day level comes first. In E8 it is the most consistent step (+0.50, 4/5 origins against its parent).
-- **Precipitation (E5).** It is close to white noise. A longer memory reduces the noise in the 30-year mean: +0.0037, positive in both eras. That gain is too small to promote.
+- **Regional signal, heavy noise (E1, E2).** The predictable part at leads 4-7 is a regional level plus slow city departures. Regional hottest-day levels persist (national lag 3 +0.47). That is why the hottest-day level comes first. In E8 it is the most consistent step (+0.50, 4/5 origins against its parent; kappa 1 adds +0.27).
+- **Precipitation (E5).** It is close to white noise. A longer memory reduces the noise in the 30-year mean: +0.0037, positive in both eras. On its own the gain is small (+0.08 headline). It promotes in E9 only because it is compared against the champion v2.1 while sitting on the stronger rescued parent.
 - **Core hypothesis (H-core).** At an origin O, where inner origins O−21..O−7 show that following the regional level (with or without drift) beats extrapolating a 30-year slope from the window centre, the core reduces the sign-flipping level bias that insights report. The evidence available at each origin is the inner-origin phi table and the gate's inner skills. The retrospective evidence (E3) is the 1915-1945 analogue for temperature. There, extrapolation from the window centre lost −0.049 and the level lost −0.004.
 
   The evidence against is just as specific:
@@ -166,7 +205,7 @@ Branch configurations for parents the policy did not reach (`v21`, `t21`, `t22`,
 |---|---|
 | `v03` | v0.3's `warming_term` (temperature; CDD via temp rate × response) |
 | `core` | `kappa·(L − cbar + phi·d·h)`, kappa temperature 1.0, CDD 0.5 |
-| `hot` | `0.5·(L − cbar)` |
+| `hot` | `kappa_hot·(L − cbar)`, kappa_hot 0.5 (v2.1) or 1.0 (diagnostic `hot-k1` / rescue v2.1r) |
 | `prcp` | `0.5·(all-history mean − ref30)` if ≥ 40 valid years ≤ t, else 0 |
 | `none` | 0 |
 
@@ -249,12 +288,15 @@ Before each version: record the champion with `reward.py ladder` and run the pre
 2. **Otherwise carried forward** if its 90% lower bound and reward against the recorded champion exceed those of the current carried-forward version, which starts as v0.5 (reward +0.834, lower bound −0.603 against average30). If the carried-forward version is the champion, this means a lower bound > 0 and Δ > 0.
 3. **Otherwise** neither. The next version builds on the current carried-forward version.
 4. **v2.0:** judged by rules 1-3. If it is neither kept nor carried forward, plan B stops and reports. Every later version depends on the corrected gate, so continuing on v0.5's mismatched gate is not an option.
-5. **Diagnostics** run with `--diagnostic` (never promoted; §5.4). A diagnostic that would have been kept or carried forward where its version was not is re-scored once, without the flag, as candidate `v2.<n>r` (same parent, rules 1-3) before the tree moves on.
+5. **Diagnostics and rescues.** Diagnostics run with `--diagnostic` (never promoted; §5.4), right after their version is decided.
+   - Each diagnostic is judged by rules 1-2 against the state **after** its version's decision: the champion and carried-forward version as they now stand, whether the version was kept, carried or rejected.
+   - If any diagnostic would be kept or carried, exactly one is re-scored without the flag as candidate `v2.<n>r`. Order: one that would promote first, then the higher 90% lower bound against the champion, then the higher reward, then declaration order.
+   - The rescue is judged by rules 1-3 and updates the champion and carried-forward version like any version. The next version's parent is the resulting carried-forward version. At most one rescue per version.
 6. Only `official` runs count. `within_noise` is "not progress".
 
 ### 4.4 Promotion prospects
 
-In E9 the champion endpoint (v2.1) promotes against the analogue, at city sd 0.32 against development sd 0.89 for v0.5. One scale illustration: v0.5 earns 0.57 of its retrospective points on development, which would map v2.1 to about +1.25. P ≥ 0.95 at sd 0.89 needs about +1.5. **Promotion on development is possible, not expected.** The step most likely to promote against its parent is v2.1 (paired lower bound +0.41 in E9).
+In E9 the champion endpoint (v2.2 on v2.1r) promotes against the analogue at city sd 0.35, against development sd 0.89 for v0.5. One scale illustration: v0.5 earns 0.57 of its retrospective points on development, which would map the endpoint to about +1.45. P ≥ 0.95 at sd 0.89 needs about +1.5. **Promotion on development is possible, not expected.** The steps with the largest paired lower bounds are v2.1 (+0.41) and v2.1r's hottest-day kappa 1 (+0.17 over v2.1).
 
 ### 4.5 Report-only diagnostics (pre-declared, never select)
 
@@ -269,9 +311,9 @@ Leave-one-origin-out and the 42-block spatial bootstrap, for every E8 configurat
 1. v2.0 code with per-metric settings (about 2 h).
 2. Hottest-day level and precipitation base (about 1 h; they use `planB_core`).
 3. **Replication before any `line.py score`:** `notebooks/Meet/retro_v2.py` runs the adapter on the E8 origins with the ≤ 1983 table.
-   - Stop rule: phi and lambda equal to `planB_e8_checks.json`, rho within 1e-4 relative, final points per origin within 0.01, for `v20`, `r21` and `r22`. Otherwise fix the bug before scoring.
+   - Stop rule: phi and lambda equal to `planB_e8_checks.json`, rho within 1e-4 relative, final points per origin within 0.01, for `v20`, `r21`, `v20+hotk1` and `v20+hotk1+prcp`. Otherwise fix the bug before scoring.
    - Time origin 1976 (< 120 s) and run it twice (identical output).
-4. Core (about 3 h) after v2.2 is scored. Replicate `r23` and `r24` the same way before scoring v2.3.
+4. Core (about 3 h) after v2.2 is scored. Before scoring v2.3, replicate `<C2>+core` and `<C2>+coreonly` the same way (E9: `v20+hotk1+prcp+core` / `+coreonly`).
 5. Departure learner and MLP last (§5.3).
 
 ### 5.2 Tests
@@ -291,38 +333,42 @@ Assets: `notebooks/Meet/placeholder-v0.1-assets.json`. Release read: none. Score
 
 ```
 v0.5 (carried; champion control:average30)
- └─ v2.0 assembly fix                      parent v0.5      → if neither kept nor carried: STOP
-     └─ v2.1 hottest-day level             parent v2.0      → P1 := v2.1 if kept/carried else v2.0
-         └─ v2.2 precipitation base        parent P1        → P2 := v2.2 if kept/carried else P1
-             └─ v2.3 regional core         parent P2        → P3 := v2.3 if kept/carried
-                 └─ else v2.4 core-only    parent P2 (runs immediately) → P3 := v2.4 if kept/carried else P2 (CORE_DROPPED)
-                     └─ v2.5 departure learner   parent P3 (skip check)  → P4 := v2.5 if kept/carried else P3
-                         └─ MLP rehearsal (E8 driver, not scored) → v2.6 MLP member   parent P4, only if the rehearsal's lower bound > 0
-optional, exploratory, never a parent: v2.Xs = P4 + features-v5 SST anomalies as an MLP input
+ └─ v2.0 assembly fix                 parent v0.5   → if neither kept nor carried: STOP
+     (each version Vn: decide Vn, then its diagnostics against the new state; at most one rescue Vnr; §4.3.5)
+     └─ v2.1 hottest-day level        parent C0     → C1 := carried-forward version after v2.1 / v2.1r
+         └─ v2.2 precipitation base   parent C1     → C2
+             └─ v2.3 regional core    parent C2     → C3 := v2.3 / v2.3r if kept/carried
+                 └─ else v2.4 core-only (immediately) parent C2 → C3 := v2.4 if kept/carried else C2 (CORE_DROPPED)
+                     └─ v2.5 departure learner   parent C3 (skip check)   → C4
+                         └─ v2.6 MLP, only if C4 contains the departure learner (v2.5 itself kept/carried):
+                            rehearsal derive(C4, temp: mlp) first; score only if its paired 90% lower bound vs C4 > 0
+optional, exploratory, never a parent: C4 + features-v5 SST anomalies as an MLP input
 ```
+
+`Ck` is always the carried-forward version after step k, including any rescue. E9 path: C0 = v2.0, C1 = v2.1r (`hot-k1`), C2 = v2.2, C3 = C2 (`CORE_DROPPED`), C4 = v2.5r (`gate-only`), and v2.6 is not run.
 
 | Version | Settings change from parent | Insight finding (v0.9) | Hypothesis, stated before the run | E9 decision |
 |---|---|---|---|---|
 | v2.0 | the gate scores the full `assemble()` | none (correctness) | The gate should judge the forecast it deploys | kept (promote) |
-| v2.1 | hottest: `W = hot` | none ranked; checked against the hottest-day headroom and calibration | A persistent regional hottest-day level is predictable at half weight | kept (promote) |
-| v2.2 | precipitation: `W = prcp` | `no_signal` (low priority) | A longer memory reduces the noise in the 30-year mean | not carried (lower bound −0.005) |
+| v2.1 | hottest: `W = hot` (kappa 0.5) | none ranked; checked against the hottest-day headroom and calibration | A persistent regional hottest-day level is predictable | kept (promote); its diagnostic `hot-k1` rescued as v2.1r (carried) |
+| v2.2 | precipitation: `W = prcp` | `no_signal` (low priority) | A longer memory reduces the noise in the 30-year mean | kept (promote, on parent v2.1r) |
 | v2.3 | temp, CDD: `W = core` | `bias_flips` / `origin_instability` | H-core (§1.2) | not carried |
 | v2.4 | temp, CDD: `W = core`, `cw = 0`, `learn = False` | same | The core alone, without the blend | not carried; `CORE_DROPPED` |
-| v2.5 | temperature: `dep`, `gate_rel` | `city_offsets` (honest +0.98) | City departures persist (E2 lag 1 +0.64); a departure-from-region learner with a gate on the gain over lambda 0 recovers them | carried forward (not promoted; the gain comes from closing the parent's learner) |
-| v2.6 | temperature: MLP joins the members | `city_offsets` | A nonlinear member adds to v2.5 (E6 +0.049 against +0.043) | rehearsal first |
+| v2.5 | temperature: `dep`, `gate_rel` | `city_offsets` (honest +0.98) | City departures persist (E2 lag 1 +0.64), and a departure-from-region learner can recover them | carried, then displaced by its `gate-only` diagnostic (v2.5r) |
+| v2.6 | temperature: MLP member (requires `dep` in C4) | `city_offsets` | A nonlinear member adds to v2.5 (E6 +0.049 against +0.043) | not run (C4 has no departure learner) |
 
-**Skip rule (v2.5, v2.6).** For each development origin, build the parent's and the child's prediction frames from that origin's training table only. Compare them element-wise on the full target grid. Skip, and record "not scored (identical frames)", only if they are equal at all three origins.
+**Skip rule (v2.5, v2.6).** For each development origin, build the parent's and the child's prediction frames from that origin's training table only. Compare them element-wise on the full target grid. Skip, recording "not scored (identical frames)", only if they are equal at all three origins. A skipped version's diagnostics are still judged (§4.3.5).
 
-**MLP rehearsal (before v2.6).** A new E8 configuration: `derive(P4, annual_avg_temp={"mlp": True})` with seeds 42-46, the full v0.5 + departure feature set and the W-adjusted departure target, nested exactly like E8. Report its paired Δ against P4. v2.6 is scored only if that Δ's 90% lower bound is > 0. It is declared now and has not been run.
+**v2.6 and its rehearsal.** v2.6 runs only if C4 contains `dep` and `gate_rel` for temperature, i.e. v2.5 itself was kept or carried and no rescue replaced it. If v2.5 is rejected, skipped or displaced by a rescue without the departure target, v2.6 is not run: adding the MLP would then also add the unproven departure target. When it does run, the rehearsal configuration is `derive(C4, annual_avg_temp={"mlp": True})`: seeds 42-46, the full v0.5 + departure feature set, the W-adjusted departure target, nested exactly like E8. v2.6 is scored only if the rehearsal's paired 90% lower bound against C4 is > 0.
 
 ### 5.4 Pre-declared development diagnostics (`line.py score --diagnostic`)
 
-| Version | Diagnostics (name: change) |
+| Version | Diagnostics (name: change), each on the version's parent |
 |---|---|
-| v2.1 | `hot-k1`: kappa_hot = 1.0 |
-| v2.2 | `prcp-w75`: weight 0.75 on ref30 |
+| v2.1 | `hot-k1`: hottest-day kappa 1.0 |
+| v2.2 | `prcp-w75`: weight 0.75 on ref30 (0.25 on the all-history mean) |
 | v2.3 | `core-phi0`: phi fixed 0; `core-phi1`: phi fixed 1 |
-| v2.5 | `dep-absgate`: departure target with v0.5's absolute gate |
+| v2.5 | `dep-absgate`: departure target with v0.5's absolute gate; `gate-only`: v2.5's relative gate without the departure target |
 
 Each diagnostic has the same parent and settings as its version except the named change. Rule §4.3.5 applies.
 
@@ -334,8 +380,8 @@ Each diagnostic has the same parent and settings as its version except the named
 |---|---|
 | 1. Warming learned as cooling | Core with no learned weights; median- or region-removed targets |
 | 2. 1990 overshoot / `bias_flips` | v2.3/v2.4 test H-core under the chronological phi rule. Rejected in E9, and that rejection is reported |
-| 3. Zero precipitation skill, near-zero hottest day | v2.1 (+0.50, promotes in E9) and v2.2 (+0.08, not carried) |
-| `city_offsets` | v2.5, with a frame-level skip check; v2.6 behind a rehearsal |
+| 3. Zero precipitation skill, near-zero hottest day | v2.1 (+0.50, promotes) and its rescue v2.1r (kappa 1, +0.27 more); v2.2 (+0.33 metric points, promotes on v2.1r) |
+| `city_offsets` | v2.5 tested; its `gate-only` diagnostic shows the gain is the gate, not departure learning (−0.03), so this finding stays open; v2.6 not run |
 | CDD `amplitude` / `control_beats_model` | kappa_cdd 0.5 in the core. E3's corrected row shows the actual v0.3 CDD term is competitive; reported after scoring |
 | Northern zones | Insights zone table and spatial blocks (report-only) |
 | 5. Reused years | Retrospective label, chronological selection, fixed constants, diagnostics flagged and pre-declared |
@@ -348,9 +394,10 @@ Each diagnostic has the same parent and settings as its version except the named
 |---|---|
 | Adapter disagrees with E8 | Stop rule §5.1 |
 | The hottest-day gain does not transfer | v2.1 remains judged by §4.3; plan B then continues from v2.0 |
-| Small steps fail the strict carried-forward rule (as precipitation does in E9) | Accepted and mechanical; reported, not retried |
+| Small steps fail the strict carried-forward rule (precipitation did in r4's replay) | Accepted and mechanical; reported, not retried |
 | The core widens origin swings | Placed after the supported steps; `CORE_DROPPED` branch defined |
-| Departure learner adds only gate noise | E9 shows this; the carried-forward status is reported as such, and v2.6 needs a positive rehearsal |
+| Departure learner adds only gate noise | E9's `gate-only` comparator shows this (departure learning −0.03 against gate-only); v2.6 runs only if v2.5 itself survives |
+| The precipitation promotion is an artefact of comparing against an older champion | Reported; the paired step on its own parent is +0.08 |
 | Runtime | Anchor step 10 (once); MLP deferred |
 
 Compute: CPU only. Dependencies: none new. No feature release.
