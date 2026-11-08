@@ -12,6 +12,7 @@ import json
 import os
 from pathlib import Path
 import sys
+from urllib.parse import urlsplit, unquote
 
 
 class RuntimeAuditError(RuntimeError):
@@ -73,44 +74,85 @@ class RuntimeAudit:
         self.inspecting = False
         self.import_report = None
 
+    def check_network(self, operation):
+        if not self.active or self.inspecting:
+            return
+        # Deliberately omit addresses, URLs and request arguments: they may
+        # contain credentials. Workers have no authorized network inputs.
+        self._record("<network>", operation, "deny", "network_disabled")
+        raise RuntimeAuditError("worker network tripwire blocked network access")
+
+    def check_path(self, raw, *, writing=False):
+        """Shared decision used by Python opens and wrapped native readers."""
+        if not self.active or self.inspecting:
+            return
+        if isinstance(raw, (list, tuple)):
+            for item in raw:
+                self.check_path(item, writing=writing)
+            return
+        if not isinstance(raw, (str, bytes, os.PathLike)):
+            return  # Existing native buffers/descriptors are outside this tripwire.
+        raw = os.fsdecode(raw)
+        if "://" in raw:
+            uri = urlsplit(raw)
+            if uri.scheme.casefold() != "file" or uri.netloc not in ("", "localhost"):
+                self.check_network("native_uri")
+            raw = unquote(uri.path)
+            if os.name == "nt" and len(raw) > 2 and raw[0] == "/" and raw[2] == ":":
+                raw = raw[1:]
+        if raw.startswith(("\\\\", "//")):
+            self.check_network("network_filesystem")
+        try:
+            lexical = Path(os.path.abspath(raw))
+            path = _path(raw)
+        except (OSError, ValueError):
+            return
+        operation = "write" if writing else "read"
+        if path in self.inputs or path in self.assets:
+            decision, reason = ("deny", "immutable_supplied_input") if writing else ("allow", "supplied_input")
+        elif path in self.pins or (path.suffix.casefold() == ".pyc" and self._module_path(path) in self.pins):
+            decision, reason = ("deny", "immutable_pinned_source") if writing else ("allow", "pinned_source")
+        elif _inside(path, self.output):
+            decision, reason = "allow", "own_origin_output"
+        elif any(_inside(path, root) for root in self.environment):
+            return  # Installed library imports/resources; package versions are bound separately.
+        elif any(_inside(candidate, root) for candidate in (path, lexical)
+                 for root in [self.root, *self.protected]):
+            decision, reason = "deny", "undeclared_protected_path"
+        else:
+            # OS resources and package temporary files outside the project are
+            # observable but not claimed to be sandboxed or input-certified.
+            decision, reason = "allow", "external_path_outside_project_boundary"
+        self._record(path, operation, decision, reason)
+        if decision == "deny":
+            raise RuntimeAuditError(f"worker file-open tripwire blocked {operation}: {path}")
+
     def _record(self, path, operation, decision, reason):
         key = (str(path), operation, decision, reason)
         self.events[key] = self.events.get(key, 0) + 1
 
     def _hook(self, event, args):
-        if not self.active or self.inspecting or event != "open":
+        if not self.active or self.inspecting:
+            return
+        if event in {"socket.connect", "socket.getaddrinfo", "socket.gethostbyname", "socket.gethostbyaddr",
+                     "socket.sendto", "urllib.Request"}:
+            self.check_network(event)
+        if event != "open":
             return
         raw = args[0]
         if isinstance(raw, int) or not isinstance(raw, (str, bytes, os.PathLike)):
             return  # Existing file descriptors are outside this path tripwire.
-        try:
-            lexical = Path(os.path.abspath(os.fsdecode(raw)))
-            path = _path(raw)
-        except (OSError, ValueError):
-            return  # The underlying open will report malformed paths.
         mode, flags = args[1], args[2]
         writing = (isinstance(mode, str) and any(char in mode for char in "wax+")) or (
             isinstance(flags, int) and bool(flags & (os.O_WRONLY | os.O_RDWR | os.O_CREAT | os.O_TRUNC | os.O_APPEND)))
-        operation = "write" if writing else "read"
-        # Exact supplied snapshots/inputs permit reads, never writes. This check
-        # precedes own-output permission because asset snapshots live beneath it.
-        if path in self.inputs or path in self.assets:
-            decision, reason = ("deny", "immutable_supplied_input") if writing else ("allow", "supplied_input")
-        # Resolve the physical destination first. Windows short (8.3) aliases
-        # such as RUNNER~1 need not share a lexical prefix with the long root.
-        # A symlink escaping own-output still resolves outside and is denied
-        # by the protected lexical/physical checks below.
-        elif _inside(path, self.output):
-            decision, reason = "allow", "own_origin_output"
-        elif any(_inside(candidate, root) for candidate in (path, lexical) for root in self.protected):
-            decision, reason = "deny", "undeclared_protected_path"
-        else:
-            return  # Package resources and ordinary imports remain usable.
-        self._record(path, operation, decision, reason)
-        if decision == "deny":
-            raise RuntimeAuditError(f"worker file-open tripwire blocked {operation}: {path}")
+        self.check_path(raw, writing=writing)
 
     def install(self):
+        # Import C-extension dependencies before replacing their standard API
+        # entry points, but before any model code can capture those entry points.
+        from evaluation.native_io import install_native_guards
+        install_native_guards(self)
+        sys.dont_write_bytecode = True
         self.active = True
         sys.addaudithook(self._hook)
 
@@ -172,7 +214,9 @@ class RuntimeAudit:
                   for key, count in sorted(self.events.items())]
         io_report = {"schema_version": 1, "status": "failed" if any(e["decision"] == "deny" for e in events) else "verified",
                      "events": events, "denied_count": sum(e["count"] for e in events if e["decision"] == "deny"),
-                     "limits": "Python file-open tripwire only; native IO, existing descriptors and subprocesses may bypass it."}
+                     "limits": "Python opens, standard Arrow path APIs and Python socket/urllib events are checked. "
+                               "External OS paths, existing descriptors, unwrapped/native internals, subprocesses and "
+                               "interpreter manipulation remain outside this trusted-team tripwire; not an OS sandbox."}
         for name, value in (("io_audit.json", io_report), ("imported_source.json", report)):
             (self.output / name).write_text(json.dumps(value, indent=2, allow_nan=False) + "\n", encoding="utf-8")
         if report["violations"]:

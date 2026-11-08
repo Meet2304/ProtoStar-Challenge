@@ -53,6 +53,22 @@ def collect_exposure_counts(runs, suite_id=None):
             warnings.append(f"Unreadable run metadata at {path.parent.name}: {type(exc).__name__}")
             continue
         suite = meta.get("suite_id") if isinstance(meta, dict) else None
+        if isinstance(meta, dict) and meta.get("phase", "development") == "development":
+            snapshot = path.parent / "suite_manifest.json"
+            if snapshot.is_file():
+                try:
+                    from evaluation.phase_policy import protected_development_years
+                    manifest = read_json(snapshot)
+                    config = manifest.get("config", {})
+                    if "development_origins" not in config:
+                        manifest = {**manifest, "config": {**config, "development_origins": config.get("origins", [])}}
+                    overlap = protected_development_years(manifest)
+                    if overlap:
+                        warnings.append(f"Cross-suite exposure: development run {meta.get('run_id', path.parent.name)} "
+                                        f"in suite {suite} includes reserved assessment target years {overlap}. "
+                                        "A new suite or freeze cannot undo that exposure.")
+                except (OSError, ValueError, TypeError):
+                    warnings.append(f"Cannot inventory city-year overlap for {path.parent.name}.")
         if not isinstance(suite, str) or not suite or (suite_id and suite != suite_id):
             continue
         protocol = str(meta.get("protocol_version", "legacy-v1-unprotected"))

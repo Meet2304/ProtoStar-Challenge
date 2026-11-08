@@ -202,9 +202,11 @@ repository's full weather data no longer work by accident. Record explicit,
 date-guarded paths for legitimate external forecast inputs.
 
 This is protection against accidental leakage, not an OS security sandbox.
-An adapter can still deliberately bypass guarded helpers, modify environment
-variables or read absolute data paths. All weather inputs must use the guard;
-framework/GPU determinism requires its own configuration. For stronger
+The Python tripwire and ordinary Arrow API wrappers catch common absolute
+CSV/Parquet reads, including attempts whose exceptions the model catches. Network
+connect/name-resolution/request events are denied in workers. Deliberate native I/O,
+subprocesses and interpreter manipulation remain outside that boundary. All
+weather inputs must use the guard; framework/GPU determinism requires its own configuration. For stronger
 separation, one evaluator should distribute only train/target files and retain
 labels separately. No claim of secure execution of untrusted code is made.
 
@@ -438,10 +440,13 @@ key or an official leaderboard position. See the Opus review and
 
 ## Runtime checks and development sensitivities
 
-Protocol `audited-runtime-v4` installs a Python file-open tripwire before adapter
+Protocol `audited-inputs-v5` installs a Python file-open tripwire before adapter
 import. Supplied history/targets/parameters and declared immutable assets are
-readable; raw repository data, suite labels and other evaluation outputs are
-blocked. An attempted blocked read fails even if the adapter catches its error.
+readable; undeclared project files, suite labels and other evaluation outputs
+are denied by the supported Python/Arrow paths. Ordinary Parquet, Arrow CSV,
+Feather, dataset, memory-map and local-filesystem entry points are checked too.
+Socket connection/name-resolution and urllib request audit events are denied.
+Arbitrary extension internals and hostile monkey-patching can still bypass these checks. An attempted blocked read fails even if the adapter catches its error.
 `io_audit.json` and `imported_source.json` survive ordinary callback failures.
 Loaded helper modules outside the Python environment must match source pins or
 declared source assets. This catches common accidental leaks, not deliberate
@@ -471,3 +476,34 @@ The HTML report displays known development trial counts, assessment accesses
 and unique freezes across each suite/protocol, including failed runs and retries.
 Missing/unshared ledgers are disclosed as unknown totals with known lower bounds.
 It cannot count experiments or label access outside the platform.
+
+## Protection across custom suites
+
+The default assessment target years 2005-2018 for the 210 challenge city IDs
+remain reserved across suite names and custom configurations. The pinned
+training source, and converted CSVs retaining these IDs, cannot assign those
+city-years to development. Preparation and verification fail before scoring;
+there is no silent override. The report warns about known historical exposure
+across suites, including archived development runs. This does not erase the
+team's earlier use of these labels or certify untouched evidence.
+
+Successful adapter runs require both worker audits to exist and say `verified`
+before scoring. A zero process exit alone cannot complete a run. Network inputs
+must be obtained, reviewed and declared outside model execution before testing.
+
+## One-command team loop
+
+The integrated control panel and optional MLflow mirror are documented in
+[the team baseline guide](../docs/evaluation-baselines.md). For a supplied-history
+model, after the suite is prepared:
+
+```bash
+uv run python scripts/eval_model.py --name my-model-v1 --adapter code/my_model.py:forecast --assets evaluation/no-assets.json
+```
+
+This builds/reuses the standard controls, evaluates the candidate on development
+origins only, writes characteristic scorecards and paired comparisons, mirrors
+verified evidence to MLflow when available, and refreshes the local HTML report.
+The gates are team screening criteria, not official judging rules or independent
+validation. Controls and incumbents retain separate roles. Extra model dependencies
+need their own asset manifest. No challenge submission is made.

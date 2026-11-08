@@ -36,6 +36,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from contextlib import ExitStack
 import csv
+import gzip
 import codecs
 import hashlib
 import json
@@ -85,16 +86,22 @@ def _validate_nonweather_classification(path, declaration, fingerprint):
             or fingerprint["sha256"] == PINNED_ANNUAL_SHA256):
         raise AssetError(f"{declaration['path']}: known weather/label data requires weather_input, not {declaration['kind']}")
     suffix = path.suffix.casefold()
-    if suffix not in {".csv", ".parquet"}:
+    compressed = name.endswith((".csv.gz", ".tsv.gz"))
+    if suffix not in {".csv", ".tsv", ".parquet", ".feather", ".arrow"} and not compressed:
         return
     try:
-        if suffix == ".csv":
-            with path.open("r", encoding="utf-8-sig", newline="") as stream:
-                columns = next(csv.reader(stream), [])
-        else:
+        if suffix in {".csv", ".tsv"} or compressed:
+            opener = gzip.open if compressed else open
+            with opener(path, "rt", encoding="utf-8-sig", newline="") as stream:
+                columns = next(csv.reader(stream, delimiter="\t" if name.endswith((".tsv", ".tsv.gz")) else ","), [])
+        elif suffix == ".parquet":
             import pyarrow.parquet as pq
             with pq.ParquetFile(path) as parquet:
                 columns = parquet.schema_arrow.names
+        else:
+            import pyarrow as pa
+            with pa.memory_map(str(path), "r") as source:
+                columns = pa.ipc.open_file(source).schema.names
     except Exception as exc:
         raise AssetError(f"{declaration['path']}: cannot inspect declared table schema") from exc
     normalized = {re.sub(r"[^a-z0-9]", "", str(column).casefold()) for column in columns}
@@ -103,7 +110,9 @@ def _validate_nonweather_classification(path, declaration, fingerprint):
                 "avgtmin", "maxtmax", "mintmin", "totprcp", "cdd", "annualavgtemp", "totalprecipin",
                 "hottestdaytemp", "actual", "actualvalue", "observedvalue", "targetvalue", "label",
                 "streamflow", "airquality", "energydemand"}
-    if normalized & temporal and normalized & outcomes:
+    wide_years = any(re.fullmatch(r"[0-9]{4}", str(column)) and 1800 <= int(column) <= 2200 for column in columns)
+    generic_outcome = {"metric", "value"} <= normalized
+    if wide_years or (normalized & temporal and (normalized & outcomes or generic_outcome)):
         raise AssetError(f"{declaration['path']}: temporal weather/actual-value table requires weather_input, not {declaration['kind']}")
 
 

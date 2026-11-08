@@ -206,6 +206,9 @@ def prepare(suite, config_path=DEFAULT_CONFIG, annual_path=None, cities_path=Non
     cities = sorted(city_table.city_id.unique().tolist())
     if not cities or set(cities) - set(annual.city_id):
         raise ValueError("city list is empty or contains cities absent from annual data")
+    from evaluation.phase_policy import enforce_phase_policy
+    enforce_phase_policy({"config": config, "city_ids": cities,
+                          "source": {"repo": TRAIN_REPO if digest(source) == PINNED_ANNUAL_SHA256 else "custom_local"}})
     suite.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix=".protostar-build-", dir=suite.parent) as temp:
         dest = Path(temp) / "suite"
@@ -249,6 +252,9 @@ def verify_suite(suite):
     manifest = read_json(suite / "manifest.json")
     validate_suite_manifest(manifest)
     validate_config(manifest["config"])
+    if manifest["schema_version"] >= 3:
+        from evaluation.phase_policy import enforce_phase_policy
+        enforce_phase_policy(manifest)
     scorer_hash = normalized_digest(SCORER) if manifest["schema_version"] >= 3 else digest(SCORER)
     if manifest["scorer_sha256"] != scorer_hash:
         raise ValueError("scorer changed; rebuild a versioned suite")
@@ -470,6 +476,10 @@ def run_suite(suite, runs, model, adapter=None, params=None, prediction_dir=None
                                                f"see {output / 'adapter.log'}") from exc
                 if process.returncode:
                     raise RuntimeError(f"adapter failed for origin {origin}; see {output / 'adapter.log'}")
+                for audit_name in ("io_audit.json", "imported_source.json"):
+                    audit_path = output / audit_name
+                    if not audit_path.is_file() or read_json(audit_path).get("status") != "verified":
+                        raise RuntimeError(f"adapter did not finish a verified {audit_name} for origin {origin}")
                 if asset_snapshot is not None:
                     verify_asset_binding(asset_snapshot["snapshot_root"], asset_snapshot["binding"])
                     verify_asset_binding(ROOT, asset_snapshot["binding"],
@@ -527,6 +537,12 @@ def verify_run(path):
         if claimed != canonical_hash(metadata):
             raise ValueError(f"run metadata fingerprint changed: {path.name}")
         metadata["run_fingerprint"] = claimed
+    if metadata.get("protocol_version") == "audited-inputs-v5" and metadata.get("adapter"):
+        for origin in metadata["origins"]:
+            for audit_name in ("io_audit.json", "imported_source.json"):
+                audit_path = path / f"origin-{origin}" / audit_name
+                if not audit_path.is_file() or read_json(audit_path).get("status") != "verified":
+                    raise ValueError(f"run has no verified worker audit: {origin}/{audit_name}")
     hashes = metadata.get("artifact_sha256", {})
     if "scores.json" not in hashes:
         raise ValueError(f"run has no score artifact fingerprint: {path.name}")

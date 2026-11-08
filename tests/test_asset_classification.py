@@ -1,5 +1,6 @@
 """Cheap classification guards distinguish labels from structural context."""
 import json
+import gzip
 from pathlib import Path
 import sys
 import tempfile
@@ -82,6 +83,22 @@ class AssetClassificationTests(unittest.TestCase):
         with self.assertRaises(assets.AssetError):
             self.declare("labels.csv")
         self.assertFalse((self.root / "run/declared_assets").exists())
+
+    def test_wide_year_and_generic_long_outcome_tables_are_rejected(self):
+        for name, content in (("wide.csv", "city_id,1980,1981\nA,55,56\n"),
+                              ("long.csv", "city_id,year,metric,value\nA,1980,cdd,100\n")):
+            self.put(name, content)
+            with self.subTest(name=name), self.assertRaisesRegex(assets.AssetError, "requires weather_input"):
+                self.declare(name)
+
+    def test_compressed_tsv_and_feather_weather_schemas_are_rejected(self):
+        self.put("weather.tsv", "year\ttmax\n1980\t50\n")
+        with gzip.open(self.root / "weather.csv.gz", "wt", encoding="utf-8") as stream:
+            stream.write("year,tmax\n1980,50\n")
+        pd.DataFrame({"year": [1980], "tmax": [50.]}).to_feather(self.root / "weather.feather")
+        for name in ("weather.tsv", "weather.csv.gz", "weather.feather"):
+            with self.subTest(name=name), self.assertRaisesRegex(assets.AssetError, "requires weather_input"):
+                self.declare(name)
 
 
 if __name__ == "__main__":

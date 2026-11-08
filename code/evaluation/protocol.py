@@ -16,7 +16,7 @@ from pathlib import Path
 from common import ROOT
 from evaluation.assets import fingerprint_assets, verify_asset_binding
 
-PROTOCOL_VERSION = "audited-runtime-v4"
+PROTOCOL_VERSION = "audited-inputs-v5"
 SELECTION_RULE = "equal_fold_mean_final_unclipped_skill"
 
 
@@ -31,6 +31,8 @@ def phase_origins(manifest, phase="development"):
         raise ValueError("phase must be development or assessment")
     if config["schema_version"] < 3:
         raise ValueError("legacy suites are retired for new runs; prepare a schema-3 suite with declared phases")
+    from evaluation.phase_policy import enforce_phase_policy
+    enforce_phase_policy(manifest)
     origins = config[f"{phase}_origins"]
     if not origins:
         raise ValueError(f"suite has no {phase} origins")
@@ -109,7 +111,7 @@ def adapter_assets(origins, entry, assets=None, root=ROOT, commit=None):
     """Built-ins consume provided history only; custom models attest dependencies."""
     known = ((entry.get("module"), entry.get("function")) in {
         ("evaluation.nested", "forecast"), ("evaluation.adapters", "combo"),
-        ("evaluation.adapters", "reference")})
+        ("evaluation.adapters", "reference"), ("evaluation.controls", "forecast")})
     if assets is None:
         if not known:
             raise ValueError("custom adapters require --assets with an explicit dependency manifest; "
