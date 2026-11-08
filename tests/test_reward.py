@@ -118,6 +118,40 @@ class LadderTests(unittest.TestCase):
         self.assertEqual(result["verdict"], "within_noise")
 
 
+class DiagnosticRoleTests(unittest.TestCase):
+    def setUp(self):
+        rng = np.random.default_rng(1)
+        self.origins = [1983, 1990, 1997]
+        cells = len(self.origins) * len(reward.SPLITS) * len(METRICS)
+        self.ref = rng.uniform(5, 10, (210, cells))
+
+    def test_role_comes_from_the_sealed_name(self):
+        self.assertEqual(reward.run_role("diagnostic:Placeholder_v1.0-no_pool"), "diagnostic")
+        self.assertEqual(reward.run_role("control:mean10"), "control")
+        self.assertEqual(reward.run_role("Placeholder_v1.0"), "candidate")
+        self.assertEqual(reward.run_role(None), "candidate")
+
+    def test_ladder_skips_a_better_diagnostic_but_promotes_a_better_candidate(self):
+        start = _fake_run(self.origins, self.ref.copy(), self.ref, name="control:average30", path="a")
+        probe = _fake_run(self.origins, self.ref * 0.8, self.ref, name="diagnostic:ablation", path="b")
+        model = _fake_run(self.origins, self.ref * 0.9, self.ref, name="Placeholder_v1.0", path="c")
+        board = reward.replay([start, probe, model], samples=300)
+        verdicts = {row["model"]: row["verdict"] for row in board["history"]}
+        self.assertEqual(verdicts["diagnostic:ablation"], "diagnostic (promote)")
+        self.assertEqual(verdicts["Placeholder_v1.0"], "promote")
+        self.assertEqual(board["champion_model"], "Placeholder_v1.0")
+        self.assertEqual({row["model"]: row["role"] for row in board["history"]}["diagnostic:ablation"], "diagnostic")
+
+    def test_line_score_flag_prefixes_the_name_once(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("_line_for_test", ROOT / "scripts/line.py")
+        line = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(line)
+        self.assertEqual(line.score_name("Placeholder_v1.0-no_pool", True), "diagnostic:Placeholder_v1.0-no_pool")
+        self.assertEqual(line.score_name("diagnostic:x", True), "diagnostic:x")
+        self.assertEqual(line.score_name("Placeholder_v1.0", False), "Placeholder_v1.0")
+
+
 class SealedRunParityTests(unittest.TestCase):
     def test_reward_matches_sealed_scores(self):
         try:

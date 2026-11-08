@@ -260,7 +260,8 @@ def lineage_tags(meta, lock, lookup=find_release):
     status, reasons = classify(meta, lock, lookup)
     found, _ = used_releases(meta, lookup)
     author = "" if status == "legacy" else (os.environ.get("LINE_AUTHOR") or git("config", "user.name"))
-    return {"line.status": status, "line.reasons": "; ".join(reasons)[:4900],
+    from evaluation.reward import run_role
+    return {"line.status": status, "line.reasons": "; ".join(reasons)[:4900], "line.role": run_role(meta["model"]),
             "line.model": meta["model"], "line.evaluator": evaluator_name(meta.get("source_pins"), lock),
             "line.test_set": f"{suite_label(meta['suite_id'], lock)}:{meta.get('phase', 'development')}",
             "line.train_data": ",".join(sorted(found)) or "provided-history",
@@ -696,9 +697,18 @@ def cmd_sync(args):
     print(f"Releases on MLflow: {sync_releases()}")
 
 
+def score_name(name, diagnostic):
+    """The sealed run name. --diagnostic declares the role up front by prefixing it (see evaluation/REWARD.md)."""
+    from evaluation.reward import DIAGNOSTIC_PREFIX
+    return name if not diagnostic or name.startswith(DIAGNOSTIC_PREFIX) else DIAGNOSTIC_PREFIX + name
+
+
 def cmd_score(args, extra):
     if git("status", "--porcelain"):
         print("Note: uncommitted changes, so this run will be labelled exploratory.")
+    args.name = score_name(args.name, args.diagnostic)
+    if args.name.startswith("diagnostic:"):
+        print(f"Diagnostic run '{args.name}': scored and reported, never a ladder candidate.")
     command = [sys.executable, str(ROOT / "code/evaluate.py"), "run", "--name", args.name, *extra]
     result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=False)
     print(result.stdout, end="")
@@ -806,6 +816,8 @@ def main(argv=None):
     sync.add_argument("--runs", type=Path, default=default_runs)
     score = commands.add_parser("score", help="evaluate.py run, then mirror to MLflow; other flags pass through")
     score.add_argument("--name", required=True)
+    score.add_argument("--diagnostic", action="store_true",
+                       help="pre-declare an ablation/probe: name becomes diagnostic:<name>; never enters the reward ladder")
     setup = commands.add_parser("setup")
     setup.add_argument("station", nargs="+", choices=[*STATIONS, "infra"])
     lock = commands.add_parser("lock")

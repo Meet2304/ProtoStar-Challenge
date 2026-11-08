@@ -204,28 +204,50 @@ def candidates(runs=RUNS, official_only=True):
     return [p for _, p in sorted(found)]
 
 
-def ladder(runs=RUNS, samples=SAMPLES, seed=SEED, official_only=True) -> dict:
-    """Replay every eligible run in time order. Starts from the 30-year-average control (reward 0)."""
-    paths = candidates(runs, official_only)
-    loaded = [Run(p) for p in paths]
+DIAGNOSTIC_PREFIX = "diagnostic:"
+
+
+def run_role(name: str) -> str:
+    """Role declared by the sealed run name (chosen before scoring, so it cannot be set after seeing results).
+
+    ``diagnostic:<name>`` marks a pre-declared ablation or probe: it is scored, labelled and reported like any
+    run (it can still be official) but never enters the champion ladder. ``control:`` names are the panel.
+    """
+    name = str(name or "")
+    if name.startswith(DIAGNOSTIC_PREFIX):
+        return "diagnostic"
+    if name.startswith("control:"):
+        return "control"
+    return "candidate"
+
+
+def replay(loaded, samples=SAMPLES, seed=SEED) -> dict:
+    """Ladder over loaded runs (oldest first). Diagnostic runs are compared for information, never promoted."""
     starts = [r for r in loaded if r.name == "control:average30"]
     if not starts:
         raise RewardError("no official control:average30 run on the locked suite; run the controls first")
     champion, history = starts[0], []
     for run in loaded:
         row = summary(run)
+        row["role"] = run_role(run.name)
         if run is champion:
             row.update(verdict="start", champion=champion.path.name)
         else:
             result = compare(run, champion, samples, seed)
-            row.update(verdict=result["verdict"], champion=champion.path.name,
-                       delta_points=result["final"]["delta_points"], p_better=result["final"]["p_better"],
-                       origin_wins=result["origin_wins"])
-            if result["verdict"] == "promote":
+            diagnostic = row["role"] == "diagnostic"
+            row.update(verdict=f"diagnostic ({result['verdict']})" if diagnostic else result["verdict"],
+                       champion=champion.path.name, delta_points=result["final"]["delta_points"],
+                       p_better=result["final"]["p_better"], origin_wins=result["origin_wins"])
+            if result["verdict"] == "promote" and not diagnostic:
                 champion = run
         history.append(row)
     return {"reward_version": REWARD_VERSION, "suite_id": _locked_suite(), "champion": champion.path.name,
             "champion_model": champion.name, "champion_reward": summary(champion)["reward"], "history": history}
+
+
+def ladder(runs=RUNS, samples=SAMPLES, seed=SEED, official_only=True) -> dict:
+    """Replay every eligible run in time order. Starts from the 30-year-average control (reward 0)."""
+    return replay([Run(p) for p in candidates(runs, official_only)], samples, seed)
 
 
 def current_champion(runs=RUNS) -> Path:
@@ -293,7 +315,9 @@ def main(argv=None):
     result = None if against.resolve() == run.path.resolve() else compare(run, Run(against), args.samples)
     score_out = summary(run)
     label, reasons = _classifier()(run.meta)
-    score_out.update(label=label, label_reasons=reasons, can_become_champion=label == "official")
+    role = run_role(run.name)
+    score_out.update(label=label, label_reasons=reasons, role=role,
+                     can_become_champion=label == "official" and role != "diagnostic")
     if args.json:
         print(json.dumps({"score": score_out, "comparison": result}, indent=2))
     else:
@@ -301,6 +325,9 @@ def main(argv=None):
         if label != "official":
             print(f"  LABEL: {label.upper()} ({'; '.join(reasons)}). The verdict is informative only: "
                   "this run cannot become champion.")
+        elif role == "diagnostic":
+            print("  ROLE: DIAGNOSTIC (declared in its sealed name). Official and reported, but outside the "
+                  "ladder: the verdict is informative only and this run cannot become champion.")
     return 0
 
 
