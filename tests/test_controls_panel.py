@@ -304,6 +304,8 @@ class PanelAndTrackingTests(unittest.TestCase):
             self.assertEqual(run.data.tags["role"], "control")
             self.assertEqual(run.data.tags[tracking.COMPLETE_TAG], "true")
             self.assertIn("headline_final_raw_skill", run.data.metrics)
+            self.assertEqual(run.data.params["control_set"], meta["control_set"])
+            self.assertIn("scorecard.csv", {a.path for a in client.list_artifacts(first)})
             # A partial mirror (crash before the completion tag) is replaced on retry.
             other = Path(self.panel["entries"]["trend30"]["run_dir"])
             other_meta = read_json(other / "run.json")
@@ -325,10 +327,11 @@ class PanelAndTrackingTests(unittest.TestCase):
         self.assertIsNone(tracking.try_log_run(Path(self.temp.name) / "missing-run", echo=lambda *_: None))
 
 
-SUITE_V3 = ROOT / "outputs/evaluation/suite-v3"
+from evaluation.defaults import DEFAULT_SUITE as SUITE_V3
 
 
-@unittest.skipUnless((SUITE_V3 / "manifest.json").is_file(), "local suite-v3 not present")
+@unittest.skipUnless(os.environ.get("PROTOSTAR_RUN_REAL_DATA_TESTS") == "1" and (SUITE_V3 / "manifest.json").is_file(),
+                     "real-suite tests require explicit PROTOSTAR_RUN_REAL_DATA_TESTS=1; may hash reserved labels")
 class RealSuiteTests(unittest.TestCase):
     """On the real suite-v3 development origins: references match the prebuilt baselines within
     1e-6, and average30 scores |skill| < 1e-9 with the official scorer. Writes only to a temp dir."""

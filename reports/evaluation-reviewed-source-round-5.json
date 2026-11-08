@@ -124,6 +124,7 @@
     "freeze_without_assessment": "outputs/evaluation/freezes/nested-v5-review.json"
   },
   "submission_sha256": "2c9b61dae823ce2e576cdbef685e5e6c54b0ad2deee11c15ee654ce885ce4091",
-  "real_assessment_access_count": 0,
-  "scope": "Integrated committed evaluator including controls/panel/scorecard/MLflow and their adapter allowlist. Notebook training source remains user-owned, outside reviewed core; unrelated workspace edits are recorded in each run."
+  "scope": "Integrated committed evaluator including controls/panel/scorecard/MLflow and their adapter allowlist. Notebook training source remains user-owned, outside reviewed core; unrelated workspace edits are recorded in each run.",
+  "assessment_phase_access_count": 0,
+  "protected_read_disclosure": "Default local test discovery before the opt-in guard could compute published practice CDD errors over 2011-2018 and hash protected suite artifacts. These accesses were not represented by assessment-phase counters; see reports/evaluation-protected-read-disclosure.md."
 }

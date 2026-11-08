@@ -51,7 +51,7 @@ Use `evaluation/no-assets.json` only for a model that reads no additional files.
 For saved weights, settings or extra inputs, supply your own [asset manifest](ASSETS.md).
 
 Training elsewhere, such as Colab? Use each development fold's `train.csv` and
-`targets.csv` under `outputs/evaluation/suite-v3/origin-YEAR/`. Return
+`targets.csv` under `outputs/evaluation/suite-v3-r5/origin-YEAR/`. Return
 `origin-1983.csv`, `origin-1990.csv` and `origin-1997.csv` in one directory:
 
 ```bash

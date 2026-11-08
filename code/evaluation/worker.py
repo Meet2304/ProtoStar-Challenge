@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from common import assert_no_post_cutoff
 from evaluation.assets import verify_asset_binding
 from evaluation.runtime_audit import RuntimeAudit
+from evaluation.audit_transport import child_sender
 
 
 def main():
@@ -31,14 +32,17 @@ def main():
     parser.add_argument("--asset-root")
     parser.add_argument("--asset-binding")
     parser.add_argument("--runtime-context", required=True)
+    parser.add_argument("--audit-fd", type=int)
+    parser.add_argument("--audit-handle", type=int)
     args = parser.parse_args()
     context = json.loads(Path(args.runtime_context).read_text(encoding="utf-8"))
     supplied = [args.train, args.targets, args.params, args.runtime_context]
     if args.asset_binding:
         supplied.append(args.asset_binding)
-    audit = RuntimeAudit(context, input_files=supplied)
-    audit.install()
+    sender = child_sender(args.audit_fd, args.audit_handle)
+    audit = RuntimeAudit(context, input_files=supplied, sender=sender)
     try:
+        audit.install()
         binding = json.loads(Path(args.asset_binding).read_text(encoding="utf-8")) if args.asset_binding else None
         if binding is not None and args.asset_root:
             audit.assets.update((Path(args.asset_root) / name).resolve()
@@ -47,7 +51,11 @@ def main():
     finally:
         # Run before returning to the parent, including import/callback failures.
         # A swallowed PermissionError still fails this final audit before scoring.
-        audit.finalize()
+        try:
+            audit.finalize()
+        finally:
+            if sender is not None:
+                sender.close()
 
 
 def _run(args, binding):

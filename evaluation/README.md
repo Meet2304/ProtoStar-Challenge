@@ -27,13 +27,13 @@ server is needed. Share the complete report folder, including its copied `metada
 adding runs. All commands accept `--help`.
 
 `prepare` is a once-per-suite step and refuses to overwrite a suite. The local
-workspace already has `suite-v3`, so use `verify` when resuming:
+workspace already has `suite-v3-r5`, so use `verify` when resuming:
 
 ```bash
 uv run python code/evaluate.py verify
 ```
 
-The default is `outputs/evaluation/suite-v3`. Schema-1/2 suites and their saved
+The default is `outputs/evaluation/suite-v3-r5`. Schema-1/2 suites and their saved
 records remain archives; new runs and freezes against them are rejected. Build
 a new schema-3 suite. Legacy records remain in separately labelled report groups.
 
@@ -281,7 +281,7 @@ Assessment verifies the freeze against the CURRENT committed source and
 requested model. Changed parameters, code, original imported predictions,
 suite or seed fail before evaluation. Freeze records refuse overwrite. Every
 assessment attempt that passes the gate creates an immutable access event
-under `suite-v3/assessment_access/`, including retries; completed runs retain a
+under `suite-v3-r5/assessment_access/`, including retries; completed runs retain a
 copy of the freeze. This is an audit trail, not proof that nobody opened labels
 manually. A new freeze cannot erase earlier exposure.
 
@@ -331,7 +331,7 @@ no bootstrap range is emitted; inspect the two period differences directly.
 
 ```text
 outputs/evaluation/
-  suite-v3/
+  suite-v3-r5/
     manifest.json
     origin-YEAR/{train.csv,targets.csv,baselines/}
     origin-YEAR/private/{answer_key.csv,reference_mae.csv}
@@ -440,7 +440,7 @@ key or an official leaderboard position. See the Opus review and
 
 ## Runtime checks and development sensitivities
 
-Protocol `audited-inputs-v5` installs a Python file-open tripwire before adapter
+Protocol `parent-audited-v6` installs a Python file-open tripwire before adapter
 import. Supplied history/targets/parameters and declared immutable assets are
 readable; undeclared project files, suite labels and other evaluation outputs
 are denied by the supported Python/Arrow paths. Ordinary Parquet, Arrow CSV,
@@ -507,3 +507,41 @@ verified evidence to MLflow when available, and refreshes the local HTML report.
 The gates are team screening criteria, not official judging rules or independent
 validation. Controls and incumbents retain separate roles. Extra model dependencies
 need their own asset manifest. No challenge submission is made.
+
+## Parent receipts, trial counts and exposure limits
+
+The worker sends events immediately over an inherited local pipe. The parent
+writes canonical `runtime_receipt.json`, `io_audit.json` and `imported_source.json`
+after the worker exits; model-written copies cannot erase events already
+received. Missing, duplicate, malformed or failed final reports fail the run.
+This improves accident detection and ordinary output-file forgery resistance;
+it is not cryptographic attestation of hostile code in the same interpreter.
+
+Supported paths include the tested Arrow top-level and public Parquet core
+readers, ParquetDataset, ORC, subtree filesystems, fragments and writer
+constructors, plus Python shutil copy, SQLite connection and file-mutation
+events. This is a tested API list, not exhaustive coverage of every extension.
+Unlisted native/internal APIs, existing descriptors, restored functions or
+interpreter manipulation may bypass it. Subprocess launches are refused.
+
+Each run/report shows observed external and non-package environment reads.
+Only the listed CPU-limit probes are pre-approved. A development run with other
+external inputs cannot be frozen through `--from-run`; assessment execution
+also refuses them before scoring. Move legitimate inputs into a declared asset
+manifest and rerun. Environment package binaries are not attested by versions.
+
+The gate summary prints known candidate attempts separately from controls and
+incumbents, including failed/running attempts in that suite. Passing a heuristic
+after repeated attempts is weak evidence; it is not a multiple-comparison
+corrected statistical test. Deleted/unshared experiments remain unknown.
+
+Assessment-phase counts combine available access records by target city-years
+across suites and protocol versions. New suite names cannot reset known
+exposure. Counts remain lower bounds, not evidence that nobody read labels: raw
+cache reads, manual inspection and real-data tests are outside those counters.
+See [the historical test-read disclosure](../reports/evaluation-protected-read-disclosure.md).
+
+Default test discovery uses synthetic data and explicitly skips real-data
+classes even when the raw cache is present. `PROTOSTAR_RUN_REAL_DATA_TESTS=1`
+opts into tests that may read reserved years; it is not permission to use their
+results for model selection. Routine CI and audit reviews leave it unset.
