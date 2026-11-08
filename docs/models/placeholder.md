@@ -134,3 +134,31 @@ and does not show that 45 years is the right window, only that 30 years did not 
 
 Move to `features-v1` as soon as it is released, one change group at a time. `gbm`-only and the strictness of the gate
 remain candidates, one change group each.
+
+## Placeholder_v0.1_clean (2026-11-08)
+
+**Status: selection in progress.** The first version of the series to train on cleaned history, from the per-origin release
+`clean-v1` (gate-eligible). Built on `Placeholder_v0.1`, the kept version.
+
+| | |
+|---|---|
+| Change | One change group: the tables behind every feature and shift target come from `origin-YYYY/annual_clean.parquet`, one series per metric through the `inputs` parameter. The anchor `ref30` and the inner-fold scoring stay on the official labels, because those are what is scored and lambda 0 must stay the reference. With every metric on `official` this is v0.1 (tested) |
+| Files | `notebooks/Meet/placeholder_v0_1_clean.py`, `placeholder-v0.1-clean-assets.json`, `placeholder-v0.1-clean-{qc,homog,fill}.json`, `test_placeholder_v0_1_clean.py` (all in `notebooks/Meet/`) |
+| Data | `clean-v1/origin-YYYY/annual_clean.parquet`, one file per origin, each built only from data up to that origin. Declared as `weather_input` per origin |
+
+**Caveat.** Inner folds use the cleaned series of their outer origin, so the cleaning behind an inner fold saw years up to that
+outer origin, not just up to the inner one. Nothing passes the outer origin, so the run stays inside the data rule, but the gate
+may slightly favour cleaned inputs.
+
+**Selection rule, fixed before any run.** `clean-v0`'s picks came from backtests through 2018 and are not reused.
+
+1. Run three recipes on suite-v3 development origins 1983, 1990 and 1997, and read no other origin:
+   `qc` (all four metrics on QC values), `homog` (station-adjusted temperature metrics and CDD, QC precipitation) and `fill`
+   (filled and station-adjusted temperature and CDD, filled precipitation, station-adjusted hottest day).
+2. Per metric, take the series with the highest equal-origin mean final skill. Keep it only if it beats that metric's skill in
+   the sealed v0.1 run `20261108T111421Z-b7a95baa04` by at least 0.002. Otherwise the metric stays on `official`.
+3. If the per-metric picks are not one of the three recipes, run that combination once. That is the fourth and last run.
+4. Apply the series keep rule (`docs/plans/placeholder-improvement-plan.md`, section 1) against v0.1: headline higher, and either
+   a higher 1997 final skill if a shift applied at 1997, or a win on at least 2 of 3 origins if lambda is 0 there in both.
+
+The development years have been seen several times, so a pick here is reused evidence, not an independent test.

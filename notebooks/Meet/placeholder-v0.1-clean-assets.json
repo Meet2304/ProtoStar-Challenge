@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "files": [
+    {
+      "path": "data/city_info.csv",
+      "kind": "static_context"
+    },
+    {
+      "path": "data/processed/releases/clean-v1/origin-1983/annual_clean.parquet",
+      "kind": "weather_input",
+      "information_end_year": 1983,
+      "origins": [
+        1983
+      ],
+      "time_column": "year",
+      "time_format": "year"
+    },
+    {
+      "path": "data/processed/releases/clean-v1/origin-1990/annual_clean.parquet",
+      "kind": "weather_input",
+      "information_end_year": 1990,
+      "origins": [
+        1990
+      ],
+      "time_column": "year",
+      "time_format": "year"
+    },
+    {
+      "path": "data/processed/releases/clean-v1/origin-1997/annual_clean.parquet",
+      "kind": "weather_input",
+      "information_end_year": 1997,
+      "origins": [
+        1997
+      ],
+      "time_column": "year",
+      "time_format": "year"
+    },
+    {
+      "path": "data/processed/releases/clean-v1/origin-2004/annual_clean.parquet",
+      "kind": "weather_input",
+      "information_end_year": 2004,
+      "origins": [
+        2004
+      ],
+      "time_column": "year",
+      "time_format": "year"
+    },
+    {
+      "path": "data/processed/releases/clean-v1/origin-2011/annual_clean.parquet",
+      "kind": "weather_input",
+      "information_end_year": 2011,
+      "origins": [
+        2011
+      ],
+      "time_column": "year",
+      "time_format": "year"
+    }
+  ]
+}

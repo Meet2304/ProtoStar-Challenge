@@ -1,0 +1,8 @@
+{
+  "inputs": {
+    "annual_avg_temp": "fill_homog",
+    "total_precip_in": "fill",
+    "hottest_day_temp": "homog",
+    "cdd": "fill_homog"
+  }
+}
