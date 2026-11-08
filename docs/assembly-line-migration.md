@@ -51,7 +51,7 @@ Finish your current step first. Never interrupt a harness run in progress.
 7. **clean only:** register the existing cleaned data as version 0. It is marked not gate-eligible, because its QC used the
    full record through 2018:
    ```bash
-   uv run python scripts/line.py adopt clean "D:\Projects_Ad Astra\Project_27_ProtoStar Challenge\ProtoStar-Challenge\data\processed\meet" --note "Cleaning output before the assembly line"
+   uv run python scripts/line.py adopt clean "<a folder holding only your final cleaned output, without older runs>" --note "Cleaning output before the assembly line"
    ```
    A warning that it is not on MLflow yet is fine.
 8. Run `uv run python scripts/line.py status --offline` and `uv run python scripts/line.py migration`. Every file you moved
