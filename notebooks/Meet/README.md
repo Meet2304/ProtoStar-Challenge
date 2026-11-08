@@ -9,7 +9,7 @@ Exploration space for Meet. See [`../README.md`](../README.md) for the shared ru
 | [`plan/cleaning-plan.md`](plan/cleaning-plan.md) | The reviewed cleaning plan for all four subsets (final, v4) and its four review rounds in [`plan/reviews/`](plan/reviews/) (Sol and Grok; final 95 and 97). Implemented as `scripts/02_clean_data.py`; documented in [`../../documentation/`](../../documentation/README.md). Notebook 02 and `meet_cleaning.py` are the earlier v0 exploration of `daily` and `annual_indices`. |
 
 - **Locally:** run from this folder or the repo root with the project environment (`uv sync`, then pick the `.venv` kernel).
-- **On Colab:** open the notebook and run all cells. The first cell clones the repo (branch `Meet/clean`, else the
+- **On Colab:** open the notebook and run all cells. The first cell clones the repo (branch `Meet_Exploration`, else the
   default branch) to `/content/ProtoStar-Challenge`. Colab only sees what is pushed to GitHub.
 - Raw data: read from `data/raw/` if present (`uv run python scripts/01_download_data.py`), otherwise streamed from the
   Hugging Face Hub at the pinned revision (about 50 MB; no upload needed).
