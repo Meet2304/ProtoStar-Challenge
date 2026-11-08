@@ -143,6 +143,23 @@ class AuditTransportTests(unittest.TestCase):
         audit.check_path(target)
         self.assertEqual(messages[0]["event"]["reason"], "environment_nonpackage_path")
 
+    def test_interpreter_zip_probe_is_standard_but_not_writable(self):
+        from evaluation.runtime_audit import RuntimeAudit, RuntimeAuditError
+        environment = self.root / "interpreter"
+        environment.mkdir()
+        target = environment / f"python{sys.version_info.major}{sys.version_info.minor}.zip"
+        messages = []
+        audit = RuntimeAudit({"schema_version": 1, "project_root": str(self.root),
+            "suite_root": str(self.fixture.suite), "own_output": str(self.output),
+            "source_pins": {}, "adapter_file": None, "declared_sources": []}, input_files=[], sender=messages.append)
+        audit.environment = {environment.resolve()}
+        audit.active = True
+        audit.check_path(target)
+        self.assertFalse(messages)
+        with self.assertRaises(RuntimeAuditError):
+            audit.check_path(target, writing=True)
+        self.assertEqual(messages[0]["event"]["reason"], "immutable_interpreter_archive")
+
 
 if __name__ == "__main__":
     unittest.main()

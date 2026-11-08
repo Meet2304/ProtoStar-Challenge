@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "benchmark_id": "protostar-external-v1",
+  "created_utc": "2026-11-08T11:22:40.564046+00:00",
+  "script_sha256": "bc83bad32273e0e038f2228c3b5110f8e9cfd815e62bff18a3dc949d437ccad5",
+  "source_files": {
+    "code/check_submission.py": "b10d2bb354e7406532dfce5cf5057d1af050389496b59d72ce792c92451235a6",
+    "code/combo_model.py": "4d35efd1858e5405d9d2d63783db7f151bce15a94804194cf3143c66ec315e7b",
+    "code/common.py": "9ef821f6fb82a02d304b0f5f6f2d65f1aa7c7f0d98eb3c3f5acc7daf8bcd4f3f",
+    "code/evaluate.py": "9d9509a64de0cb65ee55c30e42294924b5ca9e074f92e969f92c1501fbef5cf1",
+    "code/evaluation/__init__.py": "b7cbae1207d784d35bd16f0627bd45a798f652a1b988186a496228b322566352",
+    "code/evaluation/adapters.py": "2be8564374c94bf2236248412e68dea03c5124dd4224a5d0769f206e8c98a24d",
+    "code/evaluation/assets.py": "900ffb084c7297daba23695143bea4de322e5719aa610c3fbd2b07ec5907dc2a",
+    "code/evaluation/audit_transport.py": "d62c7cbeb004b29cc015f43e01fa0bea7e33a12c938a67385b6223c85e8f9f19",
+    "code/evaluation/controls.py": "9f8fa95e33ba0e9037c169dcb75d2786a6d5b1ef40942aa0ededefb847e83755",
+    "code/evaluation/core.py": "c00bbe942ffb478a8f39f0fc99a2f4ae3986b7952ab4bf8019650e48f54b10db",
+    "code/evaluation/defaults.py": "0431c79e1c463b9d652addf3ff6b9641a4be23722b395f9a607cf496fcfeb3f8",
+    "code/evaluation/diagnostic_bundle.py": "7ee3b9810b1c2fdcdd2ea63c89fff6104fcac611b687eaacd3696fc0059c1aca",
+    "code/evaluation/exposure.py": "7ac1f25855c5089f6ee83cd14432e7df44e9fe9f62772bc14443abb65ae09b70",
+    "code/evaluation/input_review.py": "a71f955c1a3dbf6a995760a42d78af4c4859a81324312dbef1a779b4f1d818aa",
+    "code/evaluation/native_io.py": "6ebd8cfcff237bdfc3e58aee062d6b558344bdf6dc36c53bde7e437197feac86",
+    "code/evaluation/nested.py": "2f64bea5a6a218bd90d010832f41c8f50518b7dfdd4efaa4878a25129e8b2b16",
+    "code/evaluation/official_score.py": "a610f9bf4787c035fc711c473beaf37549bcbbce3470b3c34fcfb9621393163a",
+    "code/evaluation/panel.py": "303377358defd1716e7f6f403b3f9974f8faa791b096250a18033523a79468db",
+    "code/evaluation/phase_policy.py": "73e2273dba40bdcf3a3a14ea53d80866012fad1186e759a543bf673140b2ecc7",
+    "code/evaluation/protocol.py": "02cf4aadde7d2da71296c117298326094f37d4f16a4a26cd3a207cec8831725a",
+    "code/evaluation/quality_diagnostics.py": "5c551c9a7508f15a022f5730121dfb1d0ad4a6ca2bd5da146cde277a935edb4c",
+    "code/evaluation/report.py": "e80893178ead2727291ead3493c3acace29904c339cde10098c76d9498eec9cf",
+    "code/evaluation/runtime_audit.py": "c23991a50c0b91d420b7cebbb892a5e43ef1b1c29f7eb9938baac444a79307be",
+    "code/evaluation/scorecard.py": "55d451b9236904736f309d89c58433d5a99451c4ad00409d3a6cc344b414bf7e",
+    "code/evaluation/suite_identity.py": "87f342a09e38931f750c2a914af6af87b35cdbf889c0c46c8cfea425b2add113",
+    "code/evaluation/tracking.py": "c3d13edd2241e5fcf1fe4fd77ccc3d86193759257627ef0fb41d15f4e2a20813",
+    "code/evaluation/trials.py": "edf4851b28168768638330d5d3673f846ad16e76f1ae954aeb41776c10a604fb",
+    "code/evaluation/worker.py": "52c8af8b473a99607dd68ce37f94ab2f938b96c69d40a9b661d7787f3d6b8f9d",
+    "code/prepare_data.py": "6934418b0d04da91dc0996f4a6209b1bf567e9da1be6a1d815605d08d5d48978",
+    "code/requirements.txt": "549cceecf8d811e5558a34ccc97b5fc5f117216dcf9688812e89028f20a68c9e",
+    "code/starter_model.py": "31360c71f32ed3fc0e1f0fc640b6edeea7d9cc6c5dae18866380b1b3b899f539",
+    "pyproject.toml": "5810512d90f9e7cd4f5bbb19918b0c4b1413d1c1b2229f62b27b8c614a92c9c1",
+    "requirements.txt": "9cdf78ed36a6b1ae0559c582f9b7762e850f35eb11ca2822fdeb241a7aef0824",
+    "src/protostar_challenge/__init__.py": "e29ac4f2fe9d7814f73b3aede61934a555b4f55edf935a24c8f42a5d4af3c1a8",
+    "src/protostar_challenge/cleaning.py": "89c854daf9eab77df341416eae61f116926c8d73e9cba4a07b7aa017a2651a22",
+    "src/protostar_challenge/config.py": "0b865c5db20089a6f89014138a32d66a0e0a5c1a0924edee40a3d659ff3bdc99",
+    "uv.lock": "2c5b30a366152f250ae7e0787e8f6a6598d2fcc34df8eef7e3093fc4cfbd2ae4"
+  },
+  "source_hash": "9e5767184eae3f975a5c74986ec8d223ba66c7a68ed149ffa26c6369c569ba2b",
+  "metadata_only_before_selection": true,
+  "team_history_confirmation": {
+    "statement": "Only the challenge dataset so far",
+    "provided_by": "user in evaluation thread on 2026-11-08",
+    "scope": "No weather stations outside the challenge dataset used by the team; station exclusion still covers all listed IDs, names and a 100km buffer"
+  },
+  "design": {
+    "version": "protostar-external-v1",
+    "start": "1950-01-01",
+    "end": "2018-12-31",
+    "units": "standard: Fahrenheit and inches",
+    "data_types": [
+      "TMAX",
+      "TMIN",
+      "PRCP"
+    ],
+    "selection": "SHA256(protostar-external-v1|station_id), first four in each stratum",
+    "conus_bounds": [
+      25,
+      49,
+      -125,
+      -67
+    ],
+    "latitude_split": 37,
+    "longitude_splits": [
+      -104,
+      -87
+    ],
+    "distance_km_min": 100,
+    "inventory": "each of TMAX,TMIN,PRCP begins by 1950 and ends no earlier than 2018",
+    "annual_avg_temp": "(mean(valid TMAX) + mean(valid TMIN))/2; published-definition approximation",
+    "cdd": "sum(max((TMAX+TMIN)/2 - 65 F, 0)) over paired valid days",
+    "quality": "nonempty QFLAG invalid; temperature outside [-130,140] F invalid; negative PRCP invalid; TMAX<TMIN invalidates both",
+    "trace": "PRCP measurement flag T with numeric zero is valid; count recorded",
+    "missing": "full calendar reindex; totals require at least one valid day",
+    "station_history": "one station ID; physical moves/changes unknown; segment/change fields null",
+    "eligibility": {
+      "baseline_1982_2011": 20,
+      "target_2012_2018": 6,
+      "live_2012_2014": 2,
+      "final_2015_2018": 3,
+      "metric_validity": "official per-variable missing counts <=10 and finite value"
+    },
+    "minimum_benchmark": {
+      "stations": 12,
+      "strata": 4
+    },
+    "limitation": "Current archive QC and revisions; single-station aggregation is not the challenge city composite. Supplementary geographic generalization, never private-answer-key validation or rank."
+  },
+  "assessment_origin": 2011,
+  "development_origin_for_suite_contract_only": 1990,
+  "primary_method": {
+    "id": "nested",
+    "adapter": "evaluation.nested:forecast",
+    "params": {}
+  },
+  "secondary_methods": [
+    {
+      "id": "average30",
+      "adapter": "evaluation.controls:forecast",
+      "params": {
+        "method": "average30"
+      }
+    },
+    {
+      "id": "persistence",
+      "adapter": "evaluation.controls:forecast",
+      "params": {
+        "method": "persistence"
+      }
+    },
+    {
+      "id": "trend30",
+      "adapter": "evaluation.controls:forecast",
+      "params": {
+        "method": "trend30"
+      }
+    },
+    {
+      "id": "mean10",
+      "adapter": "evaluation.controls:forecast",
+      "params": {
+        "method": "mean10"
+      }
+    },
+    {
+      "id": "blend",
+      "adapter": "evaluation.controls:forecast",
+      "params": {
+        "method": "blend"
+      }
+    },
+    {
+      "id": "ridge_pooled",
+      "adapter": "evaluation.controls:forecast",
+      "params": {
+        "method": "ridge_pooled"
+      }
+    },
+    {
+      "id": "starter_rf",
+      "adapter": "evaluation.controls:forecast",
+      "params": {
+        "method": "starter_rf"
+      }
+    },
+    {
+      "id": "combo",
+      "adapter": "evaluation.adapters:combo",
+      "params": {}
+    }
+  ],
+  "analysis_rules": [
+    "No model, hyperparameter or station replacement selected from new holdout scores.",
+    "Report every preregistered method, exclusions and failures; primary result is nested irrespective of sign.",
+    "Do not alter submission.csv or retrain the official 2019-2025 entry from holdout results.",
+    "New station labels supplement geographic validation only; historical challenge-city evidence remains reused.",
+    "2012-2018 new-station targets are opened only after this source/selection protocol is frozen; after first opening they are no longer untouched.",
+    "All observation requests must end at2018-12-31; no full-history station files/tarballs permitted.",
+    "Current-archive QC/revisions, regional dependence, station movement uncertainty and station-versus-city aggregation remain limitations."
+  ]
+}

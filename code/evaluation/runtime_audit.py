@@ -126,6 +126,12 @@ class RuntimeAudit:
             lower_parts = {part.casefold() for part in path.parts}
             package = bool(lower_parts & {"site-packages", "dist-packages"})
             standard = path.suffix.casefold() in {".py", ".pyc", ".pyd", ".so", ".dll"}
+            interpreter_zip = any(path == root / f"python{sys.version_info.major}{sys.version_info.minor}.zip"
+                                  for root in self.environment)
+            if interpreter_zip and writing:
+                self._record(path, "write", "deny", "immutable_interpreter_archive")
+                raise RuntimeAuditError("worker blocked modification of interpreter archive")
+            standard = standard or interpreter_zip
             if package or standard:
                 return
             decision, reason = "allow", "environment_nonpackage_path"
