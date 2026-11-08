@@ -56,6 +56,17 @@ data reaches 2019 or has an unknown cutoff, and every value must come from code.
   Since main `14bf1ef` (merged into wt/train at `0a5e6fc`), `line.lock.json` sets `enhance: enhance-v2`, and
   `code/enhance_ocean.py` provides `load_ocean_for_origin(release, origin, frequency="monthly")`, which verifies hashes
   and the fold cutoff; adapters should load ocean indices through it rather than reading the CSVs directly.
+- **Combined feature tables (from the features station, 2026-11-08).** `features-v5` (not gate-eligible: includes
+  enhance-v2) and its gate-eligible twin `features-v4` (identical but without the nine ocean SST columns), both pulled to
+  `data/processed/releases/features-v{4,5}/`. One table per development origin, `origin-{1983,1990,1997}-combined.parquet`
+  (one row per city and year up to the origin, 142 columns in v5): the four official values, lat/lon, CDD and day-band
+  features, seasonal trends, station-change and missing-day history, similar-city pooled trends, the cleaning station's
+  `*_qc/_fill/_homog/_nbfill/_adj` values, cleaned city facts, and (v5 only) ocean SSTs. Row t is what was known at the
+  end of year t; pair row t's features with row t+h's target. Declare with the release's `assets-template.json` and read
+  only the fold's own origin file through `PROTOSTAR_ASSET_ROOT`. Caveat: the adjusted columns were fitted on all data
+  up to each origin, so inside a fold they have seen years after an inner pseudo-origin; inner validation must not rely
+  on them as if they were causal at the pseudo-origin. **Rule for this round:** any version that must stay `official`
+  (and so can become champion) uses `features-v4` or no feature release; `features-v5` is for exploratory variants only.
 - Each fold must train only on years <= its origin. Inner validation (choosing hyperparameters) must use pseudo-origins
   earlier than the outer origin. The harness timeout is 900 s per origin by default.
 - Hardware: 16 logical CPU cores, 15 GB RAM, RTX 3050 Ti laptop GPU (4 GB). Python 3.13 with numpy 2.5, pandas 3.1,
