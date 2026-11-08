@@ -1,6 +1,7 @@
 # 09 — Per-origin cleaning
 
-This is release `clean-v1`, the line's current cleaned dataset. `clean-v0` cleans the whole record through 2018 at once. It is fine for exploration, but a backtest at origin 1983
+This is release `clean-v1`. Its weather tables are carried unchanged in `clean-v2`, the line's current cleaned dataset
+([page 10](10-enhanced.md)). `clean-v0` cleans the whole record through 2018 at once. It is fine for exploration, but a backtest at origin 1983
 would train on data whose thresholds, outliers and station adjustments were fitted with 1984–2018 in view. The
 per-origin build fixes that: one complete cleaned dataset for each forecast origin in `evaluation/config.json`
 (1983, 1990, 1997 and the sealed 2004 and 2011), each built from data up to 31 December of that origin only.

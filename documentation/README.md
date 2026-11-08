@@ -17,7 +17,8 @@ uv run python -m unittest tests.test_cleaning  # 17 acceptance tests on syntheti
 
 | Release | Built by | Use it for |
 |---|---|---|
-| **`clean-v1`** (current, gate-eligible) | `scripts/03_clean_per_origin.py`: one dataset per forecast origin, each from data up to that origin ([page 09](09-per-origin.md)) | everything scored on the assembly line: fetch it with `line.py pull`, read `data/processed/releases/clean-v1/origin-YYYY/` |
+| **`clean-v2`** (current, gate-eligible) | `scripts/04_clean_enhanced.py`: `clean-v1`'s per-origin weather tables unchanged, plus the cleaned city facts from the enhanced dataset ([page 10](10-enhanced.md)) | everything scored on the assembly line: fetch it with `line.py pull`, read `data/processed/releases/clean-v2/origin-YYYY/` and `static/city_static_clean.csv` |
+| `clean-v1` (gate-eligible) | `scripts/03_clean_per_origin.py`: one dataset per forecast origin, each from data up to that origin ([page 09](09-per-origin.md)) | the same weather tables as `clean-v2`; runs that already cite it stay valid |
 | `clean-v0` (not gate-eligible) | `scripts/02_clean_data.py`: the whole record through 2018 at once | exploration only: thresholds, outliers and station steps were fitted with later years in view, so runs on it are `exploratory` |
 
 Pages 01–07 describe the cleaning steps, which are the same in both. Where they say "through 2018", "the end year" or
@@ -36,6 +37,7 @@ Pages 01–07 describe the cleaning steps, which are the same in both. Where the
 | [07 — outputs](07-outputs.md) | `data/processed/` | every output file and column (data dictionary) |
 | [08 — review history](08-review-history.md) | process | the plan's four review rounds with Sol (gpt-6.1-sol) and Grok (grok-4.7), scores and what changed |
 | [09 — per-origin cleaning](09-per-origin.md) | `clean-v1` | one cleaned dataset per forecast origin, built only from data up to that origin |
+| [10 — enhanced inputs](10-enhanced.md) | `clean-v2` | the city facts and ocean indices of `enhance-v2`: checks, flaws, the cleaned city table, the ocean verification |
 
 ## The flaws at a glance
 
