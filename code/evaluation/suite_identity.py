@@ -39,6 +39,7 @@ def preparation_source_pins(root=ROOT):
     root = Path(root)
     names = ("code/common.py", "code/combo_model.py", "code/evaluation/core.py",
              "code/evaluation/adapters.py", "code/evaluation/official_score.py",
+             "code/evaluation/phase_policy.py",
              "code/evaluation/suite_identity.py", "code/requirements.txt", "uv.lock",
              "pyproject.toml", "requirements.txt")
     return {name: normalized_digest(root / name) for name in names}

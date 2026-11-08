@@ -137,3 +137,11 @@ uv run python -m unittest discover -s tests -v
 
 The tests use synthetic data/local Git fixtures. LFS checks never fetch remote
 objects, and the examples do not use observed weather after 2018.
+
+Common misclassification checks also inspect TSV, gzip CSV/TSV and Feather/Arrow
+file schemas. Wide tables with four-digit year columns and long year/metric/value
+tables require weather handling. Long structural census rows with explicit
+population columns remain permitted; ambiguous wide structural tables should be
+reshaped to explicit named columns. Convert temporal weather inputs to the
+supported CSV/Parquet formats for timestamp validation. Schema checks cannot
+prove the semantic independence of arbitrary renamed values.

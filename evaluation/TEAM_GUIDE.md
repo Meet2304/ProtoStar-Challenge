@@ -36,11 +36,12 @@ city_id,year,metric,predicted_value
 ```
 
 ```bash
-uv run python code/evaluate.py run --name my-model-v1 --adapter code/my_model.py:forecast --assets evaluation/no-assets.json
-uv run python code/evaluate.py report
+uv run python scripts/eval_model.py --name my-model-v1 --adapter code/my_model.py:forecast --assets evaluation/no-assets.json
 ```
 
-Open `outputs/evaluation/report/index.html`. Compare raw final skill, every
+The command builds/reuses standard controls, writes comparisons and scorecards,
+logs to MLflow when available, and refreshes the report. Open
+`outputs/evaluation/report/index.html`. Compare raw final skill, every
 metric, and the individual historical periods against the baselines. Negative
 skill means worse than the thirty-year-average baseline. Keep each experiment's
 run ID, parameters and source. Run `uv run python code/evaluate.py diagnose --run outputs/evaluation/runs/RUN_ID` for station, CDD and precision sensitivities. To try the supplied nested-selection example,
@@ -89,8 +90,8 @@ registered teammate submits the chosen dataset commit on Hugging Face.
 
 The published scoring arithmetic is verified, and loader guards, file-read tripwires, imported-helper checks, full-grid
 checks, deterministic run records and regression tests catch several common
-mistakes. This is a trusted-team tool: arbitrary model code can still bypass
-supported data loaders, so review every model's input sources.
+mistakes. This is a trusted-team tool: Python and ordinary Arrow reads plus network attempts are checked, but hostile
+native code or interpreter manipulation can bypass these tripwires, so review every model's input sources.
 
 Historical performance is evidence for comparing methods, not an exact
 leaderboard prediction. These historical periods have already influenced team

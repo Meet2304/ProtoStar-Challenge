@@ -24,7 +24,7 @@ class WorkerRuntimeAuditTests(unittest.TestCase):
         self.base = Path(self.temp.name)
         self.root = self.base / "project"
         for name in ("common.py", "evaluation/__init__.py", "evaluation/assets.py",
-                     "evaluation/runtime_audit.py", "evaluation/worker.py"):
+                     "evaluation/runtime_audit.py", "evaluation/native_io.py", "evaluation/worker.py"):
             destination = self.root / "code" / name
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(PROJECT / "code" / name, destination)
@@ -129,12 +129,17 @@ class WorkerRuntimeAuditTests(unittest.TestCase):
         helper = self.adapter.with_name("helper.py")
         helper.write_text("LEVEL = 1.0\n")
         source = "import helper\ndef forecast(train, targets, origin, seed):\n    return targets.assign(predicted_value=helper.LEVEL)\n"
-        _, imports, _ = self.run_worker(source)
-        self.assertTrue(any(item["module"] == "helper" and item["status"] == "undeclared"
-                            for item in imports["violations"]))
+        def is_helper(path):
+            path = Path(path)
+            return path == helper.resolve() or (
+                path.parent == helper.resolve().parent / "__pycache__" and path.name.startswith("helper."))
+        io, imports, _ = self.run_worker(source)
+        self.assertTrue(any(event["decision"] == "deny" and is_helper(event["path"])
+                            for event in io["events"]))
         helper.write_text("LEVEL = 123.0\n")
-        _, imports, _ = self.run_worker(source)
-        self.assertTrue(any(item["module"] == "helper" for item in imports["violations"]))
+        io, imports, _ = self.run_worker(source)
+        self.assertTrue(any(event["decision"] == "deny" and is_helper(event["path"])
+                            for event in io["events"]))
 
     def test_declared_helper_hash_allows_import_then_rejects_changed_source(self):
         helper = self.adapter.with_name("helper.py")
