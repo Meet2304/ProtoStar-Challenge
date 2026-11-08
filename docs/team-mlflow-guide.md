@@ -81,7 +81,7 @@ Run in your own terminal so it outlives any agent. The first start asks you to c
 
 ```powershell
 cd "D:\Projects_Ad Astra\Project_27_ProtoStar Challenge\wt\infra"
-uv run python scripts/line.py serve
+uv run --with flask-wtf python scripts/line.py serve
 ```
 
 Add a teammate (the password is shown once, so send it privately):
@@ -90,7 +90,7 @@ Add a teammate (the password is shown once, so send it privately):
 $env:MLFLOW_TRACKING_URI = "http://127.0.0.1:5000"
 $env:MLFLOW_TRACKING_USERNAME = "admin"
 $env:MLFLOW_TRACKING_PASSWORD = "<admin password>"
-uv run python scripts/line.py add-user kohav
+uv run --with flask-wtf python scripts/line.py add-user kohav
 ```
 
 Publish the test set once with `uv run python scripts/line.py publish-suite`, then backfill with

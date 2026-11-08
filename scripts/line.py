@@ -41,6 +41,8 @@ os.environ.setdefault("MLFLOW_HTTP_REQUEST_MAX_RETRIES", "2")  # fail fast if th
 LOCK_PATH = ROOT / "line.lock.json"
 STATIONS = ("clean", "enhance", "features", "train", "eval")
 BRANCH_PREFIX = "Meet/"
+# Only the MLflow server needs Flask-WTF. It stays out of the project so uv.lock, which runs and freezes pin, is unchanged.
+SERVER_COMMAND = "uv run --with flask-wtf python scripts/line.py"
 UPSTREAM = {"features": ("clean", "enhance"), "train": ("features",)}
 EVALUATOR_FILES = ("code/evaluate.py", "code/common.py", *(f"code/evaluation/{name}.py" for name in (
     "core", "protocol", "worker", "runtime_audit", "native_io", "phase_policy", "assets", "suite_identity",
@@ -571,6 +573,10 @@ authorization_function = mlflow.server.auth:authenticate_request_basic_auth
 
 
 def serve(host, port, allowed_hosts):
+    try:
+        import flask_wtf  # noqa: F401
+    except ImportError as exc:
+        raise LineError(f"The login server needs one extra package. Start it with: {SERVER_COMMAND} serve") from exc
     with socket.socket() as probe:
         probe.settimeout(1)
         if probe.connect_ex(("127.0.0.1" if host == "0.0.0.0" else host, port)) == 0:
@@ -755,6 +761,8 @@ def cmd_add_user(args):
     try:
         get_app_client("basic-auth", tracking_uri=mlflow_uri()).create_user(username=args.username, password=password)
     except Exception as exc:
+        if isinstance(exc, ImportError):
+            raise LineError(f"Adding a user needs one extra package. Run: {SERVER_COMMAND} add-user {args.username}") from exc
         if "404" in str(exc):
             raise LineError("The server at this address has no login system. Start it with `line.py serve`.") from exc
         raise
