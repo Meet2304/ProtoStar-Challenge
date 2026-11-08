@@ -296,3 +296,31 @@ combo average (v0.5) halves it. Two follow-ups, one change each, both `official`
 - **v0.9:** v0.5 with the boosted member only (v0.7's change, which helped on v0.3).
 - A damped warming term is the remaining candidate if the 1990 loss has to come down further. It is not run yet: any
   damping chosen now would be chosen after seeing 1990, so it would be fitted to the development years.
+
+## Placeholder_v1.1-v1.3: plan A, graph-local terms (2026-11-08)
+
+Plan: `docs/plans/creative/plan-A-graph.md` (r6.3, approved by Sol 92/100 and Grok 94/100). Adapters
+`notebooks/Meet/placeholder_v1_{1,2,3}.py`, tests `test_placeholder_v1.py` (78 pass), parity with the plan's walk-forward
+script to 0.0 (`docs/plans/creative/analysis/planA_parity.py`). All runs official, suite-v3, eval-v1, commit `ccb92d3`,
+manifest `placeholder-v0.1-assets.json` (coordinates only). Verdicts from `reward.py` against the champion at the time.
+
+| Version | Change | Run | Reward (final pts) | Live pts | 1983 / 1990 / 1997 | Against | Delta, 90% | Verdict |
+|---|---|---|---:|---:|---|---|---|---|
+| v1.1 | average30 + centred city-minus-neighbours local term | `20261108T180344Z-688d14231d` | +1.025 | +1.816 | -0.33 / +2.28 / +1.12 | average30 | +1.025 [+0.37, +1.69] | **promote** |
+| v1.2 | v1.1 + 60-year relative offset | `20261108T180515Z-c2ea877eff` | +1.268 | +2.094 | +0.02 / +2.48 / +1.31 | v1.1 | +0.243 [+0.02, +0.48], 3/3 | **promote (champion)** |
+| v1.3 | v1.1 + national warm increment | `20261108T180633Z-b323d1501d` | +1.720 | +3.128 | -0.37 / +2.43 / +3.11 | v1.2 | +0.452 [+0.12, +0.77], 1/3 | within_noise |
+
+Per metric (final points): v1.2 temperature +1.54, precipitation +0.20, hottest day +0.14, CDD +3.19. v1.3 temperature +4.26,
+precipitation -0.14, hottest day +0.02, CDD +2.74. v1.3's national gap N was -0.04 F (I = 0) at 1983, +0.52 F (I = 0.26 F) at
+1990 and +0.29 F (I = 0.15 F) at 1997.
+
+- **First promotions of the series.** The ladder champion moved from `control:average30` to v1.1 and then to v1.2. Every v0.x
+  version had been `within_noise` (best P 0.84).
+- **v1.3** beats v1.2 on the bootstrap (P 0.99) but wins only 1990 of the three origins, so it fails the 2-of-3 guard. Against
+  average30 it is +1.720 (90% [+0.94, +2.54]) and against v1.1 it would promote (+0.696, 2/3). It goes to the integrator as a
+  disclosed alternative, not a recommendation (plan section 4.3, step 7).
+- **Next under the plan:** v1.2 is champion after v1.3, so the conditional v1.4 (v1.2 + the same frozen increment) runs, after
+  its own pre-1983 walk-forward rows and the KAPPA = 0 check.
+- **Insights for v1.1:** temperature runs 0.64 F too cold (honest headroom +1.46), and the model captures about 0% of the
+  observed shift for temperature and CDD, as expected for a median-zero term. That is the finding v1.3/v1.4 target.
+- **MLflow:** not mirrored, because the server at 127.0.0.1:5000 refused connections. Runs are sealed; `line.py sync` mirrors them.
