@@ -226,3 +226,17 @@ steep (1960s-70s cooling, then 1980s warming) and the final years 1994-1997 incl
 One origin out of three going the wrong way is a real risk for the submission, not noise to explain away. Adaptation (applies
 to later versions only): if v0.4-v0.7 do not reduce the 1990 loss, a version that damps W (for example a slope from a longer
 window blended with the 30-year one, or W gated with its own lambda) is the next candidate.
+
+## Placeholder_v0.4 (2026-11-08)
+
+**Status: not kept.** Built on v0.3. Change: lambda chosen on 15 inner origins (O-21 to O-7), one shared lambda for
+annual_avg_temp, hottest_day_temp and CDD. Files `placeholder_v0_4.py`, `test_placeholder_v0_4.py`. Run
+`20261108T140828Z-f06f18f6a3`, clean commit `f6431b5`.
+
+| Final skill | Headline | 1983 | 1990 | 1997 |
+|---|---:|---:|---:|---:|
+| v0.3 (kept) | +0.0079 | +0.0251 | -0.0386 | +0.0374 |
+| v0.4 | +0.0017 | +0.0108 | -0.0432 | +0.0376 |
+
+Selected lambdas: 0 for every metric at 1983 and 1990, 0.5 for the temperature group at 1997. Headline lower, so not kept.
+The 1990 loss stays with lambda 0, so it comes from the warming term, not from the learners: damping W is the next fix.
