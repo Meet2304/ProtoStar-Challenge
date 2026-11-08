@@ -103,8 +103,34 @@ What these show, and their limits:
   v0.1, whose gate chose lambda 0. So on the one origin with no prior look, the gate gave up real skill. One origin is not
   enough to change the rule; this is an open question for the next versions.
 
+Finished v0.1 runs are reused when the notebook is re-executed; `PLACEHOLDER_RUN_ABLATIONS=1` runs any missing ablation.
+
+## Placeholder_v0.2 (2026-11-08)
+
+**Status: not kept. Placeholder_v0.1 (45-year window) stays the series baseline.**
+
+| | |
+|---|---|
+| Change | One setting: the training window, `TRAIN_YEARS = 30` instead of 45. `notebooks/Meet/test_placeholder_v0_2.py` checks that nothing else differs |
+| Files | `notebooks/Meet/placeholder_v0_2.py`, `placeholder-v0.1-assets.json` (the same asset manifest) |
+| Run | `20261108T130154Z-799a27c056`, labelled `official`, commit `0028950`, suite-v3 `4029caa1...`, protocol `parent-audited-v6`, evaluator `eval-v1` |
+| MLflow | Not mirrored yet: the team server returned 401 (no credentials in this environment). The sealed run is safe; run `line.py sync` once credentials are set |
+
+| | Headline | 1983 | 1990 | 1997 |
+|---|---:|---:|---:|---:|
+| Placeholder_v0.1 (45 years) | -0.0008 | -0.0073 | +0.0050 | 0.0000 |
+| Placeholder_v0.2 (30 years) | -0.0064 | -0.0103 | -0.0090 | 0.0000 |
+
+Final skill by metric: annual_avg_temp -0.0182, total_precip_in 0.0000, hottest_day_temp -0.0008, cdd -0.0068. Gates: G1 fail,
+G2 pass (`mean10` -0.0087), G3 pass, G4 fail.
+
+**Decision, by the pre-declared rule:** keep the 30-year window only if origin 1997's final skill is higher than v0.1's.
+It is not: both are 0.0000, because the gate picked lambda 0 for every metric at 1997 in both versions. So 1997 could not
+test the window here. The shorter window is worse on 1983 and 1990, and the selected lambdas are identical to v0.1's at
+every origin, so the difference comes from the fitted shifts, not the gate. This is one comparison on three reused folds
+and does not show that 45 years is the right window, only that 30 years did not earn a change.
+
 ### Pending
 
-Next: `v0.2`, one pre-declared training-window comparison (recent 30 years against 45), kept only if origin 1997's final
-skill improves. `gbm`-only and the strictness of the gate are candidates after that, one change group each. Finished runs
-are reused when the notebook is re-executed; `PLACEHOLDER_RUN_ABLATIONS=1` runs any missing ablation.
+Move to `features-v1` as soon as it is released, one change group at a time. `gbm`-only and the strictness of the gate
+remain candidates, one change group each.
