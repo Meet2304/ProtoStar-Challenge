@@ -1,0 +1,692 @@
+{
+  "algorithm": {
+    "annual_avg_temp": "(mean(valid TMAX) + mean(valid TMIN))/2; published-definition approximation",
+    "cdd": "sum(max((TMAX+TMIN)/2 - 65 F, 0)) over paired valid days",
+    "conus_bounds": [
+      25,
+      49,
+      -125,
+      -67
+    ],
+    "data_types": [
+      "TMAX",
+      "TMIN",
+      "PRCP"
+    ],
+    "distance_km_min": 100,
+    "eligibility": {
+      "baseline_1982_2011": 20,
+      "final_2015_2018": 3,
+      "live_2012_2014": 2,
+      "metric_validity": "official per-variable missing counts <=10 and finite value",
+      "target_2012_2018": 6
+    },
+    "end": "2018-12-31",
+    "inventory": "each of TMAX,TMIN,PRCP begins by 1950 and ends no earlier than 2018",
+    "latitude_split": 37,
+    "limitation": "Current archive QC and revisions; single-station aggregation is not the challenge city composite. Supplementary geographic generalization, never private-answer-key validation or rank.",
+    "longitude_splits": [
+      -104,
+      -87
+    ],
+    "minimum_benchmark": {
+      "stations": 12,
+      "strata": 4
+    },
+    "missing": "full calendar reindex; totals require at least one valid day",
+    "quality": "nonempty QFLAG invalid; temperature outside [-130,140] F invalid; negative PRCP invalid; TMAX<TMIN invalidates both",
+    "selection": "SHA256(protostar-external-v1|station_id), first four in each stratum",
+    "start": "1950-01-01",
+    "station_history": "one station ID; physical moves/changes unknown; segment/change fields null",
+    "trace": "PRCP measurement flag T with numeric zero is valid; count recorded",
+    "units": "standard: Fahrenheit and inches",
+    "version": "protostar-external-v1"
+  },
+  "algorithm_sha256": "6cd64d49d1df8d1d9c1139a53a7102a96583c4a6355e7bacd2a78e44a5ec1814",
+  "benchmark_id": "protostar-external-v1",
+  "created_utc": "2026-11-08T11:22:51.772563+00:00",
+  "eligible_counts": {
+    "north_central": 241,
+    "north_east": 97,
+    "north_west": 356,
+    "south_central": 152,
+    "south_east": 59,
+    "south_west": 105
+  },
+  "exclusion_files": {
+    "data/city_info.csv": "b46552f8bb118ca6914510e8b4e7250da8d59b304d22cfa9a68547fb4f5017e0",
+    "data/raw/.cache/huggingface/download/city_info/train-00000-of-00001.parquet.metadata": "77dffc3ee8ca1c8de66bc697d76d156bde647152850f12a113a7406236271f84",
+    "data/raw/city_info/train-00000-of-00001.parquet": "6b71424c7c30a1b8027ba47a92ccb9aab8553147950af491538ea0912bbb955d"
+  },
+  "metadata_files": {
+    "metadata/inventory.txt": "3d7378c3ecad6841340b47392f10b391c42a5f47369765e6bb032704d2301125",
+    "metadata/stations.txt": "437ee87f0343bcad408a492cf7a02163fb69255364c541b4006d5d76055d0dc3"
+  },
+  "metadata_provenance": {
+    "inventory": {
+      "headers": {
+        "ETag": "\"22b73b4-65f770a943135\"",
+        "Last-Modified": "Wed, 04 Nov 2026 17:52:23 GMT"
+      },
+      "request_url": "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-inventory.txt",
+      "retrieved_utc": "2026-11-08T11:22:49.429287+00:00",
+      "sha256": "3d7378c3ecad6841340b47392f10b391c42a5f47369765e6bb032704d2301125"
+    },
+    "stations": {
+      "headers": {
+        "ETag": "\"ae9576-65f770a95d715\"",
+        "Last-Modified": "Wed, 04 Nov 2026 17:52:23 GMT"
+      },
+      "request_url": "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
+      "retrieved_utc": "2026-11-08T11:22:46.071935+00:00",
+      "sha256": "437ee87f0343bcad408a492cf7a02163fb69255364c541b4006d5d76055d0dc3"
+    }
+  },
+  "preregistration": "evaluation/independent/preregistration-v1.json",
+  "preregistration_sha256": "2fe1637c7817e23fdf2d9968a45c65d3111b5400e6cb05135db0fcdd9423c688",
+  "schema_version": 1,
+  "script_sha256": "bc83bad32273e0e038f2228c3b5110f8e9cfd815e62bff18a3dc949d437ccad5",
+  "source_hash": "9e5767184eae3f975a5c74986ec8d223ba66c7a68ed149ffa26c6369c569ba2b",
+  "stations": [
+    {
+      "elevation_m": 1140.0,
+      "inventory": {
+        "PRCP": [
+          1915,
+          2026
+        ],
+        "TMAX": [
+          1915,
+          2026
+        ],
+        "TMIN": [
+          1915,
+          2026
+        ]
+      },
+      "lat": 42.7325,
+      "lon": -114.5192,
+      "name": "JEROME",
+      "nearest_challenge_km": 167.6419934993298,
+      "selection_key": "0078d031377dc7261bf7c816412f4dfd5629603546b99f72f25dbdff363f3b8e",
+      "state": "ID",
+      "station_id": "USC00104670",
+      "stratum": "north_west"
+    },
+    {
+      "elevation_m": 1428.9,
+      "inventory": {
+        "PRCP": [
+          1894,
+          2026
+        ],
+        "TMAX": [
+          1894,
+          2026
+        ],
+        "TMIN": [
+          1894,
+          2026
+        ]
+      },
+      "lat": 41.53,
+      "lon": -120.1792,
+      "name": "CEDARVILLE",
+      "nearest_challenge_km": 145.21270108641215,
+      "selection_key": "00c68645d4289027494bf6e6c77cc7bb498801fea86bbd2fc87f489bb531f59f",
+      "state": "CA",
+      "station_id": "USC00041614",
+      "stratum": "north_west"
+    },
+    {
+      "elevation_m": 343.8,
+      "inventory": {
+        "PRCP": [
+          1914,
+          2026
+        ],
+        "TMAX": [
+          1914,
+          2026
+        ],
+        "TMIN": [
+          1914,
+          2026
+        ]
+      },
+      "lat": 47.5586,
+      "lon": -120.675,
+      "name": "LEAVENWORTH 3 S",
+      "nearest_challenge_km": 123.76522104531277,
+      "selection_key": "00fc5e911675c61c811903685173b3379c1d2dac055da94f7ebfd819e27b4f4d",
+      "state": "WA",
+      "station_id": "USC00454572",
+      "stratum": "north_west"
+    },
+    {
+      "elevation_m": 929.3,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 44.2558,
+      "lon": -121.1408,
+      "name": "REDMOND AP",
+      "nearest_challenge_km": 164.06503410137898,
+      "selection_key": "03d2ff7733acaed1ad8748e3a6f55c1a6073574969cfb9001b55b08d1a0cc2f6",
+      "state": "OR",
+      "station_id": "USW00024230",
+      "stratum": "north_west"
+    },
+    {
+      "elevation_m": 334.7,
+      "inventory": {
+        "PRCP": [
+          1917,
+          2026
+        ],
+        "TMAX": [
+          1917,
+          2026
+        ],
+        "TMIN": [
+          1917,
+          2026
+        ]
+      },
+      "lat": 45.3856,
+      "lon": -96.1258,
+      "name": "ARTICHOKE LAKE 1 E",
+      "nearest_challenge_km": 162.7188523472852,
+      "selection_key": "00443760166d571bd683debe6261c1c34ee6242e2e4babdc6e542d74db14e65c",
+      "state": "MN",
+      "station_id": "USC00210287",
+      "stratum": "north_central"
+    },
+    {
+      "elevation_m": 752.9,
+      "inventory": {
+        "PRCP": [
+          1916,
+          2026
+        ],
+        "TMAX": [
+          1916,
+          2026
+        ],
+        "TMIN": [
+          1916,
+          2026
+        ]
+      },
+      "lat": 46.8886,
+      "lon": -102.3192,
+      "name": "RICHARDTON ABBEY",
+      "nearest_challenge_km": 119.31441312217174,
+      "selection_key": "017adacb3e532275ad92634837d292b423fd976651c34319f99ca7c0b8ef8581",
+      "state": "ND",
+      "station_id": "USC00327530",
+      "stratum": "north_central"
+    },
+    {
+      "elevation_m": 612.6,
+      "inventory": {
+        "PRCP": [
+          1892,
+          2026
+        ],
+        "TMAX": [
+          1892,
+          2026
+        ],
+        "TMIN": [
+          1892,
+          2026
+        ]
+      },
+      "lat": 38.8586,
+      "lon": -99.3358,
+      "name": "HAYS 1 S",
+      "nearest_challenge_km": 133.96402686072418,
+      "selection_key": "06297eb46b647c7e99c659d1b522211211ff34dcbb859e16dc718cd4a797cc98",
+      "state": "KS",
+      "station_id": "USC00143527",
+      "stratum": "north_central"
+    },
+    {
+      "elevation_m": 272.2,
+      "inventory": {
+        "PRCP": [
+          1902,
+          2026
+        ],
+        "TMAX": [
+          1902,
+          2026
+        ],
+        "TMIN": [
+          1902,
+          2026
+        ]
+      },
+      "lat": 37.5339,
+      "lon": -95.8269,
+      "name": "FREDONIA",
+      "nearest_challenge_km": 148.48675022876435,
+      "selection_key": "063fc0299a44866790f07dcd4fb04f4ce0820366756fadfa8b8c1c967a50c91d",
+      "state": "KS",
+      "station_id": "USC00142894",
+      "stratum": "north_central"
+    },
+    {
+      "elevation_m": 181.4,
+      "inventory": {
+        "PRCP": [
+          1899,
+          2026
+        ],
+        "TMAX": [
+          1899,
+          2026
+        ],
+        "TMIN": [
+          1899,
+          2026
+        ]
+      },
+      "lat": 43.8322,
+      "lon": -82.6428,
+      "name": "HARBOR BEACH 1 SSE",
+      "nearest_challenge_km": 120.23577466164863,
+      "selection_key": "026a16d1d8a328e136c8c7532b3c7ee0879490d2fec3de4e83202299ad21bb8b",
+      "state": "MI",
+      "station_id": "USC00203585",
+      "stratum": "north_east"
+    },
+    {
+      "elevation_m": 146.3,
+      "inventory": {
+        "PRCP": [
+          1948,
+          2026
+        ],
+        "TMAX": [
+          1948,
+          2026
+        ],
+        "TMIN": [
+          1948,
+          2026
+        ]
+      },
+      "lat": 46.1183,
+      "lon": -67.7928,
+      "name": "HOULTON AP",
+      "nearest_challenge_km": 338.15557865151857,
+      "selection_key": "03af664b4806c1c9f2068b7fa782907237dbab4bb5613976a8b618031c3f665c",
+      "state": "ME",
+      "station_id": "USW00014609",
+      "stratum": "north_east"
+    },
+    {
+      "elevation_m": 15.2,
+      "inventory": {
+        "PRCP": [
+          1945,
+          2026
+        ],
+        "TMAX": [
+          1945,
+          2026
+        ],
+        "TMIN": [
+          1945,
+          2026
+        ]
+      },
+      "lat": 38.6897,
+      "lon": -75.3625,
+      "name": "GEORGETOWN-DELAWARE COASTAL AP",
+      "nearest_challenge_km": 111.2286576076935,
+      "selection_key": "0669c36ad0985abbe1cd1980b548d3cb4489a7b936a0487ca1390987837d1c27",
+      "state": "DE",
+      "station_id": "USW00013764",
+      "stratum": "north_east"
+    },
+    {
+      "elevation_m": 128.0,
+      "inventory": {
+        "PRCP": [
+          1936,
+          2026
+        ],
+        "TMAX": [
+          1937,
+          2026
+        ],
+        "TMIN": [
+          1937,
+          2026
+        ]
+      },
+      "lat": 44.3539,
+      "lon": -75.5122,
+      "name": "GOUVERNEUR 3 NW",
+      "nearest_challenge_km": 188.0554732673605,
+      "selection_key": "088a5b4d761ae62e57231375e95b71d2a1650613154ad30c6f7e8daa7ef54cf4",
+      "state": "NY",
+      "station_id": "USC00303346",
+      "stratum": "north_east"
+    },
+    {
+      "elevation_m": 1769.7,
+      "inventory": {
+        "PRCP": [
+          1892,
+          2018
+        ],
+        "TMAX": [
+          1892,
+          2018
+        ],
+        "TMIN": [
+          1892,
+          2018
+        ]
+      },
+      "lat": 36.6669,
+      "lon": -107.9603,
+      "name": "BLOOMFIELD 3 SE",
+      "nearest_challenge_km": 217.5636964267441,
+      "selection_key": "003d6256044a74d144eb9e0a59051b6eb31ac967c3680a64d7d66a021323418a",
+      "state": "NM",
+      "station_id": "USC00291063",
+      "stratum": "south_west"
+    },
+    {
+      "elevation_m": 2133.6,
+      "inventory": {
+        "PRCP": [
+          1926,
+          2026
+        ],
+        "TMAX": [
+          1926,
+          2026
+        ],
+        "TMIN": [
+          1926,
+          2026
+        ]
+      },
+      "lat": 34.075,
+      "lon": -107.6211,
+      "name": "AUGUSTINE 2E",
+      "nearest_challenge_km": 141.5528127380455,
+      "selection_key": "018670fa3e0849cddd0e799d2346981fae847cdd7900311298b138237c501e32",
+      "state": "NM",
+      "station_id": "USC00290640",
+      "stratum": "south_west"
+    },
+    {
+      "elevation_m": 1204.0,
+      "inventory": {
+        "PRCP": [
+          1893,
+          2018
+        ],
+        "TMAX": [
+          1893,
+          2018
+        ],
+        "TMIN": [
+          1893,
+          2018
+        ]
+      },
+      "lat": 36.7981,
+      "lon": -118.2036,
+      "name": "INDEPENDENCE",
+      "nearest_challenge_km": 134.9957581296905,
+      "selection_key": "02919bfbffc282623cd01e0df520549db0a9dc75e5d8543893d8be969deb20c5",
+      "state": "CA",
+      "station_id": "USC00044232",
+      "stratum": "south_west"
+    },
+    {
+      "elevation_m": 2008.6,
+      "inventory": {
+        "PRCP": [
+          1950,
+          2026
+        ],
+        "TMAX": [
+          1950,
+          2026
+        ],
+        "TMIN": [
+          1950,
+          2026
+        ]
+      },
+      "lat": 34.3925,
+      "lon": -110.5581,
+      "name": "HEBER (BLACK MESA) RS",
+      "nearest_challenge_km": 131.2806738029955,
+      "selection_key": "02fe4c915097dc8eeffafe1603e91253b5e256d85fa81abb905d8da222778693",
+      "state": "AZ",
+      "station_id": "USC00023961",
+      "stratum": "south_west"
+    },
+    {
+      "elevation_m": 59.4,
+      "inventory": {
+        "PRCP": [
+          1892,
+          2026
+        ],
+        "TMAX": [
+          1892,
+          2026
+        ],
+        "TMIN": [
+          1892,
+          2026
+        ]
+      },
+      "lat": 31.5889,
+      "lon": -91.3408,
+      "name": "NATCHEZ",
+      "nearest_challenge_km": 118.39319500179725,
+      "selection_key": "00ecf47237777ad9ebef5d75211f36bdadedf3f66e927ab7ce0c0ec8ab4f90af",
+      "state": "MS",
+      "station_id": "USC00226177",
+      "stratum": "south_central"
+    },
+    {
+      "elevation_m": 576.1,
+      "inventory": {
+        "PRCP": [
+          1947,
+          2026
+        ],
+        "TMAX": [
+          1947,
+          2026
+        ],
+        "TMIN": [
+          1947,
+          2026
+        ]
+      },
+      "lat": 31.3708,
+      "lon": -100.4944,
+      "name": "SAN ANGELO WFO",
+      "nearest_challenge_km": 138.73599070506822,
+      "selection_key": "061e749f1764ab40d0e460ce05e95ff1954349647021e53ddef82453bf280c86",
+      "state": "TX",
+      "station_id": "USC00417944",
+      "stratum": "south_central"
+    },
+    {
+      "elevation_m": 35.4,
+      "inventory": {
+        "PRCP": [
+          1886,
+          2026
+        ],
+        "TMAX": [
+          1890,
+          2026
+        ],
+        "TMIN": [
+          1890,
+          2026
+        ]
+      },
+      "lat": 33.59,
+      "lon": -92.8236,
+      "name": "CAMDEN 1",
+      "nearest_challenge_km": 104.71127188417856,
+      "selection_key": "06ccccaaf5a65867ec6542580b7f223d52a3e689db57f833b06a4e083c7632b5",
+      "state": "AR",
+      "station_id": "USC00031152",
+      "stratum": "south_central"
+    },
+    {
+      "elevation_m": 341.4,
+      "inventory": {
+        "PRCP": [
+          1900,
+          2020
+        ],
+        "TMAX": [
+          1897,
+          2020
+        ],
+        "TMIN": [
+          1897,
+          2020
+        ]
+      },
+      "lat": 29.3167,
+      "lon": -100.4144,
+      "name": "BRACKETTVILLE",
+      "nearest_challenge_km": 188.66185167048616,
+      "selection_key": "06cd75d9d6a282d34e11c1ffda549c75e3bf434023f1e463aef4e3eb049f13c3",
+      "state": "TX",
+      "station_id": "USC00411007",
+      "stratum": "south_central"
+    },
+    {
+      "elevation_m": 291.7,
+      "inventory": {
+        "PRCP": [
+          1899,
+          2025
+        ],
+        "TMAX": [
+          1899,
+          2026
+        ],
+        "TMIN": [
+          1899,
+          2026
+        ]
+      },
+      "lat": 36.1333,
+      "lon": -80.2244,
+      "name": "WINSTON SALEM REYNOLDS AP",
+      "nearest_challenge_km": 120.79019838060647,
+      "selection_key": "04b01a666742404a6ffede46f9c302d13f0f0f80129f2d7b3d84ddafc9ff3191",
+      "state": "NC",
+      "station_id": "USW00093807",
+      "stratum": "south_east"
+    },
+    {
+      "elevation_m": 10.7,
+      "inventory": {
+        "PRCP": [
+          1870,
+          2026
+        ],
+        "TMAX": [
+          1887,
+          2026
+        ],
+        "TMIN": [
+          1887,
+          2026
+        ]
+      },
+      "lat": 35.8842,
+      "lon": -77.5386,
+      "name": "TARBORO 1 S",
+      "nearest_challenge_km": 112.00678982375639,
+      "selection_key": "05232c327173e313db50511ba0f0c8722693bb3e64a9724214c928399c5b19b3",
+      "state": "NC",
+      "station_id": "USC00318500",
+      "stratum": "south_east"
+    },
+    {
+      "elevation_m": 54.9,
+      "inventory": {
+        "PRCP": [
+          1892,
+          2021
+        ],
+        "TMAX": [
+          1891,
+          2021
+        ],
+        "TMIN": [
+          1891,
+          2021
+        ]
+      },
+      "lat": 31.5339,
+      "lon": -84.1489,
+      "name": "ALBANY 3 SE",
+      "nearest_challenge_km": 127.52218551343339,
+      "selection_key": "05511a699a59834ce055b5f78953c6bcb0d303ba59b64cc92210ba96723271d0",
+      "state": "GA",
+      "station_id": "USC00090140",
+      "stratum": "south_east"
+    },
+    {
+      "elevation_m": 5.8,
+      "inventory": {
+        "PRCP": [
+          1923,
+          2026
+        ],
+        "TMAX": [
+          1942,
+          2026
+        ],
+        "TMIN": [
+          1942,
+          2026
+        ]
+      },
+      "lat": 27.6553,
+      "lon": -80.4142,
+      "name": "VERO BEACH INTL AP",
+      "nearest_challenge_km": 112.32885886843722,
+      "selection_key": "196667390ef17a39b99192f12ec35c66f036c52063f27eca4086490bc60840d5",
+      "state": "FL",
+      "station_id": "USW00012843",
+      "stratum": "south_east"
+    }
+  ]
+}

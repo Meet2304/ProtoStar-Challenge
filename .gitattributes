@@ -2,3 +2,5 @@
 evaluation/upstream/** -text
 scripts/build_independent_holdout.py text eol=lf
 evaluation/independent/*.json text eol=lf
+outputs/independent-v1/selection*.json text eol=lf
+evaluation/independent/snapshots/*.gz -text
