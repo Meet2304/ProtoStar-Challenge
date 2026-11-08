@@ -50,7 +50,7 @@ submission:
 Everything is numpy. Runs read no feature or enhancement release, so they are `official`. One origin takes 7-9 s,
 deterministically. No development diagnostics are run, even though the `--diagnostic` flag now exists (section 4.3).
 
-Status: draft r6.2 (r6 plus wording fixes from Sol's r6 review (93/100) and Grok's r6.1 review (94/100), and the pre-declared conditional v1.4; edits by the training station)
+Status: draft r6.3, approved (Sol 92/100 on r6.2, Grok 94/100 on r6.1; r6.3 adds Sol's last wording SHOULDs). History: r6.2 (r6 plus wording fixes from Sol's r6 review (93/100) and Grok's r6.1 review (94/100), and the pre-declared conditional v1.4; edits by the training station)
 
 Author: strategy planner A (Claude Opus 5.5), 2026-11-08. Brief: `docs/plans/creative/brief.md` (sections 3-7). Reward and
 insights: `evaluation/REWARD.md`, `evaluation/INSIGHTS.md`, `code/evaluation/reward.py`. Evidence scripts:
@@ -213,8 +213,8 @@ not part of the argument below, and no parameter was set from them.
   weight, and it was not fitted.
 - **Floor at 0.** This is a design choice, not a result of the pre-1983 data. Those data show national persistence in both
   directions: the decomposition's national coefficient is 1.32 in 1950-75. The unfloored diagnostic "raw national shift"
-  (KAPPA 1, no floor, no cap) gains in the cooling blocks by carrying cooling forward. The floor makes v1.3 depart from v1.1
-  only when N is positive. That keeps its exposure one-sided and keeps out the persistence of mid-century cooling, which cost
+  (KAPPA 1, no floor, no cap) gains in the cooling blocks by carrying cooling forward. The floor makes the increment non-zero
+  only when N is positive (coefficient differences from the refit can remain when it is 0). That keeps its exposure one-sided and keeps out the persistence of mid-century cooling, which cost
   the learners in v0.1 (lesson 1). It is kept as declared; switching to the unfloored form after seeing the walk-forward would
   be selection on it.
 - **CAP_F = 1.0 F** is an amplitude bound: the increment can never exceed 0.5 F, whatever N is. It never bound in 1915-1975
@@ -525,8 +525,12 @@ and which produces the submission.
    - The version becomes the champion only if the verdict is `promote`, with all four `reward.py` guards: final P(better)
      >= 0.95 with a positive delta, better on >= 2 of 3 origins, live P(worse) < 0.95, and every metric's final points >= -2.
    - Any other verdict leaves the champion unchanged.
-4. **Order.** v1.1, then v1.2, then v1.3, each against the champion current at that moment. If v1.1 promoted, v1.2 and v1.3 are
-   compared with v1.1. If v1.2 also promoted, v1.3 is compared with v1.2.
+4. **Order.** v1.1, then v1.2, then v1.3, then conditionally v1.4, each against the champion current at that moment. If v1.1
+   promoted, v1.2 and v1.3 are compared with v1.1. If v1.2 also promoted, v1.3 is compared with v1.2.
+   - **v1.4** runs only if, when v1.3's verdict is in, a fresh `reward.py ladder` shows v1.2 as the champion. It is then
+     scored against that champion with the same four guards; only a promote changes the champion, and nomination stays with
+     the latest champion (step 6). Before its official score it gets its own pre-1983 walk-forward rows (persistent-warming
+     and stalling/cooling blocks, cutoff asserts, fallback rows) and the check that KAPPA = 0 with refitting reproduces v1.2.
    - v1.3 always uses v1.1's graph definition, whatever v1.1's verdict. Against a v1.1 champion its comparison measures the
      increment including the coefficient refit it causes; against a v1.2 champion it also removes the long-window term, so it
      then measures both changes together, not the increment alone (see v1.4 in section 5).
@@ -553,7 +557,7 @@ plan pre-declares **no** development diagnostics, for these reasons:
   folds.
 - Seeing development scores for KAPPA or floor variants would invite tuning them on those folds.
 
-So the plan has exactly three official development runs: v1.1, v1.2 and v1.3.
+So the plan has three unconditional official development runs (v1.1, v1.2, v1.3) and at most four, with v1.4.
 
 **Pre-registered expectations (development):**
 - v1.1: +0.5 to +2.0 points against average30, positive at >= 2 origins. Hottest day and temperature carry the gain;
@@ -572,7 +576,8 @@ So the plan has exactly three official development runs: v1.1, v1.2 and v1.3.
   - it gains when a positive N persists (1915-1939: 11 of 11 early triplets promote against v1.1);
   - it costs when warming stalls (1940-49: -0.47 points; its weakest 1940-61 triplet fails in 26 of 30 seeds against
     average30);
-  - it is neutral when N <= 0.
+  - when N <= 0 the increment is 0; final points still move slightly through the refit (+0.0130 and +0.0018 in the cooling
+    blocks).
 
   Across all 61 pre-1983 fit origins it is +0.50 points above v1.1.
   Head to head against v1.1 on the 22 triplets of 1940-61, v1.3 promotes on 3/22 under the official city bootstrap, and
@@ -654,7 +659,7 @@ uv run python scripts/line.py sync
    - Spatial-block resampling shows the city bootstrap is mildly optimistic for G.
 5. **Reused years (lesson 5).**
    - Design used years <= 1982 only.
-   - Exactly three official development runs, and no diagnostics.
+   - Three unconditional official development runs (at most four with the conditional v1.4), and no diagnostics.
    - Development-year numbers seen before r5 are disclosed and not used.
    - Only the 2004/2011 assessment is clean.
 
@@ -674,7 +679,7 @@ uv run python scripts/line.py sync
 | Champion changes between versions | | | `C_before` recorded each time |
 | Adapter differs from the script | | 1975 equality check fails | Fix before scoring |
 
-**Dependencies:** none new (numpy, pandas), and no data release. **Compute:** 7-9 s per origin; 3 official runs.
+**Dependencies:** none new (numpy, pandas), and no data release. **Compute:** 7-9 s per origin; 3 official runs, at most 4.
 
 ---
 
