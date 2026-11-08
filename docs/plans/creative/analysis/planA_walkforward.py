@@ -14,8 +14,11 @@ Data rule and cutoffs (audit points):
   cities with at least one scored row in that triplet are resampled.
 Plan: docs/plans/creative/plan-A-graph.md (sections 3.4, 3.5 and appendix A).
 
-r5 adds v1.3 (v1.1 + a pre-declared national warm increment, KAPPA and CAP below, fixed before this script first
-computed any v1.3 score), the reward.py-exact bootstrap, Monte Carlo seeds for the weakest triplet, overlap counts of
+r6 adds the early-era diagnostic: fit origins 1915-1939 with the same fit, the same cutoff asserts and the unchanged
+parameters (reused design-era years), plus a cut-table check at F = 1925. Fits for F >= 1940 are unchanged.
+
+r5 adds v1.3 (v1.1 + a national warm increment; KAPPA and CAP below, which the author reports fixing before this script
+first computed any v1.3 score; there is no timestamped declaration), the reward.py-exact bootstrap, Monte Carlo seeds for the weakest triplet, overlap counts of
 the fit sample, the fallback-city counts, and two diagnostic rows (25-NN graph, raw national shift).
 """
 from __future__ import annotations
@@ -47,6 +50,10 @@ GAP_MIN_VALID = 5               # valid years needed in t-9..t for a city's 10-y
 Y0 = 1780                       # NaN padding so 60-year windows never index before the array
 FIT_ORIGINS = list(range(1940, 1976))
 BLOCKS = {"1940-49": range(1940, 1950), "1950-62": range(1950, 1963), "1963-75": range(1963, 1976)}
+# r6: early-era diagnostic (reused design-era years; same fit, cutoff asserts and frozen parameters)
+EARLY_ORIGINS = list(range(1915, 1940))
+EARLY_BLOCKS = {"1915-35": range(1915, 1936), "1925-39": range(1925, 1940)}
+ALL_ORIGINS = sorted(set(EARLY_ORIGINS) | set(FIT_ORIGINS))
 SEED = 20261108
 DRAWS = 2000
 
@@ -358,7 +365,7 @@ def main():
     dn = d.copy()
     np.fill_diagonal(dn, np.inf)
     order = np.argsort(dn, axis=1, kind="stable")
-    ts = range(FIT_ORIGINS[0] - TRAIN_YEARS, FIT_ORIGINS[-1] + 1)
+    ts = range(ALL_ORIGINS[0] - TRAIN_YEARS, ALL_ORIGINS[-1] + 1)
     t0 = time.perf_counter()
     pres = {"gauss": precompute(tab, gauss_kernel(d), order, ts), "knn25": precompute(tab, knn_kernel(order, 25), order, ts)}
     pre = pres["gauss"]
@@ -366,7 +373,7 @@ def main():
 
     t0 = time.perf_counter()
     coefs, sums, forecasts, shifts = {}, {}, {}, {}
-    for fo in FIT_ORIGINS:
+    for fo in ALL_ORIGINS:
         for m in METRICS:
             for cand, (kern, base_kind, use_long, fitted) in CANDIDATES.items():
                 c = fit_coefs(tab, pres[kern], m, fo, base_kind, use_long) if fitted else (0.0, 0.0)
@@ -375,7 +382,7 @@ def main():
                 forecasts[(cand, fo, m)], shifts[(cand, fo, m)] = fc, g
                 sums[(cand, fo, m)] = city_sums(tab, m, fo, fc, ref)
     # precip_off: v1.1 with G = 0 for precipitation (forecast = average30 there)
-    for fo in FIT_ORIGINS:
+    for fo in ALL_ORIGINS:
         for m in METRICS:
             src = "ref v0.5-like proxy (no G)" if m == "total_precip_in" else "v1.1"   # proxy = average30 for precip
             sums[("diag v1.1 precip=off", fo, m)] = sums[(src, fo, m)]
@@ -407,6 +414,38 @@ def main():
     print("   v1.3 minus v1.1, final points by block:",
           {b: round(float(np.mean([100 * np.mean([skill("v1.3", fo, m, "final") - skill("v1.1", fo, m, "final")
                                                     for m in METRICS]) for fo in fos])), 4) for b, fos in BLOCKS.items()})
+
+    print("\n== r6 early-era diagnostic: fit origins 1915-1939 (reused design-era years; same cutoff asserts) ==")
+    for bname, fos in EARLY_BLOCKS.items():
+        ng = np.array([pre[fo]["n_gap"] for fo in fos])
+        inc = np.array([pre[fo]["inc"] for fo in fos])
+        nex = [overlap_counts(tab, pre, "annual_avg_temp", fo)[0] for fo in fos]
+        nexp = [overlap_counts(tab, pre, "total_precip_in", fo)[0] for fo in fos]
+        print(f"   {bname}: N mean {ng.mean():+.3f} F (min {ng.min():+.3f}, max {ng.max():+.3f}); N > 0 at {np.mean(ng > 0):.0%}; "
+              f"I mean {inc.mean():.3f} F; cap binding at {np.mean(ng > CAP_F):.0%}; "
+              f"fit examples per origin: temp min {min(nex)}, precip min {min(nexp)}")
+        for cand in ("v1.1", "v1.2", "v1.3", "diag v1.1 + raw national shift", "diag avg30+G+0.5W",
+                     "ref v0.5-like proxy (no G)"):
+            fin = [100 * np.mean([skill(cand, fo, m, "final") for m in METRICS]) for fo in fos]
+            live = [100 * np.mean([skill(cand, fo, m, "live") for m in METRICS]) for fo in fos]
+            per_m = [100 * np.mean([skill(cand, fo, m, "final") for fo in fos]) for m in METRICS]
+            print(f"      {cand:30s} final {np.mean(fin):+.4f}  positive {np.mean(np.array(fin) > 0):.0%}  "
+                  f"min {min(fin):+.2f}  live {np.mean(live):+.4f}  | temp {per_m[0]:+.2f} precip {per_m[1]:+.2f} "
+                  f"hot {per_m[2]:+.2f} cdd {per_m[3]:+.2f}")
+        diff = [100 * np.mean([skill("v1.3", fo, m, "final") - skill("v1.1", fo, m, "final") for m in METRICS])
+                for fo in fos]
+        dlive = [100 * np.mean([skill("v1.3", fo, m, "live") - skill("v1.1", fo, m, "live") for m in METRICS])
+                 for fo in fos]
+        print(f"      v1.3 minus v1.1: final {np.mean(diff):+.4f} (positive at {np.mean(np.array(diff) > 0):.0%} of origins, "
+              f"min {min(diff):+.2f}), live {np.mean(dlive):+.4f}")
+    early_trips = [(f, f + 7, f + 14) for f in range(1915, 1926)]
+    for cand, champ in (("v1.1", "average30"), ("v1.3", "average30"), ("v1.3", "v1.1")):
+        res = pd.DataFrame([compare(sums, cand, champ, trip, SEED) for trip in early_trips])
+        print(f"   early triplets F=1915..1925: {cand} vs {champ}: median reward {res.pts.median():+.4f}  "
+              f"median P {res.p.median():.3f}  min P {res.p.min():.4f}  median LB90 {res.lb.median():+.4f}  "
+              f"worst floor {res.floor.min():+.4f}  promote {int(res.promote.sum())}/{len(res)}")
+    print("   all 61 fit origins 1915-1975, v1.3 minus v1.1 final:",
+          f"{np.mean([100 * np.mean([skill('v1.3', fo, m, 'final') - skill('v1.1', fo, m, 'final') for m in METRICS]) for fo in ALL_ORIGINS]):+.4f}")
 
     print("\n== Coefficients (beta, gamma) by fit origin ==")
     show = (1940, 1945, 1950, 1955, 1960, 1965, 1970, 1975)
@@ -469,7 +508,7 @@ def main():
 
     # Runtime and determinism of one complete origin from a table cut at F (what an adapter would see)
     print("\n== End-to-end single origin from a table cut at F (load, pivot, graph terms, fits, forecast) ==")
-    for fo in (1940, 1960, 1975):
+    for fo in (1925, 1940, 1960, 1975):
         digests, digests13, times = [], [], []
         for _ in range(2):
             t0 = time.perf_counter()
