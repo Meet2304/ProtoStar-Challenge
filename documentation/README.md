@@ -25,6 +25,7 @@ uv run python -m unittest tests.test_cleaning  # 17 acceptance tests on syntheti
 | [06 — input selection](06-input-selection.md) | across subsets | the rolling-origin backtest that decides which cleaned input a model should use, and its result |
 | [07 — outputs](07-outputs.md) | `data/processed/` | every output file and column (data dictionary) |
 | [08 — review history](08-review-history.md) | process | the plan's four review rounds with Sol (gpt-6.1-sol) and Grok (grok-4.7), scores and what changed |
+| [09 — per-origin cleaning](09-per-origin.md) | `clean-v1` | one cleaned dataset per forecast origin, built only from data up to that origin |
 
 ## The flaws at a glance
 
