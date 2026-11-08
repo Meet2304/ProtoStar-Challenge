@@ -120,7 +120,12 @@ Lessons so far (details in `docs/models/placeholder.md`, `docs/plans/placeholder
 
 ## 5b. Current champion (2026-11-08, after plan A's first runs)
 
-The ladder champion is **`Placeholder_v1.2`** (run `20261108T180515Z-c2ea877eff`): the 30-year average plus a median-centred
+**Update (later on 2026-11-08):** `Placeholder_v1.4` (v1.2 + the frozen national warm increment for temperature and CDD)
+promoted over v1.2 (+0.705, 90% [+0.47, +0.93], 2/3 origins) and is the champion at **+1.973** (run
+`20261108T184527Z-a0989aa55f`; temperature +4.49, precipitation +0.20, hottest day +0.14, CDD +3.06; 1983 -0.01 / 1990
++2.64 / 1997 +3.30). The text below describes v1.2, its parent.
+
+The previous ladder champion was **`Placeholder_v1.2`** (run `20261108T180515Z-c2ea877eff`): the 30-year average plus a median-centred
 city-minus-neighbours local term and a 60-year relative offset (plan A). Reward +1.268 final points; against average30
 +1.268, 90% [+0.59, +1.94], better at 3/3 origins; per metric temperature +1.54, precipitation +0.20, hottest day +0.14,
 CDD +3.19; by origin 1983 +0.02 / 1990 +2.48 / 1997 +1.31. `Placeholder_v1.1` promoted before it (+1.025);

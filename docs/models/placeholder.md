@@ -324,3 +324,20 @@ precipitation -0.14, hottest day +0.02, CDD +2.74. v1.3's national gap N was -0.
 - **Insights for v1.1:** temperature runs 0.64 F too cold (honest headroom +1.46), and the model captures about 0% of the
   observed shift for temperature and CDD, as expected for a median-zero term. That is the finding v1.3/v1.4 target.
 - **MLflow:** not mirrored, because the server at 127.0.0.1:5000 refused connections. Runs are sealed; `line.py sync` mirrors them.
+
+### Placeholder_v1.4 (conditional, triggered because v1.2 was champion after v1.3)
+
+v1.2's definition plus the frozen national increment (KAPPA 0.5, cap 1.0 F, floor 0). Pre-1983 rows and section 5 checks:
+`docs/plans/creative/analysis/planA_v14_walkforward.py` (commit `0ea8736`): against v1.2 it gains +1.73 / +2.01 in 1915-35 /
+1925-39, loses -0.41 in 1940-49, and is near 0 in 1950-75; promotes against v1.2 on 11/11 early and 6/22 1940-61 triplets.
+KAPPA = 0 reproduces v1.2 exactly. Run `20261108T184527Z-a0989aa55f`, commit `c88eebb`, official.
+
+| | Reward | Live | 1983 / 1990 / 1997 | Against | Delta, 90% | Origins won | Verdict |
+|---|---:|---:|---|---|---|---|---|
+| v1.4 | **+1.973** | +3.434 | -0.01 / +2.64 / +3.30 | v1.2 (champion) | +0.705 [+0.47, +0.93] | 2/3 | **promote (champion)** |
+| | | | | v1.3 | +0.253 [+0.04, +0.48] | 3/3 | (promote) |
+| | | | | average30 | +1.973 [+1.17, +2.78] | 2/3 | (promote) |
+
+Per metric (final points): temperature +4.49, precipitation +0.20, hottest day +0.14, CDD +3.06. Champion path on the ladder:
+`control:average30` -> v1.1 (+1.025) -> v1.2 (+1.268) -> **v1.4 (+1.973)**. The hottest day (+0.14) and precipitation
+(+0.20) remain the weakest metrics.
