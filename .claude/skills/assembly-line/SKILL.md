@@ -56,5 +56,6 @@ Ask the integrator for changes to `pyproject.toml`, `uv.lock`, `requirements.txt
 - Open assessment origins 2004 or 2011. Only the integrator runs assessment.
 - Run `evaluate.py prepare` on `suite-v3`. Teammates use `line.py get-suite`.
 - Hard-code a path to the main checkout in model code.
+- Start your own MLflow server or `mlflow ui`. The team server already uses that port.
 - Write credentials into any file.
 - Delete another station's files.

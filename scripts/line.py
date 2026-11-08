@@ -23,6 +23,7 @@ import os
 import re
 import secrets
 import shutil
+import socket
 import stat
 import subprocess
 import sys
@@ -570,6 +571,10 @@ authorization_function = mlflow.server.auth:authenticate_request_basic_auth
 
 
 def serve(host, port, allowed_hosts):
+    with socket.socket() as probe:
+        probe.settimeout(1)
+        if probe.connect_ex(("127.0.0.1" if host == "0.0.0.0" else host, port)) == 0:
+            raise LineError(f"Port {port} is already in use, so the login server cannot start. Stop the other server first.")
     store = depot_root() / "outputs/mlflow"
     store.mkdir(parents=True, exist_ok=True)
     config = store / "basic_auth.ini"  # holds no secret: the admin password stays in the environment
@@ -747,7 +752,12 @@ def cmd_add_user(args):
     from mlflow.server import get_app_client
 
     password = secrets.token_urlsafe(18)
-    get_app_client("basic-auth", tracking_uri=mlflow_uri()).create_user(username=args.username, password=password)
+    try:
+        get_app_client("basic-auth", tracking_uri=mlflow_uri()).create_user(username=args.username, password=password)
+    except Exception as exc:
+        if "404" in str(exc):
+            raise LineError("The server at this address has no login system. Start it with `line.py serve`.") from exc
+        raise
     print(f"Created {args.username}. Password, shown once: {password}")
 
 

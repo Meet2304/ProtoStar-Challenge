@@ -1,5 +1,6 @@
 """Assembly-line labels and releases. No network, no MLflow."""
 import importlib.util
+import socket
 import stat
 import tempfile
 import unittest
@@ -113,6 +114,13 @@ class ReleaseTests(unittest.TestCase):
         target.write_text("changed")
         with self.assertRaises(line.LineError):
             line.verify_release_folder(folder)
+
+    def test_serve_refuses_a_port_already_in_use(self):
+        with socket.socket() as other_server:
+            other_server.bind(("127.0.0.1", 0))
+            other_server.listen()
+            with self.assertRaises(line.LineError):
+                line.serve("127.0.0.1", other_server.getsockname()[1], "")
 
     def test_assessment_ledger_is_left_out_of_the_shared_suite(self):
         suite = self.tmp / "suite"
