@@ -21,6 +21,7 @@ import hashlib
 import json
 import os
 import re
+import secrets
 import shutil
 import stat
 import subprocess
@@ -33,6 +34,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "code"))
 os.environ.setdefault("MLFLOW_DISABLE_AGENT_HINT", "1")
+os.environ.setdefault("MLFLOW_HTTP_REQUEST_MAX_RETRIES", "2")  # fail fast if the server's machine is asleep
 
 LOCK_PATH = ROOT / "line.lock.json"
 STATIONS = ("clean", "enhance", "features", "train", "eval")
@@ -554,6 +556,7 @@ def serve(host, port, allowed_hosts):
     if not (store / "basic_auth.db").exists() and not os.environ.get("MLFLOW_AUTH_ADMIN_PASSWORD"):
         raise LineError("Set MLFLOW_AUTH_ADMIN_PASSWORD (12+ characters) in your shell for the first start.")
     environment = {**os.environ, "MLFLOW_AUTH_CONFIG_PATH": str(config)}
+    environment.setdefault("MLFLOW_FLASK_SERVER_SECRET_KEY", secrets.token_hex(32))  # per start, never stored
     command = [sys.executable, "-m", "mlflow", "server", "--app-name", "basic-auth",
                "--backend-store-uri", f"sqlite:///{(store / 'mlflow.db').as_posix()}",
                "--artifacts-destination", (store / "artifacts").as_posix(),
@@ -708,8 +711,6 @@ def cmd_get_suite(args):
 
 
 def cmd_add_user(args):
-    import secrets
-
     from mlflow.server import get_app_client
 
     password = secrets.token_urlsafe(18)
