@@ -274,3 +274,25 @@ change worth one run.
 Only CDD changes (+0.0154 / -0.0616 / +0.0307 against +0.0096 / -0.0261 / +0.0333). The physics response is larger than
 the regression one (mean CDD W at 1990: 86 against 60 degree-days), so it amplifies the 1990 overshoot. Headline lower, not
 kept. This is more evidence that the warming term is too large at 1990, not that the CDD response is wrong.
+
+## Placeholder_v0.8 (2026-11-08)
+
+**Status: not kept (exploratory, uses features-v1).** Built on v0.5. Change: `years_since_station_change`,
+`station_changes_10y` and `station_changes_30y` as level features. Run `20261108T142718Z-7e9948bed1`, clean commit `06e3f6c`.
+
+| Final skill | Headline | 1983 | 1990 | 1997 |
+|---|---:|---:|---:|---:|
+| v0.5 (kept) | +0.008343 | +0.0027 | -0.0235 | +0.045847 |
+| v0.8 | +0.008886 | +0.0037 | -0.0227 | +0.045675 |
+
+Headline higher, 1997 lower by 0.0002, so not kept by the rule. The differences are within 0.001 on every origin: station
+history adds little on top of the shared warming term.
+
+## Adaptation after v0.3-v0.8
+
+Every version so far loses at 1990, and the loss comes from the ungated warming term (v0.4 loses there with lambda 0). The
+combo average (v0.5) halves it. Two follow-ups, one change each, both `official`:
+
+- **v0.9:** v0.5 with the boosted member only (v0.7's change, which helped on v0.3).
+- A damped warming term is the remaining candidate if the 1990 loss has to come down further. It is not run yet: any
+  damping chosen now would be chosen after seeing 1990, so it would be fitted to the development years.
