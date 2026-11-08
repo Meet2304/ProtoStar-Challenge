@@ -5,123 +5,127 @@ its neighbours do not share: the city minus a Gaussian-kernel (600 km) average o
 27-44% less noise than the raw anomaly. Before 1983 its recent level persisted, with fitted coefficients between 0.45 and 0.80
 across fit origins 1940-1975.
 
-The promotion route, **v1.1 = 30-year average + a centred graph-local term**, has no warming term, no learners and no gate. Its
-gain does not depend on the shared warming exposure that costs every W-based version at 1990.
+There are three versions, all on the 30-year average, with no learners and no gate:
+- **v1.1** adds a centred graph-local term.
+- **v1.2** adds the same term plus a long-window relative offset.
+- **v1.3** is v1.1 plus a pre-declared, damped and capped **national warm increment** for temperature and CDD.
 
-The chronological check has the training-target cutoff enforced in code (`docs/plans/creative/analysis/planA_walkforward.py`).
-Coefficients are fitted only on targets <= F and scored on F+1..F+7.
-- v1.1 scored +0.66, +2.37 and +1.10 final points over three held-out pre-1983 blocks, positive on 70%, 100% and 85% of origins.
-- On 22 held-out origin triplets, the paired city bootstrap gave a median reward of +1.85 points and a median 90% lower bound
-  of +1.17. Every triplet would have promoted.
-- Resampling 5-degree or 10-degree spatial blocks instead of cities lowers the median lower bound to +1.07 / +1.10. All 22
-  triplets still promote.
-- The v0.5-like warming base lost -9.22 points in the 1940-49 block, the pre-1983 analogue of the 1990 overshoot.
+The graph term has zero cross-city median adjustment, so by construction v1.1 and v1.2 add nothing for a continental warm
+shift. v1.3 exists because 2019-2025 is expected to be warmer than the 30-year mean. Pre-1983 data cannot estimate how much of
+a sustained warm shift to carry: the mean share of cities with a positive floored 30-year warming rate is 84%, 15% and 9% over
+the three blocks. The increment's shrink (0.5) and cap (1.0 F on the national gap) are therefore a conservative prior, fixed
+before computing any v1.3 number.
 
-v1.2 is one frozen joint model (graph-local term plus a long-window relative offset), run whatever happens to v1.1. The v0.5 +
-graph version is deferred out of this round. Everything is numpy, the runs are gate-eligible (`official`), and one origin takes
-about 7 s from CSV to forecast, deterministically. The evidence is pre-1983 and was produced on the same years as the design. It
-supports trying the route; it does not forecast the development verdict.
+Chronological evidence (pre-1983, training targets <= F asserted in code, `docs/plans/creative/analysis/planA_walkforward.py`):
 
-Status: draft r4
+| Final points against average30 | 1940-49 | 1950-62 | 1963-75 |
+|---|---:|---:|---:|
+| v1.1 | +0.66 | +2.37 | +1.10 |
+| v1.2 | +1.06 | +2.49 | +1.07 |
+| v1.3 | +0.19 | +2.38 | +1.10 |
+| v0.5-like warming base | -9.22 | +3.75 | +2.66 |
 
-Author: strategy planner A (Claude Opus 5.5), 2026-11-08. Base code: `notebooks/Meet/placeholder_v0_5.py` (coordinates and
-helpers). Brief: `docs/plans/creative/brief.md`. Reward rules: `evaluation/REWARD.md`, `code/evaluation/reward.py`. Evidence
-script: `docs/plans/creative/analysis/planA_walkforward.py`.
+- The increment fires only in the 1940-49 block, where it costs 0.47 points against v1.1. That is the cost side; pre-1983 data
+  never shows its benefit.
+- Under `reward.py`'s exact bootstrap on 22 held-out triplets, v1.1 promotes on all 22, but **only just**: the weakest triplet
+  has P(better) = 0.950. Its 90% Monte Carlo interval is [0.942, 0.958], and P fell below 0.95 in 2 of 30 seeds.
+- v1.3 promotes on 20 of 22, and its weakest triplet fails in 26 of 30 seeds.
+
+The trade-off is explicit (section 4.4). v1.3 is the better-motivated forecast for 2019-2025. It is less likely to promote on
+the development folds, which cannot test sustained warming. A promoted v1.1 is not treated as the challenge submission as it
+stands.
+
+Everything is numpy. Runs read no feature or enhancement release, so they are `official`. One origin takes about 7 s,
+deterministically. No official development ablations are run, because the ladder would count them (section 4.3).
+
+Status: draft r5
+
+Author: strategy planner A (Claude Opus 5.5), 2026-11-08. Brief: `docs/plans/creative/brief.md` (sections 3-6). Reward and
+insights: `evaluation/REWARD.md`, `evaluation/INSIGHTS.md`, `code/evaluation/reward.py`. Evidence scripts:
+`docs/plans/creative/analysis/planA_walkforward.py` (sections 3-4) and `docs/plans/creative/analysis/planA_section1.py`
+(section 1).
 
 ---
 
-## Changes in r4
+## Changes in r5
 
-Sol's re-review of r3 found a leak in the evidence. The r3 walk-forward script filtered training rows by `t + h <= 1982`
-instead of `t + h <= F`, so the last three pseudo-origins (t = F-6..F-4, h up to 7) reached targets F+1..F+3. The adapter
-specification (section 3.1) already required `t + h <= O`; the leak was in the r3 analysis only. Every number from it is
-regenerated here.
+Grok's review of r4 (86/100), with Sol's points from the plan B review, and the data and insights updates.
 
 | Item | What changed |
 |---|---|
-| 1. Regenerate the chronological evidence with the cutoff enforced (MUST) | The new script saves to `docs/plans/creative/analysis/planA_walkforward.py`. Its `coef_rows` keeps only `t + h <= F`, and `fit_coefs` asserts `max(training target year) <= F` before every fit. A separate end-to-end check rebuilds three origins from a table with every year > F set to NaN and reproduces the walk-forward coefficients and forecasts exactly. All affected numbers are replaced: block scores, live, per-metric points, positive shares, coefficients, coefficient medians for the fixed-coefficient ablations, bootstrap summaries and rationale. The results match Sol's reproduction: v1.1 +0.6582 / +2.3694 / +1.0970, first block 70% positive, median reward +1.8532, worst floor -0.1058, 22/22, and 1940 CDD in v1.2 (0.70, 0.55). Sol's median lower bound of +1.1679 differs from mine (+1.1742), probably from how bootstrap draws are generated across triplets (this script draws fresh weights per triplet from one seeded generator). |
-| 2. Freeze one v1.2 definition (MUST) | v1.2 is the joint model `average30 + centre(beta L_raw + gamma L_long_raw)`, built on `control:average30` and run unconditionally. The long-only branch is removed. |
-| 3. v1.3 (MUST) | Deferred out of this round, as recommended: the deadline is 2026-11-10, and the complete v1.3 procedure (residual learners with the 0.5 blend in their targets, inner lambda selection on the deployed forecast) has not been validated. Section 5 states what a later validation would need. The proxy-based v1.3 evidence and its ablations are removed. |
-| 4. Zero-median wording (SHOULD) | Corrected everywhere. The cross-city median of the adjustment G is 0, but the median forecast level can still move. Sol's example: baseline [0, 10, 20] plus [20, 0, -1] moves the median from 10 to 19. |
-| 5. Runtime and determinism (SHOULD) | Measured on pre-1983 data: one complete origin (CSV load, pivot, graph terms, v1.1 and v1.2 fits, forecast) takes 6.0-6.9 s, and two runs per origin give identical SHA-256 digests (section 3.3). The adapter itself is not written yet. The first implementation check is stated: `forecast()` called directly on a pre-1983 cut, twice, then the harness `runtime_s`. |
-| 6. Dependence-sensitive diagnostic (SHOULD) | Added spatial-block bootstraps (42 blocks of 5 x 5 degrees, 14 blocks of 10 x 10 degrees) next to the official city bootstrap (section 3.4). The official city bootstrap remains the verdict. |
+| 1. National warm increment (Grok MUST) | New **v1.3 = v1.1 + I**, which replaces the deferred learner stack. The formula, the shrink `KAPPA = 0.5`, the cap `CAP_F = 1.0` F and the floor at 0 were written into the script before it first computed a v1.3 number, and were not changed afterwards. The plan states that pre-1983 data cannot estimate a sustained-warming coefficient (mean share of cities with a positive floored rate 84% / 15% / 9%), and explains how the shrink and cap were chosen instead (section 1.3). The pre-1983 cost is reported: -0.47 points in 1940-49, never the -9 of W, because the increment is at most 0.5 F. Grok's development numbers (+0.79 / +0.14 / +0.73 F residuals; +13 / -5 temperature points) and the insights bias figures are disclosed as reused development evidence that shaped the design. v1.3 has its own walk-forward rows and keep decision. The trade-off is in section 4.4. |
+| 2. Bootstrap exactly as `reward.py` (SHOULD) | `compare()` in the script resets seed 20261108 for every triplet and resamples only cities with a scored row (205-208 per triplet). The weakest v1.1 triplet (1960, 1967, 1974) gives P = 0.9500, a binomial 90% interval of [0.9420, 0.9580], and P < 0.95 in 2 of 30 seeds (seeds 1-30: 0.9475-0.9690), matching Grok. Promotion is described as being at the bar. |
+| 3. Split equality check (SHOULD) | Section 5: on rows with a 30-year mean, beta = 0 (and `KAPPA = 0` for v1.3) must equal `control:average30`. Fallback rows (cities without a 30-year mean: 16, 3 and 5 at F = 1940, 1960, 1975, with G = 0 there verified in the script) are checked against `reference(..., "average")`'s fallbacks separately: shorter-window mean, then full-history mean, then the metric-wide training median. The increment is not added on fallback rows. The "no NaN" wording is removed. |
+| 4. Section 1 code (SHOULD) | New `docs/plans/creative/analysis/planA_section1.py` reproduces every section 1 table: distances, correlation by distance, relative noise, decomposition, in-era tables, the kernel horse-race, and the empirical-Bayes, break-aware and correlation-graph rejections. All are recomputed with the declared centred estimator. CDD kernel values and two decomposition coefficients moved in the second or third decimal; the table shows the script's values. |
+| 5. Overlapping examples (SHOULD) | Section 3.1: at F = 1940 there are 22,671 examples on 5,936 unique city-years; at F = 1975, 30,640 on 7,963 (temperature). Each target city-year is used a median of 4 times. |
+| 6. Wording (SHOULD) | `load()` parses the whole CSV, then keeps years <= 1982. 84% / 15% / 9% is the mean share of cities with a positive floored 30-year warming rate. |
+| 7. Diagnostic exclusion (Sol MUST) | `reward.py ladder` counts every official development run, whatever its name. No official development ablations are run. The diagnostics that r4 planned as ablations are pre-1983 walk-forward rows instead (25-NN graph, `precip=off`, +0.5 W, raw national shift). Before each version, the champion is recorded with `reward.py ladder`, and the run is compared with it explicitly (`--against`). If the team wants development ablations, the plan asks the eval station for a diagnostic flag that `reward.candidates` skips (section 4.3). |
+| Data update (features-v4/v5) | No version reads any feature or enhancement release, only `data/city_info.csv` (static). Section 2 says so per version. |
+| Insights (eval station) | Each version names its finding. v1.1 and v1.2 target finding 1 (persistent per-city temperature offsets, honest +0.98 on v0.9). v1.3 targets finding 2 (regime sensitivity; bias flips sign by origin). The increment is damped and falls back to the 30-year average whenever the national gap is <= 0. Insights output is tracked per run (section 8). |
 
-## Changes in r3 (for the record; its walk-forward numbers are superseded by r4)
+## Changes in r4 and r3 (for the record)
 
-r3 made these changes after Sol's review of r2:
-- Removed post-origin station information from the rationale.
-- Replaced the keep rules with the champion verdict plus the lower-bound-and-reward rule against v0.5.
-- Added the `average30 + G` promotion route.
-- Moved to one deploy path.
-- Recomputed the supporting tables with the declared centred estimator: centred precipitation +0.00670 / +0.00685 / +0.00219.
-- Added the walk-forward (leaky in r3, fixed in r4) and the design-overlap table.
-- Replaced guarantees with measured checks and corrected the 1.5-point and "errors cancel" statements.
-- Stated that the plan does not use the ocean loader.
+- **r4:** Regenerated the walk-forward with the target cutoff `t + h <= F` asserted. The r3 script had used `t + h <= 1982`.
+  Froze v1.2 as the joint model, deferred the learner-based v1.3, corrected the zero-median wording, measured runtime and
+  determinism, and added the spatial-block bootstrap.
+- **r3:** Removed post-origin station information. Made the champion verdict the keep rule. Added the `average30 + G` route and
+  one deploy path. Moved to the centred estimator. Added the walk-forward and the design-overlap table.
 
 ---
 
 ## 1. Strategy and model-selection logic
 
-### 1.1 What the data say (years <= 1982 only; method in appendix A)
+### 1.1 What the data say (years <= 1982; `planA_section1.py`)
 
-Inputs are `data/annual_valid.csv` and `data/city_info.csv`, cut at 1982 right after reading. No year in 1983-2018, no
-`private/` file and no run output was read for design.
+Both scripts parse the whole `data/annual_valid.csv` and `data/city_info.csv`, then keep only years <= 1982 (asserted) before
+computing anything. No `private/` file and no run output was read. Every table in this section fits and scores on the same
+pre-1983 era. These tables are descriptive; the out-of-sample evidence is section 3.4.
 
-**Spatial correlation is strong for temperature and weak for precipitation.** Median pairwise correlation of annual anomalies,
-1941-1982:
+**Spatial correlation** (median pairwise correlation of annual anomalies, 1941-1982, pairs with >= 25 shared years):
 
 | Distance (km) | 0-250 | 250-500 | 500-750 | 750-1000 | 1000-1500 | 1500-2500 | >2500 | e-folding |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| annual_avg_temp | 0.77 | 0.71 | 0.64 | 0.54 | 0.38 | 0.10 | -0.19 | ~1180 km |
-| cdd | 0.76 | 0.67 | 0.57 | 0.45 | 0.28 | 0.01 | -0.15 | ~1030 km |
-| hottest_day_temp | 0.67 | 0.52 | 0.40 | 0.30 | 0.18 | 0.00 | -0.13 | ~860 km |
-| total_precip_in | 0.60 | 0.42 | 0.27 | 0.18 | 0.10 | 0.04 | 0.00 | ~750 km |
+| annual_avg_temp | 0.77 | 0.71 | 0.64 | 0.54 | 0.38 | 0.10 | -0.19 | 1176 km |
+| cdd | 0.76 | 0.67 | 0.57 | 0.45 | 0.28 | 0.01 | -0.15 | 1026 km |
+| hottest_day_temp | 0.67 | 0.52 | 0.40 | 0.30 | 0.18 | 0.00 | -0.13 | 859 km |
+| total_precip_in | 0.60 | 0.42 | 0.27 | 0.18 | 0.10 | 0.04 | 0.00 | 746 km |
 
-Median distance to the 1st, 5th, 15th and 30th nearest city: 104, 234, 423 and 634 km.
+Median distance to the 1st, 5th, 10th, 15th and 30th nearest city: 104, 234, 346, 423 and 634 km.
 
-**Subtracting the neighbour mean removes much of the weather noise.** `R = city anomaly - mean of its 15 nearest cities'
-anomalies`, 1941-1982:
+**Relative anomaly** `R = anomaly - mean of 15 nearest`, 1941-1982:
 
 | Metric | sd(anomaly) | sd(R) | lag-1 anomaly | lag-1 R | lag-5 R |
 |---|---:|---:|---:|---:|---:|
-| annual_avg_temp | 1.26 F | 0.70 F | 0.30 | 0.57 | 0.15 |
-| cdd | 184 | 114 | 0.25 | 0.46 | 0.11 |
-| hottest_day_temp | 2.99 F | 2.08 F | 0.14 | 0.14 | 0.00 |
-| total_precip_in | 7.26 in | 5.30 in | 0.05 | 0.06 | 0.01 |
+| annual_avg_temp | 1.257 F | 0.702 F | 0.30 | 0.57 | 0.15 |
+| cdd | 183.6 | 113.8 | 0.25 | 0.46 | 0.11 |
+| hottest_day_temp | 2.990 F | 2.078 F | 0.14 | 0.14 | 0.00 |
+| total_precip_in | 7.260 in | 5.296 in | 0.05 | 0.06 | 0.01 |
 
-**The local part is the era-stable one.** Pooled OLS of the lead-4-7 departure on three parts of the 10-year gap: national
-(cross-city median), regional (15-NN mean minus national) and local (own minus regional). Pseudo-origins 1950-1975, national
-part removed from the target:
+**Decomposition.** OLS without intercept of the lead-4-7 departure on three parts of the 10-year gap: national, regional
+(15-NN) and local. The national part is removed from the target for the era columns.
 
-| Metric | regional 1950-62 | regional 1963-75 | local 1950-62 | local 1963-75 |
-|---|---:|---:|---:|---:|
-| annual_avg_temp | 0.11 | 0.70 | 0.66 | 0.54 |
-| cdd | 0.58 | 0.82 | 0.69 | 0.51 |
-| hottest_day_temp | 0.25 | 1.42 | 0.53 | 0.44 |
-| total_precip_in | -0.37 | -0.53 | 0.39 | 0.29 |
+| Metric | 1950-75 [national, regional, local] | regional 1950-62 / 1963-75 | local 1950-62 / 1963-75 |
+|---|---|---|---|
+| annual_avg_temp | 1.324, 0.371, 0.602 | +0.11 / +0.69 | +0.65 / +0.52 |
+| cdd | 1.079, 0.722, 0.610 | +0.58 / +0.82 | +0.69 / +0.50 |
+| hottest_day_temp | 1.380, 0.695, 0.495 | +0.25 / +1.41 | +0.53 / +0.43 |
+| total_precip_in | -0.361, -0.402, 0.332 | -0.37 / -0.53 | +0.38 / +0.29 |
 
-The national coefficient for temperature over 1950-1975 is 1.32: recent national cold persisted in the cooling era, which is
-lesson 1's effect. Regional coefficients change several-fold between eras. Local ones stay within about 0.2 (largest gap: CDD,
-0.18).
+- The local coefficient is the era-stable one.
+- The national coefficient for temperature, 1.32 over 1950-75, shows that recent national cold persisted in the cooling era.
+  That is lesson 1's effect, and it is why the national increment in v1.3 is floored at 0 (section 1.3).
 
-**Declared estimator, in-era description (same-era best coefficient; descriptive only).** These tables fit and score on the
-same years, so they carry no cutoff and are not out-of-sample evidence; that is section 3.4.
+**Declared centred estimator, in-era best coefficient** (skill of `ref30 + b centre(L)` against ref30, leads 4-7, clipped). The
+last column adds the best `b centre(L)` to the v0.5-like proxy `0.5 (ref30 + W) + 0.5 combo`:
 
-The estimator is the centred L of section 2. The table gives skill of `ref30 + b * centre(L)` against `ref30`, leads 4-7. The
-last column adds the best `b * centre(L)` to the v0.5-like proxy `0.5 (ref30 + W) + 0.5 combo` (no learners):
-
-| Metric | 1915-35: b, skill | 1950-62: b, skill | 1963-75: b, skill | gain over v0.5-like proxy (3 eras) |
+| Metric | 1915-35: b, skill | 1950-62 | 1963-75 | gain over the proxy (3 eras) |
 |---|---|---|---|---|
 | annual_avg_temp | 0.65, +0.00865 | 1.00, +0.05054 | 0.65, +0.01433 | 0.00000 / +0.00600 / 0.00000 |
-| total_precip_in | 0.70, +0.00670 | 0.75, +0.00685 | 0.40, +0.00219 | same as skill (proxy = ref30) |
-| hottest_day_temp | 0.65, +0.01348 | 0.65, +0.01483 | 0.55, +0.01045 | same as skill (proxy = ref30) |
+| total_precip_in | 0.70, +0.00670 | 0.75, +0.00685 | 0.40, +0.00219 | same (proxy = ref30) |
+| hottest_day_temp | 0.65, +0.01348 | 0.65, +0.01483 | 0.55, +0.01045 | same (proxy = ref30) |
 | cdd | 0.60, +0.00937 | 0.90, +0.03534 | 0.70, +0.01901 | +0.00011 / +0.00372 / +0.00022 |
 
-Against the 30-year average, the local term helps all four metrics in all three eras. Against a combo-based base it helps only
-precipitation and hottest day, because combo's last-10 mean already carries the temperature and CDD local signal. That is why
-the promotion route is built on the 30-year average.
-
-v1.2 in-era (0.1 grid, combined centring), skill of `ref30 + centre(b L + g L_long)`:
+v1.2 in-era, skill of `ref30 + centre(b L + g L_long)` on a 0.1 grid:
 
 | Metric | 1915-35: b, g, skill | 1950-62 | 1963-75 |
 |---|---|---|---|
@@ -130,92 +134,160 @@ v1.2 in-era (0.1 grid, combined centring), skill of `ref30 + centre(b L + g L_lo
 | hottest_day_temp | 0.6, 0.0, +0.01343 | 0.6, 0.5, +0.01723 | 0.6, 0.2, +0.01157 |
 | cdd | 0.6, 0.5, +0.00997 | 1.0, 0.5, +0.03815 | 0.8, 0.3, +0.02092 |
 
-### 1.2 Chosen model
+### 1.2 Chosen models and the finding each targets
 
 ```
-v1.1:  forecast(c, m, O+h) = clip_m( ref30(c, m, O) + G(c, m, O) ),   G = beta_m * centre(L_raw)
-v1.2:  same, with                                                     G = centre(beta_m * L_raw + gamma_m * L_long_raw)
-clip_m = max(0, .) for total_precip_in and cdd, identity otherwise. G is the same for all seven leads.
+v1.1:  forecast(c, m, O+h) = clip_m( ref30 + G ),          G = beta_m * centre(L_raw)
+v1.2:  forecast            = clip_m( ref30 + G ),          G = centre(beta_m * L_raw + gamma_m * L_long_raw)
+v1.3:  forecast            = clip_m( ref30 + I_m + G ),    G as v1.1, beta refitted with I in the base
+       I_temp  = KAPPA * min(max(N, 0), CAP_F)             (same for every city with a 30-year mean)
+       I_cdd,c = I_temp * rho_c                            I = 0 for precipitation and hottest day
+clip_m = max(0, .) for total_precip_in and cdd. G and I are the same for all seven leads.
 ```
+
+| Version | Insight finding targeted (`evaluation/INSIGHTS.md`, v0.9) | Hypothesis, written before scoring |
+|---|---|---|
+| v1.1 | 1. Persistent per-city temperature offsets (32% of squared error, honest +0.98) | A city's recent departure from its neighbours persists (local coefficient stable across eras), so `ref30 + beta centre(L)` removes part of the persistent city error. This holds for all four metrics, without the shared-warming exposure. |
+| v1.2 | 1, the same finding, via a robust city level | The 30-year mean carries about `sd(R)/sqrt(30)` of local sampling noise (0.97 in precipitation, 0.38 F hottest day). A 60-year relative offset estimates the stable city level better. |
+| v1.3 | 2. Regime sensitivity: the level bias flips sign by origin, so a constant correction fails | A level correction computed at each origin from its own recent national decade, damped by 0.5, capped, and falling back to the 30-year average whenever the gap is <= 0, captures part of a sustained warm shift without the -9-point failure of an extrapolated trend. |
+
+Not targeted:
+- **Finding 3** (northern zones about -0.5 points each): the zone contributions of v1.1-v1.3 are read from insights after
+  scoring, and no zone-specific change is planned.
+- **Finding 4** (CDD departures too large, best scaling 0.72): v1.x has no W departures. Its CDD graph coefficient is already
+  fitted in-fold, between 0.45 and 0.75.
+- **Finding 5** (precipitation): low priority, as insights says.
 
 Why the 30-year average base:
+- The champion is `control:average30`, so v1.1's paired comparison differs from it only by G.
+- The W-based base loses -9.22 points in 1940-49 (section 3.4).
+- Shared weather still enters each city's absolute error in both runs, so the paired difference is less noisy, not noise-free.
 
-- **The champion is `control:average30`.** The paired comparison then differs from the champion only by G, a city-relative
-  adjustment with zero cross-city median. The median adjustment is 0, but the median forecast level can still move. Shared
-  weather enters each city's absolute error in both runs, so the paired difference is less noisy but not noise-free.
-- **The warming term is the source of the 1990-type loss.** In the walk-forward (section 3.4), the v0.5-like proxy scored
-  -9.22 final points in the 1940-49 held-out block. In that block 84% of median-city warming rates were positive just before
-  warming stalled. The proxy scored +3.75 and +2.66 in the cooling-era blocks, where rates were mostly floored at 0. Adding even
-  0.5 W to the graph base turned 1940-49 from +0.66 to -2.82 points. Promotion needs wins on 2 of 3 origins and no metric
-  below -2 points; W exposure risks both.
-- **The cost:** no warming gain at 1983/1997. Carrying W with the graph term is v1.3, deferred (section 5).
+### 1.3 The national warm increment (v1.3)
 
-Fit to the rest of the data:
-- **Size:** one fixed linear operator plus one or two scalars per metric, each fitted on roughly 25,000-30,000 city-years.
-- **Noise:** sd(R) is 27-44% below sd(anomaly).
-- **Scoring:** coefficients minimise MAE of the exact deployed forecast.
-- **Cost:** about 7 s per origin, measured.
+**Why it is needed (Grok).**
+- G has zero cross-city median, and the neighbour subtraction removes any uniform anomaly, so v1.1 matches climatology on the
+  continental warm shift.
+- REWARD.md says the development periods had weaker warming than 2019-2025.
+- A model with no level term is biased cold for the challenge if warming continues.
 
-### 1.3 Alternatives considered and rejected
+**Reused development evidence, disclosed.** These numbers come from development years. They shaped the decision to add v1.3
+and its fallback design. They were not used to set KAPPA or CAP_F, and this plan did not compute them:
+- Grok, final-lead cross-city temperature residuals against the 30-year mean: +0.79 F (1987-1990), +0.14 F (1994-1997),
+  +0.73 F (2001-2004).
+- Grok: the undamped shift "cross-city median of the last-10 mean minus the 30-year mean" was worth about +13 temperature points
+  at origin 1997 and about -5 at 1990.
+- Insights: v0.9's level bias flips sign (temperature -0.98 / +0.52 / -0.20 F at 1983 / 1990 / 1997; CDD -84 / +62 / -2).
 
-Kernel comparison with the declared centred estimator (mean over three eras of in-era best skill; descriptive):
+**What pre-1983 data can and cannot say.**
+- The mean share of cities with a positive floored 30-year warming rate is 84% in 1940-49, 15% in 1950-62 and 9% in 1963-75.
+- The national 10-year gap N was positive only in 1940-49 (mean +0.19 F, max +0.65) and negative throughout 1950-75 (-0.13 to
+  -0.54 F).
+- There is no pre-1983 era of sustained warming, so the data cannot estimate the coefficient of a warm shift. They can only
+  measure the cost when warming stalls (1940-49).
+
+**Formula (fixed).** At origin O:
+1. N = the cross-city median, over cities with a 30-year mean and >= 5 valid years in O-9..O, of
+   `mean(valid years in O-9..O) - ref30`.
+2. `I_temp = 0.5 * min(max(N, 0), 1.0 F)`, added to every city's annual_avg_temp forecast at all leads (cities with a 30-year
+   mean only).
+3. `I_cdd,c = I_temp * rho_c`. `rho_c` is v0.5's regional CDD response: the OLS slope of annual CDD on annual mean temperature
+   over O-29..O (>= 15 joint valid years), averaged over the city and its 15 nearest, NaN to 0, floored at 0.
+
+**How the parameters were chosen, in place of estimation.**
+- **Floor at 0.** This is the physical prior that the shift being forecast is warming. It also follows lesson 1: the national
+  cold persistence of 1950-75 (coefficient 1.32) is the era-specific signal that cost the learners in v0.1, and a symmetric
+  increment would bring it back. The diagnostic row "raw national shift" (unfloored, uncapped, KAPPA 1) shows this. It gains
+  +5.16 and +2.29 points in the cooling blocks by persisting cooling, and loses -1.21 in 1940-49. It is not a candidate.
+- **KAPPA = 0.5.** Write N as persistent signal plus decadal noise:
+  - coefficient 0 is climatology (all noise);
+  - 1 is full persistence of the recent decade's level;
+  - 2 is a linear trend extrapolated to leads 4-7 (the leads sit about 20 years after the centre of the 30-year window, the
+    last decade's centre about 10);
+  - in 1940-49 the coefficient that would have helped was <= 0.
+
+  0.5 is halfway between climatology and persistence, below the trend value. It is the same 50/50 shrinkage the series already
+  uses (v0.5's combo weight), adopted as a convention, not fitted.
+- **CAP_F = 1.0 F on N** (so the increment is at most 0.5 F). It bounds the damage from an exceptional national decade
+  independent of the data. It was set as a round value above the pre-1983 range of N, so it binds only in exceptional decades.
+  It never bound in 1940-1975 (max N +0.65). Whether it binds at the development origins or at 2018 is logged, not assumed.
+- **CDD through rho**, not a uniform degree-day shift. Warming of x F adds about x times the city's local response, which is
+  near 0 in cool cities and large in hot ones.
+
+**Pre-1983 cost (walk-forward, section 3.4):**
+- v1.3 minus v1.1 is -0.47 / +0.01 / +0.00 final points by block.
+- In 1940-49 the temperature points fall from +1.38 to +0.04, CDD from +0.42 to -0.13, and the positive share from 70% to 50%.
+- It does not repeat W's -9.22, because the increment is at most 0.5 F and is not extrapolated.
+
+### 1.4 Alternatives considered and rejected
+
+Kernel horse-race (`planA_section1.py` (f); mean over three eras of in-era best skill, centred L, clipped):
 
 | Graph | temp | precip | hottest | cdd | mean |
 |---|---:|---:|---:|---:|---:|
-| 5-NN equal | +0.0217 | +0.0037 | +0.0115 | +0.0152 | +0.0130 |
-| 15-NN equal (v0.3's graph) | +0.0240 | +0.0052 | +0.0112 | +0.0182 | +0.0147 |
-| 25-NN equal | **+0.0274** | **+0.0055** | +0.0122 | +0.0204 | **+0.0164** |
-| Gaussian 300 km | +0.0239 | +0.0049 | +0.0116 | +0.0170 | +0.0144 |
-| **Gaussian 600 km (declared in r1, kept)** | +0.0245 | +0.0052 | **+0.0129** | +0.0203 | +0.0157 |
-| ordinary kriging (exp. cov., e-fold per metric, nugget 0.25, 30 nearest) | +0.0222 | +0.0046 | +0.0107 | +0.0155 | +0.0133 |
+| 5-NN equal | +0.0217 | +0.0037 | +0.0115 | +0.0163 | +0.0133 |
+| 15-NN equal (v0.3's graph) | +0.0240 | +0.0052 | +0.0112 | +0.0190 | +0.0149 |
+| 25-NN equal | **+0.0274** | **+0.0055** | +0.0122 | **+0.0215** | **+0.0166** |
+| Gaussian 300 km | +0.0239 | +0.0049 | +0.0116 | +0.0181 | +0.0146 |
+| **Gaussian 600 km (declared in r1, kept)** | +0.0245 | +0.0052 | **+0.0129** | +0.0212 | +0.0160 |
+| ordinary kriging (exp. cov., e-fold per metric, nugget 0.25, 30 nearest) | +0.0222 | +0.0046 | +0.0107 | +0.0164 | +0.0135 |
+| correlation-learned (top 10 of 30 nearest by first-difference corr., corr^2) | +0.0259 | +0.0046 | +0.0105 | +0.0191 | +0.0150 |
 
-25-NN leads by 0.0007 mean skill (0.07 points). I keep the 600 km kernel declared in r1: the difference is below the spread
-between eras, and switching now would be selection on the same years. 25-NN is ablation 2. The 600 km kernel has a median of 45
-effective neighbours (`1 / sum w^2`; 10th percentile 19), and no city has kernel mass below 1.
+25-NN leads by 0.0006 mean skill, and in the walk-forward by 0.00 / +0.06 / +0.11 points per block (section 3.4). I keep the
+kernel declared in r1:
+- The gap is below the triplet-level noise.
+- Switching after seeing two comparisons on the same years is the kind of repeated choice the ladder is meant to prevent.
+
+The 25-NN result is reported as a diagnostic.
+
+Rejected alternatives against centred L (`planA_section1.py` (g)-(i); in-era best b on 0-1.5, skill against ref30):
+
+| Metric | 1915-35: L / EB / break | 1950-62 | 1963-75 |
+|---|---|---|---|
+| annual_avg_temp | +0.0086 / +0.0083 / +0.0058 | +0.0507 / +0.0470 / +0.0597 | +0.0143 / +0.0133 / +0.0148 |
+| total_precip_in | +0.0067 / +0.0000 / +0.0056 | +0.0069 / +0.0000 / +0.0044 | +0.0022 / +0.0000 / +0.0017 |
+| hottest_day_temp | +0.0135 / +0.0104 / +0.0128 | +0.0148 / +0.0123 / +0.0145 | +0.0105 / +0.0100 / +0.0101 |
+| cdd | +0.0094 / +0.0055 / +0.0087 | +0.0353 / +0.0349 / +0.0397 | +0.0190 / +0.0162 / +0.0176 |
 
 | Candidate | Why not |
 |---|---|
-| Graph neural network / learned message passing (`uv add torch`) | The signal is linear: one high-pass operator and a scalar. Learned messages over 210 nodes and about 40 overlapping snapshots would fit the era-unstable regional part. It also needs a lock change and risks GPU nondeterminism. |
-| Graph-Laplacian per-city coefficients | Needs heterogeneity. The closest cheap test, per-city empirical-Bayes reliability weights, lowered skill on every metric (r2 test, uncentred L; e.g. hottest day 1915-35 +0.0119 to +0.0093). Not recomputed: rejected by a large margin. |
-| Kriging weights | Table above: below the Gaussian kernel on every metric. |
-| Correlation-learned graph | r2 (uncentred): better for temperature only. Not recomputed. |
-| Break-aware local level | r2, centred L: no hottest-day gain; temperature helps in one era only. |
-| Regional precipitation mean reversion (coef -0.37 / -0.53) | Both eras sit in one drought-to-wet cycle; likely era-specific. |
-| Spatial smoothing or damping of W | W's error is shared across nodes, and any damping would be tuned. The no-W base is fixed now. |
+| Graph neural network (`uv add torch`) | The signal is one linear high-pass operator and a scalar. Learned messages over 210 nodes and about 40 overlapping snapshots would fit the era-unstable regional part. It also needs a lock change and risks GPU nondeterminism. |
+| Graph-Laplacian per-city coefficients | The closest cheap test, per-city empirical-Bayes reliability weights (EB above), is below L in every era for every metric, and 0 for precipitation, where the white-noise assumption sends every weight to 0. |
+| Break-aware local level (most significant single split of R, t > 4) | Better for temperature in 2 of 3 eras and for CDD in 1 of 3; worse for hottest day and precipitation in all three. Mixed and not walk-forward tested. Insights finding 1 suggests break-aware levels, so it is the natural next candidate after this round, as one version on its own. |
+| Kriging, correlation-learned graph | Below the Gaussian kernel on the mean. |
+| Regional precipitation mean reversion (-0.37 / -0.53) | Both eras sit in one drought-to-wet cycle; likely era-specific. |
+| Smoothing or damping W | W's error is shared across nodes. The increment in v1.3 replaces W with a bounded level term. |
 
 ---
 
 ## 2. Targets and inputs
 
-**Predicted:** the level `predicted_value`. Internally it is a shift from `ref30(c, m, O)`, the official 30-year mean (>= 10
-valid years), as produced by `evaluation.adapters.reference(..., method="average")`. Implementation check: with G = 0, v1.1
-equals `control:average30`.
+**Predicted:** the level `predicted_value`. Internally it is a shift from `ref30(c, m, O)`, as produced by
+`evaluation.adapters.reference(..., method="average")`.
 
-**Inputs:** suite `train` per fold and `data/city_info.csv` (lat/lon, `static_context`), with manifest
-`notebooks/Meet/placeholder-v0.1-assets.json`. The runs are `official` and gate-eligible. The plan uses no `features-v1`,
-`clean-v1`, `enhance-v1/v2`, daily data or ocean loader. SST indices (`code/enhance_ocean.load_ocean_for_origin`, `enhance-v2`)
-are basin-scale low-pass signals, which G is built to exclude, and they would make runs exploratory. If a later version used
-them, it would load them through that function and score with `--assets evaluation/enhance-v2-assets.json` (entries copied into
-its own manifest, binding only `data/processed/releases/enhance-v2/` paths), outside the champion route.
+**Inputs, per version:** suite `train` and `data/city_info.csv` (lat/lon, `static_context`), with the manifest
+`notebooks/Meet/placeholder-v0.1-assets.json`.
+- **v1.1, v1.2 and v1.3 read no feature or enhancement release:** no `features-v4`, `features-v5`, `clean-v*` or
+  `enhance-v*`, and no daily data.
+- The `*_qc` / `_fill` / `_homog` / `_adj` columns in the feature releases are fitted on data up to the outer origin, so they
+  would not be causal at pseudo-origins anyway.
+- The SST indices in `enhance-v2` and `features-v5` are low-pass and would make runs exploratory. If a later version used them,
+  it would load them through `code/enhance_ocean.load_ocean_for_origin` and score with the release's assets template, outside
+  the champion route.
 
-**Graph terms at a (pseudo-)origin t, metric m, from years <= t only:**
+**Graph terms at a (pseudo-)origin t, from years <= t only:**
 
-- `K_ij = exp(-(d_ij / 600 km)^2)`, `K_ii = 0`, haversine distance (radius 6371 km), built once.
-- `ref = ref30(t)`. `X` = values for `t-59..t` (NaN invalid). `A = X - ref[:, None]`.
-- `N_c(y) = sum_j K_cj A_j(y) / sum_j K_cj 1[A_j(y) valid]`, NaN where the valid kernel mass is < 1.0. `R = A - N` where X is
-  valid.
-- `L_raw = EWMA_hl(R, valid years in t-29..t) - mean(R, valid years in t-29..t)`. Half-life `hl` = 3 years (temperature,
-  hottest day, CDD) or 6 (precipitation). It needs >= 10 valid R years.
-- `L_long_raw = mean(R, valid years in t-59..t) - mean(R, valid years in t-29..t)`. It needs >= 15 valid R years in t-59..t-30
-  and >= 10 in t-29..t.
-- `centre(v)`: subtract the median over cities where v is defined, then set undefined cities to 0. The cross-city median of
-  the adjustment G is therefore 0. The median forecast level can still move (baseline [0, 10, 20] + [20, 0, -1] moves the
-  median from 10 to 19), and G can correlate with any spatial pattern, including W's.
-  - v1.1: `G = beta * centre(L_raw)`, which equals `centre(beta L_raw)` since beta >= 0. It is defined where L_raw is defined.
-  - v1.2: `G = centre(beta nz(L_raw) + gamma nz(L_long_raw))`, defined where either part is defined, with nz(NaN) = 0.
-
-Every array comes from the fold table cut at the fit origin (`assert_no_post_cutoff`). Neighbours' values come from the same
-years, and coordinates are static.
+- `K_ij = exp(-(d_ij / 600 km)^2)`, with `K_ii = 0` and haversine distance d.
+- `A = X - ref30(t)` on t-59..t. `N_c(y)` is the kernel mean of the neighbours' valid A, NaN if the valid mass is < 1.0.
+  `R = A - N`.
+- `L_raw = EWMA_hl(R, t-29..t) - mean(R, t-29..t)`, with half-life 3 (temperature, hottest day, CDD) or 6 (precipitation). It
+  needs >= 10 valid years.
+- `L_long_raw = mean(R, t-59..t) - mean(R, t-29..t)`. It needs >= 15 valid years in t-59..t-30 and >= 10 in t-29..t.
+- `centre(v)`: subtract the median over defined cities, and set undefined cities to 0. The median adjustment is 0, but the
+  median forecast level can still move (baseline [0, 10, 20] + [20, 0, -1] moves the median from 10 to 19), and G can correlate
+  with any spatial pattern.
+- National increment (v1.3): section 1.3. It is computed from the same cut table. It is the only term that moves every city's
+  level in the same direction.
 
 ---
 
@@ -224,134 +296,143 @@ years, and coordinates are static.
 ### 3.1 Coefficient fit
 
 At the outer origin O:
+1. Take pseudo-origins t in [O-45, O-4], leads h in 4..7, with **t + h <= O** (asserted).
+2. Fit `beta_m` (v1.2: `(beta_m, gamma_m)`) as the argmin over the grid 0.00-1.00 (step 0.05, ascending, first minimum kept) of
+   `mean |y - deploy(base, G)|`. The base is ref30 for v1.1/v1.2 and `ref30 + I(t)` for v1.3, with the increment computed at
+   each pseudo-origin from its own data. With fewer than 2,000 rows the coefficients are 0.
 
-1. For each pseudo-origin t in [O-45, O-4], compute `ref30(t)`, `L_raw(t)` and `L_long_raw(t)`.
-2. Rows: every (t, h) with h in {4, 5, 6, 7} **and t + h <= O**, with `y(t+h)` and `ref30(t)` finite.
-   `assert max(target year) <= O` before the fit, as in the evidence script.
-3. `beta_m` (v1.2: `(beta_m, gamma_m)`) is the argmin over GRID (x GRID) of `mean |y - deploy(ref30, G)|`, using the exact
-   deployed formula with the same centring and clipping.
-   - GRID = 0.00, 0.05, ..., 1.00, scanned in ascending order (gamma outer, beta inner). Ties keep the first, i.e. the smallest
-     gamma, then the smallest beta.
-   - With fewer than 2,000 rows the coefficients are 0.
-4. Forecast: `deploy(ref30(O), G(O))` for all seven leads.
-
-Leads 4-7 match the reward. Live (leads 1-3) gets the same G; it is measured, not assumed (section 3.4).
+**The fit sample is overlapping examples, not independent city-years.** For temperature, F = 1940 gives 22,671 examples on
+5,936 unique target city-years, and F = 1975 gives 30,640 on 7,963. Precipitation is 22,965 / 6,012 and 30,644 / 7,957. A
+target city-year appears a median of 4 times: four leads from four pseudo-origins.
 
 ### 3.2 One assembly path
 
 ```python
-def centre(v):                                      # v: (cities,), NaN = undefined
+def centre(v):
     return np.where(np.isfinite(v), v - np.nanmedian(v), 0.0)
 
-def graph_shift(beta, gamma, L_raw, L_long_raw, use_long):
-    defined = np.isfinite(L_raw) | (np.isfinite(L_long_raw) if use_long else False)
-    v = beta * np.nan_to_num(L_raw) + (gamma * np.nan_to_num(L_long_raw) if use_long else 0.0)
-    return centre(np.where(defined, v, np.nan))
+def graph_shift(beta, gamma, L_raw, L_long_raw, use_long): ...      # as planA_walkforward.graph_shift
 
-def deploy(metric, ref30, G):                       # the only forecast formula: coefficient fit and outer forecast
-    f = ref30 + G
+def national_increment(tables, O, rho):                             # v1.3; 0 for precipitation and hottest day
+    N = median over cities with ref30 and >= 5 valid in O-9..O of (mean(O-9..O) - ref30)
+    I_temp = KAPPA * min(max(N, 0.0), CAP_F)                        # KAPPA = 0.5, CAP_F = 1.0, fixed
+    return {"annual_avg_temp": I_temp, "cdd": I_temp * rho, "total_precip_in": 0, "hottest_day_temp": 0}
+
+def deploy(metric, ref30, G, I=0.0):                                # the only forecast formula (fit and forecast)
+    f = ref30 + I + G
     return np.maximum(f, 0.0) if metric in NON_NEGATIVE else f
-
-def fit_coefs(rows, metric, use_long):              # rows: y, ref30, L_raw, L_long_raw, target_year over (t, h)
-    assert max(rows.target_year) <= fit_origin
-    ...grid scan of mean |y - deploy(metric, ref30, graph_shift(b, g, L_raw, L_long_raw, use_long))|...
 ```
 
-The evidence script implements exactly these functions (`graph_shift`, `deploy`, `coef_rows`, `fit_coefs`). The adapter should
-copy them, add the v0.5 helpers `load_coords` / `_check_coords`, and use `reference(..., "average")` for ref30. There is no gate
-and no inner origin, so no second scoring path exists.
+- The script implements these functions: `graph_shift`, `national_gap`, `national_shift`, `deploy`, `coef_rows`, `fit_coefs`.
+- The adapter copies them, takes `load_coords` and `_check_coords` from v0.5, and uses `reference(..., "average")` for ref30
+  and its fallbacks.
+- On rows without a 30-year mean, G = 0, I = 0, and the forecast is `reference()`'s fallback.
+- There is no gate and no inner origin.
 
-### 3.3 Seeds, determinism, runtime (measured)
+### 3.3 Determinism and runtime (measured)
 
-- No randomness. Grid scans run in fixed order. Kernel sums use broadcasting (`(K[:, :, None] * A[None]).sum(1)`) instead of
-  BLAS `@`, so the result does not depend on thread count.
-- **Measured** with the evidence script on this machine. The script ran one complete origin from a table cut at F (CSV load,
-  pivot, 46 pseudo-origins of graph terms and v0.5-style proxies, v1.1 and v1.2 fits for four metrics, forecast), twice each:
+- No randomness. Grid scans run in fixed order, and kernel sums use broadcasting rather than BLAS `@`.
+- One complete origin from a table cut at F (CSV load, pivot, 46 pseudo-origins, v1.1 + v1.2 + v1.3 fits, forecast), twice
+  each:
 
-| Origin F | run 1 | run 2 | SHA-256 of forecasts (first 16 hex) | identical | equals walk-forward |
-|---|---:|---:|---|---|---|
-| 1940 | 6.7 s | 6.9 s | d2654cef2645705a | yes | yes |
-| 1960 | 6.1 s | 6.5 s | f4b94357cdafa19f | yes | yes |
-| 1975 | 6.0 s | 6.6 s | 75f65a152199aef2 | yes | yes |
+| F | run 1 | run 2 | SHA-256 v1.1+v1.2 | SHA-256 v1.3 | identical | equals walk-forward |
+|---|---:|---:|---|---|---|---|
+| 1940 | 6.5 s | 6.6 s | d2654cef2645705a | 17e785718f01c097 | yes | yes |
+| 1960 | 7.6 s | 6.4 s | f4b94357cdafa19f | a59a425d96ee5df4 | yes | yes |
+| 1975 | 6.8 s | 7.2 s | 75f65a152199aef2 | 1cf734bd8393feb9 | yes | yes |
 
-- The v1.2 21 x 21 grid is most of that time. The adapter skips the W/combo proxies, so it should be faster. The harness limit
-  is 900 s (brief) and 600 s (`evaluate.py run` default).
-- **Not yet measured:** the adapter itself, which is not written. The first implementation step, before any scoring:
-  1. Call `forecast(train, targets, origin=1975)` directly, with `train` = `data/annual_valid.csv` cut at 1975 and a
-     1976-1982 target grid, twice. Compare SHA-256 and time.
-  2. Check equality with this script's 1975 forecast to 1e-9.
-  3. Read `runtime_s` from the first scorecard.
+The v1.1+v1.2 digests are unchanged from r4. The adapter is not written yet; its first checks are in section 5. The harness
+limit is 900 s.
 
 ### 3.4 Chronological evidence (cutoff enforced)
 
-**Procedure** (`planA_walkforward.py`). For each fit origin F = 1940..1975:
-- Fit the coefficients exactly as in section 3.1, with training targets <= F (asserted).
-- Forecast at F and score F+1..F+7 against the 30-year average with the reward formula: pooled over cities,
-  `skill = 1 - MAE / MAE(ref30)`, points = 100 x mean over metrics.
-
-All targets are <= 1982. Three origins (1940, 1960, 1975) were recomputed from a table with every year > F removed, and they
-reproduce the walk-forward coefficients and forecasts exactly.
+For each fit origin F = 1940..1975, the coefficients are fitted with targets <= F (asserted). The forecast at F is scored on
+F+1..F+7 against the 30-year average with the reward formula. Origins 1940, 1960 and 1975 recomputed from a table with every
+year > F removed reproduce the walk-forward exactly.
 
 **Held-out points against average30, by block of fit origins:**
 
 | Candidate | 1940-49 final | 1950-62 final | 1963-75 final | origins > 0 | live by block |
 |---|---:|---:|---:|---|---|
-| **v1.1** avg30 + G(L) | **+0.6582** | **+2.3694** | **+1.0970** | 70% / 100% / 85% | +2.32 / +3.00 / +2.56 |
-| **v1.2** avg30 + G(L, L_long) | **+1.0576** | **+2.4880** | **+1.0703** | 80% / 100% / 85% | +2.71 / +2.97 / +2.46 |
-| diagnostic: avg30 + G(L) + 0.5 W | -2.8193 | +2.1311 | +1.3292 | 40% / 100% / 92% | -0.66 / +2.91 / +2.62 |
-| reference: v0.5-like proxy, no G | -9.2177 | +3.7541 | +2.6594 | 0% / 100% / 100% | -7.20 / +3.08 / +3.83 |
+| **v1.1** | **+0.6582** | **+2.3694** | **+1.0970** | 70% / 100% / 85% | +2.32 / +3.00 / +2.56 |
+| **v1.2** | **+1.0576** | **+2.4880** | **+1.0703** | 80% / 100% / 85% | +2.71 / +2.97 / +2.46 |
+| **v1.3** | **+0.1861** | **+2.3823** | **+1.0989** | 50% / 100% / 85% | +1.87 / +3.02 / +2.57 |
+| diag: v1.1 with 25-NN graph | +0.6621 | +2.4299 | +1.2032 | 70% / 100% / 85% | +2.40 / +3.10 / +2.52 |
+| diag: v1.1 with precip=off | +0.7751 | +2.2058 | +1.0399 | 80% / 100% / 85% | +2.35 / +2.87 / +2.40 |
+| diag: v1.1 + raw national shift (KAPPA 1, unfloored, uncapped) | -1.2126 | +5.1629 | +2.2861 | 40% / 100% / 77% | +0.87 / +3.90 / +4.85 |
+| diag: v1.1 + 0.5 W | -2.8193 | +2.1311 | +1.3292 | 40% / 100% / 92% | -0.66 / +2.91 / +2.62 |
+| ref: v0.5-like proxy, no G | -9.2177 | +3.7541 | +2.6594 | 0% / 100% / 100% | -7.20 / +3.08 / +3.83 |
 
-Per metric, final points by block (temp / precip / hottest / cdd):
-- v1.1: 1940-49 +1.38 / -0.47 / +1.30 / +0.42; 1950-62 +4.40 / +0.65 / +1.49 / +2.94; 1963-75 +1.37 / +0.23 / +1.03 / +1.76.
-  The worst single origin is -1.31 (1940-49).
-- v1.2: 1940-49 +1.69 / +0.03 / +1.76 / +0.75; 1950-62 +4.49 / +0.81 / +1.62 / +3.05; 1963-75 +1.52 / +0.16 / +0.84 / +1.76.
-  The worst single origin is -0.83.
+**Final points by metric** (temp / precip / hottest / cdd):
 
-The 1940-49 block follows early-century warming: 84% of median-city warming rates were positive, against 15% and 9% in the
-later blocks. It is the closest pre-1983 analogue of the 1990 origin.
+| Candidate | 1940-49 | 1950-62 | 1963-75 | worst origin |
+|---|---|---|---|---:|
+| v1.1 | +1.38 / -0.47 / +1.30 / +0.42 | +4.40 / +0.65 / +1.49 / +2.94 | +1.37 / +0.23 / +1.03 / +1.76 | -1.31 |
+| v1.2 | +1.69 / +0.03 / +1.76 / +0.75 | +4.49 / +0.81 / +1.62 / +3.05 | +1.52 / +0.16 / +0.84 / +1.76 | -0.83 |
+| v1.3 | +0.04 / -0.47 / +1.30 / -0.13 | +4.40 / +0.65 / +1.49 / +2.99 | +1.36 / +0.23 / +1.03 / +1.78 | -2.32 |
+
+**National increment, by block** (N is the national 10-year gap; I = 0.5 min(max(N, 0), 1)):
+
+| Block | N mean (range), F | I mean, F | origins with I > 0 | cap binding |
+|---|---|---:|---:|---:|
+| 1940-49 | +0.194 (-0.216 to +0.651) | 0.112 | 80% | 0% |
+| 1950-62 | -0.241 (-0.335 to -0.134) | 0.000 | 0% | 0% |
+| 1963-75 | -0.428 (-0.539 to -0.300) | 0.000 | 0% | 0% |
+
+From 1950 onwards, v1.3 equals v1.1 up to the small change in refitted beta. The pre-1983 test measures only the increment's
+cost when warming stalls, never its benefit.
 
 **Coefficients (beta, gamma) by fit origin** (data <= F only):
 
-| Metric | v1.1 beta, 1940 / 1950 / 1960 / 1970 / 1975 | v1.1 median of 36 | v1.2 (beta, gamma), 1940 / 1950 / 1960 / 1970 / 1975 | v1.2 median of 36 |
-|---|---|---:|---|---:|
-| annual_avg_temp | 0.80 / 0.65 / 0.70 / 0.80 / 0.80 | 0.725 | (0.80,0.45) (0.65,0.35) (0.75,0.40) (0.90,0.35) (0.85,0.40) | (0.75, 0.40) |
-| total_precip_in | 0.80 / 0.60 / 0.55 / 0.50 / 0.45 | 0.55 | (0.80,0.40) (0.60,0.75) (0.60,0.60) (0.55,0.55) (0.60,0.50) | (0.60, 0.65) |
-| hottest_day_temp | 0.60 / 0.60 / 0.65 / 0.65 / 0.60 | 0.65 | (0.60,0.05) (0.60,0.65) (0.65,0.70) (0.65,0.50) (0.65,0.50) | (0.60, 0.65) |
-| cdd | 0.70 / 0.45 / 0.55 / 0.65 / 0.70 | 0.55 | (0.70,0.55) (0.50,0.40) (0.60,0.45) (0.65,0.50) (0.75,0.25) | (0.60, 0.45) |
+| Metric | v1.1 beta 1940 / 1950 / 1960 / 1970 / 1975 (median of 36) | v1.2 (beta, gamma) 1940 / 1950 / 1960 / 1970 / 1975 (median) | v1.3 beta (median) |
+|---|---|---|---|
+| annual_avg_temp | 0.80 / 0.65 / 0.70 / 0.80 / 0.80 (0.725) | (0.80,0.45) (0.65,0.35) (0.75,0.40) (0.90,0.35) (0.85,0.40) (0.75, 0.40) | 0.80 / 0.65 / 0.70 / 0.85 / 0.80 (0.75) |
+| total_precip_in | 0.80 / 0.60 / 0.55 / 0.50 / 0.45 (0.55) | (0.80,0.40) (0.60,0.75) (0.60,0.60) (0.55,0.55) (0.60,0.50) (0.60, 0.65) | same as v1.1 |
+| hottest_day_temp | 0.60 / 0.60 / 0.65 / 0.65 / 0.60 (0.65) | (0.60,0.05) (0.60,0.65) (0.65,0.70) (0.65,0.50) (0.65,0.50) (0.60, 0.65) | same as v1.1 |
+| cdd | 0.70 / 0.45 / 0.55 / 0.65 / 0.70 (0.55) | (0.70,0.55) (0.50,0.40) (0.60,0.45) (0.65,0.50) (0.75,0.25) (0.60, 0.45) | 0.65 / 0.45 / 0.55 / 0.65 / 0.70 (0.55) |
 
-The coefficients for temperature, hottest day and CDD are stable. Precipitation's v1.1 beta falls from 0.80 to 0.45 over
-1940-1975, and its 1940-49 block is negative (-0.47 points) with L alone and +0.03 with L_long. It is the weakest component.
-This is the origin-available persistence evidence: every number uses data <= its fit origin.
+The coefficients are stable for temperature, hottest day and CDD. Precipitation's beta falls from 0.80 to 0.45, and it is the
+weakest component: `precip=off` is 0.12 points better in 1940-49 and 0.06-0.16 worse after.
 
-**Promotion analogue.** Held-out triplets (F, F+7, F+14), F = 1940..1961, spaced like 1983/1990/1997: 22 overlapping triplets,
-compared against average30 with 2,000 draws (seed 20261108). All four `reward.py` guards apply:
-- P(better) >= 0.95 with a positive point estimate;
-- wins on >= 2 origins;
-- live P(worse) < 0.95;
-- every metric's final points >= -2.
+**Promotion analogue, exactly as `reward.py`.** 22 held-out triplets (F, F+7, F+14), F = 1940..1961. Each comparison:
+- 2,000 multinomial draws, with seed 20261108 reset per triplet;
+- only cities with a scored row resampled (205-208);
+- the same draw for every origin, split and metric;
+- `reward.py`'s four guards.
 
-The official city resampling is shown next to two dependence-sensitive schemes that resample whole spatial blocks: 42 cells of
-5 x 5 degrees and 14 of 10 x 10 degrees. Every city in a drawn block gets that block's count.
+Dependence diagnostic: whole spatial blocks resampled instead, 5 x 5 degrees (42 blocks) or 10 x 10 (14 blocks).
 
-| Candidate | resampling | median reward | median P | min P | median 90% LB | min 90% LB | worst floor | promote |
-|---|---|---:|---:|---:|---:|---:|---:|---:|
-| **v1.1** | cities (official) | +1.8532 | 1.000 | 0.958 | +1.1742 | +0.0322 | -0.1058 | 22 / 22 |
-| v1.1 | 5-degree blocks | +1.8532 | 1.000 | 0.951 | +1.0662 | +0.0095 | -0.1058 | 22 / 22 |
-| v1.1 | 10-degree blocks | +1.8532 | 1.000 | 0.956 | +1.0954 | +0.0202 | -0.1058 | 22 / 22 |
-| **v1.2** | cities (official) | +1.8073 | 1.000 | 0.974 | +1.1230 | +0.1186 | -0.0344 | 22 / 22 |
-| v1.2 | 5-degree blocks | +1.8073 | 1.000 | 0.971 | +1.0823 | +0.1119 | -0.0344 | 22 / 22 |
-| v1.2 | 10-degree blocks | +1.8073 | 1.000 | 0.945 | +1.1401 | -0.0219 | -0.0344 | 21 / 22 |
-| diag. + 0.5 W | cities | +1.5124 | 1.000 | 0.000 | +0.8550 | -2.4930 | -5.6441 | 17 / 22 |
-| ref. v0.5-like proxy | cities | +3.0465 | 1.000 | 0.000 | +2.2895 | -7.8548 | -16.0311 | 16 / 22 |
-| ref. v0.5-like proxy | 10-degree blocks | +3.0465 | 0.999 | 0.000 | +1.5743 | -8.5056 | -16.0311 | 16 / 22 |
+| Candidate vs champion | resampling | median reward | median P | min P (triplet) | median 90% LB | min LB | worst floor | promote |
+|---|---|---:|---:|---|---:|---:|---:|---:|
+| **v1.1 vs average30** | cities (official) | +1.8532 | 1.000 | **0.9500** (1960, 1967, 1974) | +1.1659 | +0.0010 | -0.1058 | 22 / 22 |
+| v1.1 vs average30 | 5-degree blocks | +1.8532 | 1.000 | 0.9555 | +1.0889 | +0.0291 | -0.1058 | 22 / 22 |
+| v1.1 vs average30 | 10-degree blocks | +1.8532 | 1.000 | 0.9555 | +1.0805 | +0.0202 | -0.1058 | 22 / 22 |
+| **v1.2 vs average30** | cities (official) | +1.8073 | 1.000 | 0.9765 (1961, 1968, 1975) | +1.1497 | +0.1104 | -0.0344 | 22 / 22 |
+| v1.2 vs average30 | 10-degree blocks | +1.8073 | 1.000 | 0.9445 | +1.1165 | -0.0219 | -0.0344 | 21 / 22 |
+| **v1.3 vs average30** | cities (official) | +1.8609 | 1.000 | **0.9390** (1941, 1948, 1955) | +1.1747 | -0.0451 | -0.1058 | 20 / 22 |
+| v1.3 vs average30 | 10-degree blocks | +1.8609 | 1.000 | 0.9085 | +1.0707 | -0.1567 | -0.1058 | 20 / 22 |
+| v1.2 vs v1.1 | cities | +0.1019 | 0.708 | 0.2560 | -0.1905 | -0.5223 | -0.0344 | 4 / 22 |
+| v1.3 vs v1.1 | cities | +0.0000 | 0.148 | 0.0000 | -0.0099 | -0.8578 | -0.1058 | 3 / 22 |
+| diag 25-NN vs average30 | cities | +1.9090 | 1.000 | 0.9695 | +1.2267 | +0.1118 | -0.0758 | 22 / 22 |
+| diag precip=off vs average30 | cities | +1.7577 | 1.000 | 0.9385 | +1.0849 | -0.0432 | +0.0000 | 21 / 22 |
+| diag raw national shift vs average30 | cities | +3.7372 | 1.000 | 0.4600 | +2.9899 | -0.8688 | -0.8909 | 19 / 22 |
+| ref v0.5-like proxy vs average30 | cities | +3.0465 | 1.000 | 0.0000 | +2.2895 | -7.8926 | -16.0311 | 16 / 22 |
+| ref v0.5-like proxy vs average30 | 10-degree blocks | +3.0465 | 0.998 | 0.0000 | +1.5381 | -8.5361 | -16.0311 | 16 / 22 |
 
-Reading:
-- Block resampling lowers v1.1's median lower bound by 0.08-0.11 points. It lowers the W-based proxy's by up to 0.72: the
-  warming term's gains are spatially clustered, the graph term's are not.
-- The weakest triplet is close to the 0.95 threshold under every scheme (minimum P 0.95-0.96 for v1.1), so a promotion in the
-  development run is plausible but not assured.
-- What the bootstrap cannot show: the triplets overlap, the kernel and half-lives were chosen on these years (section 4.2),
-  and 1984-2004 may behave differently.
+**Monte Carlo error of the verdict at the bar:**
+- v1.1, triplet (1960, 1967, 1974): P = 0.9500 at seed 20261108, with binomial 90% interval [0.9420, 0.9580]. Seeds 1-30 give
+  0.9475-0.9690 (mean 0.9577), and P < 0.95 in 2 of 30.
+- v1.2's weakest triplet (1961, 1968, 1975) is 0.9765, and P < 0.95 in 0 of 30 seeds.
+- v1.3's weakest triplet (1941, 1948, 1955) is 0.9390, and P < 0.95 in 26 of 30 seeds.
+
+What this means:
+- **v1.1 promotes in the analogue only at the bar.** A development promote is plausible, not assured; v1.2 has more margin.
+- Spatial-block resampling lowers v1.1's median lower bound by 0.08-0.09 points, against 0.75 for the W-based proxy. The graph
+  term's gains are spatially spread out; the warming term's are clustered.
+- **v1.3 vs v1.1** is identical or nearly identical on most triplets: the increment is 0 at every fit origin after 1949, and
+  only the refitted beta differs. Exact ties count as neither better nor worse in `reward.py`, hence the median P of 0.148. It promotes on only 3 of 22. If v1.1 promotes first, v1.3 will very likely be `within_noise` against it.
+- The bootstrap cannot show four things: triplet overlap; that the kernel and half-lives were chosen on these years
+  (section 4.2); 1984-2004 behaving differently; and anything about sustained warming.
 
 ---
 
@@ -359,61 +440,95 @@ Reading:
 
 ### 4.1 Fixed in advance vs fitted in-fold
 
-**Fixed now:**
+**Fixed:**
 - Gaussian 600 km kernel, mass floor 1.0.
-- Half-lives {temp 3, hottest 3, cdd 3, precip 6}.
-- Windows of 30 and 60 years, with minimum valid years 10 / 15.
+- Half-lives {3, 3, 3, 6}.
+- Windows of 30 and 60 years, minimum valid years 10 / 15.
 - Combined centring.
-- Grid 0-1, step 0.05, ascending ties.
-- Fit leads 4-7, `t + h <= O`, `MIN_COEF_ROWS` 2000.
-- G on all leads.
-- Base = 30-year average, with no warming term.
+- Grid 0-1, step 0.05, ascending ties. Fit leads 4-7 with `t + h <= O`. `MIN_COEF_ROWS = 2000`.
+- G and I on all leads.
+- Base = 30-year average.
+- v1.3: `KAPPA = 0.5`, `CAP_F = 1.0`, floor at 0, `GAP_MIN_VALID = 5`, CDD conversion through v0.5's rho.
 
-**Fitted in each fold:** beta (v1.1), or beta and gamma (v1.2), at the outer origin from targets <= O. There are no inner
-origins and no gate. No value is chosen after looking at a development score.
+**Fitted in each fold:** beta (and gamma) at the outer origin. N and rho are computed at the origin from its own data. No value
+is chosen after looking at a development score.
 
 ### 4.2 Overlap between design years and the development folds
 
-Design used pseudo-origins 1895-1975 with targets <= 1982. The descriptive eras (1915-35, 1950-62, 1963-75) and the kernel and
-half-life comparisons used the same years, and the walk-forward's held-out targets are inside them.
+Design used pseudo-origins 1895-1975 with targets <= 1982.
 
-| Outer origin | coefficient-fit pseudo-origins (t in [O-45, O-4], t + h <= O) | overlap with design pseudo-origins | targets in fit |
+| Outer origin | coefficient-fit pseudo-origins | overlap with design pseudo-origins | targets in fit |
 |---|---|---|---|
 | 1983 | 1938-1979 | 1938-1975 (38 of 42) | 1942-1983 |
 | 1990 | 1945-1986 | 1945-1975 (31 of 42) | 1949-1990 |
 | 1997 | 1952-1993 | 1952-1975 (24 of 42) | 1956-1997 |
 
-The fixed hyperparameters were chosen on years that also train every development fold. That is allowed, because all of them
-are <= every origin. But the in-fold fit and the walk-forward are not independent evidence for the kernel or half-lives. The
-development targets (1984-2004) were seen by no design choice in this plan; they were reused by earlier versions of the series.
-The 25-NN ablation measures kernel sensitivity on development years.
+- The fixed hyperparameters were chosen on years that also train every development fold, which is allowed.
+- The in-fold fit and the walk-forward are not independent evidence for the kernel or half-lives.
+- This plan computed no number on 1983-2018. Development-year numbers from reviewers and insights shaped v1.3 (section 1.3)
+  and are reused evidence.
 
-### 4.3 Keep rule (one rule, mechanical, fixed now)
+### 4.3 Keep rule, champion record and diagnostic exclusion
 
-The rule uses `uv run python code/evaluation/reward.py score <run_id> --json` against the current champion: `control:average30`
-until something promotes (`reward.py ladder`).
+**Before each version:**
+1. Run `uv run python code/evaluation/reward.py ladder` and record the champion's run id and model in
+   `docs/models/placeholder.md`. Other stations' official runs can change it between versions.
+2. Score the version.
+3. Run `reward.py score <run_id> --against <recorded champion> --json`.
 
-1. **Primary: `promote`.** All four `reward.py` guards must hold: final P(better) >= 0.95 with a positive delta, better on >= 2
-   of 3 origins, live P(worse) < 0.95, and every metric's final points >= -2. A promoted version becomes the champion.
-2. **Otherwise keep over `Placeholder_v0.5` only if both** its 90% lower bound and its reward are strictly higher than v0.5's.
-   Both are computed against the same champion with the same `reward.py`, at the same time. v0.5's values come from
-   `reward.py score 20261108T141546Z-d0ac8f8b36 --json`, read before the first v1.x run and written into
-   `docs/models/placeholder.md`. Its reward is +0.834 (brief).
-3. A `worse` verdict is never kept. Ablations are never kept.
-4. **Secondary evidence only:** `reward.py score <run_id> --against 20261108T141546Z-d0ac8f8b36 --json`. It is reported and never
-   decides. Shared errors do not cancel exactly: each city's paired difference is `|e + d| - |e|`, which depends on the shared
-   error e.
-5. **v1.1 and v1.2 are siblings, both built on `control:average30`.** Each is judged by rules 1-3 on its own. If v1.1 promotes
-   first, v1.2 is compared with the new champion v1.1 by the same `reward.py` rules. If both qualify under rule 2, the
-   candidate follows REWARD.md's order: verdict, then the 90% lower bound, then the reward.
+**Keep rule** (brief sections 5-6):
+1. **Promote** against the recorded champion, with all four `reward.py` guards. A promoted version becomes the champion.
+2. **While nothing from this plan has promoted:** a non-promoting version is carried forward over `Placeholder_v0.5` only if
+   both its 90% lower bound and its reward beat v0.5's, against the same champion. v0.5's values come from
+   `reward.py score 20261108T141546Z-d0ac8f8b36 --json`, read before v1.1 and recorded. After a promotion, a version is carried
+   forward only by promoting against the new champion.
+3. `worse` is never kept.
+4. Secondary evidence, reported but never deciding: the paired comparison against v0.5, and the comparison against
+   `control:average30` when the champion is something else. Shared errors do not cancel exactly in a paired MAE comparison.
 
-There is no fixed point threshold: promotion depends on the bootstrap distribution and the four guards.
+There is no fixed point threshold.
 
-**Pre-registered expectation:**
-- v1.1 final points of +0.5 to +2.0 against average30.
-- Positive on at least 2 origins, including 1990.
-- Hottest day and temperature carry most of the gain; precipitation within ±0.5 points.
-- If v1.1 is negative at 2 or more origins, the pre-1983 persistence does not hold in 1984-2004.
+**Diagnostic exclusion (Sol MUST).** `reward.candidates` puts every complete official run on the locked suite into the ladder,
+whatever its name or tags. An official ablation that happened to clear the bar would become champion, and every extra official
+run is another try at the same three folds. So:
+- **No official development ablations in this round.** The three official runs are v1.1, v1.2 and v1.3, each a real candidate.
+- The questions r4's ablations asked are answered by the pre-1983 diagnostic rows in section 3.4: 25-NN graph, `precip=off`,
+  +0.5 W, and the raw national shift.
+- I rejected the two mechanisms that would make development ablations exploratory:
+  - Scoring from an uncommitted checkout: the label is honest, but the run loses its commit pin and cannot be reproduced.
+  - Declaring an unused non-gate-eligible release: the label would misstate the inputs.
+- If the team wants development ablations, the plan asks the eval station for a `diagnostic` flag in `run.json` that
+  `reward.candidates` skips. Until that exists, none are run.
+
+**Pre-registered expectations (development):**
+- v1.1: +0.5 to +2.0 points against average30, positive at >= 2 origins including 1990. Hottest day and temperature carry the
+  gain; precipitation is within ±0.5. If v1.1 is negative at >= 2 origins, the pre-1983 persistence does not hold in 1984-2004.
+- v1.3: within ±1.5 points of v1.1 at every origin, and below v1.1 at 1990 if the national gap there is positive (reused
+  evidence suggests so). Likely `within_noise` against v1.1 if v1.1 has promoted.
+
+### 4.4 The challenge forecast and the trade-off
+
+A promoted v1.1 is **not** the 2018-origin submission as it stands. Its forecast has the 30-year average's cross-city level,
+and every source available here points to 2019-2025 being warmer (REWARD.md, and Grok's reused residuals). The trade-off:
+
+- **v1.3 helps the challenge forecast**, if warming continued, by up to 0.5 F on temperature and the matching CDD response.
+- **v1.3 costs the development promote.** On the folds it adds a shared shift, which is spread across all cities and cannot be
+  diversified by city resampling. Its sign depends on the origin, and 1990-type origins lose.
+  - In the analogue it promotes on 20 of 22 triplets against average30, against 22 for v1.1.
+  - Its weakest triplet fails in 26 of 30 seeds.
+  - Against a v1.1 champion it promotes on 3 of 22.
+- **The development folds cannot settle this.** Their warming is weaker than 2019-2025, and pre-1983 has no sustained-warming
+  era. A non-promoting v1.3 is not evidence against the increment.
+
+**Pre-declared hand-off recommendation** (it does not change the ladder or the keep rule; the integrator and team decide). For
+the frozen candidate and the 2004/2011 assessment, recommend v1.3 over v1.1 if all of these hold:
+- v1.3's verdict against the champion recorded before it is not `worse`.
+- Every metric's final points are >= -2.
+- Its live points are not clearly worse than average30's.
+
+Otherwise recommend the ladder champion, and state in the README that it carries no national warm shift. The assessment
+origins (2004 targets 2005-2011, 2011 targets 2012-2018) are later and warmer than the development folds, so they are the
+first clean test of the increment.
 
 ---
 
@@ -423,107 +538,76 @@ Each version is one single-file adapter in `notebooks/Meet/`, committed, then sc
 
 ```powershell
 uv run python scripts/line.py status
+uv run python code/evaluation/reward.py ladder                     # record the champion first
 uv run python scripts/line.py score --name Placeholder_v1.1 --adapter notebooks/Meet/placeholder_v1_1.py:forecast `
   --assets notebooks/Meet/placeholder-v0.1-assets.json --suite outputs/evaluation/suite-v3
-# ablation: same command with --name Placeholder_v1.1-<ablation> --params notebooks/Meet/placeholder-v1.1-<ablation>.json
-uv run python code/evaluation/reward.py score <run_id> --json
+uv run python code/evaluation/reward.py score <run_id> --against <recorded champion> --json
+uv run python code/evaluation/insights.py <run_id> --json
 uv run python scripts/line.py sync
 ```
 
-### Placeholder_v1.1: 30-year average + graph-local term (promotion route)
+| Version | Built on | Reads | Change | Finding |
+|---|---|---|---|---|
+| **Placeholder_v1.1** | `control:average30` | `data/city_info.csv` only | `G = beta_m centre(L_raw)`, all metrics, clipped | 1 |
+| **Placeholder_v1.2** | `control:average30` (sibling, run unconditionally) | same | `G = centre(beta_m L_raw + gamma_m L_long_raw)`, joint fit | 1 |
+| **Placeholder_v1.3** | v1.1's definition | same | + national warm increment I (section 1.3), beta refitted with I in the base | 2 |
 
-- **Built on:** `control:average30`.
-- **Change:** `G = beta_m * centre(L_raw)` for all four metrics (section 3.1), with clipping for precipitation and CDD.
-- **Ablations (max 4, diagnostic only, never kept):**
-  1. `coef=fixed`: beta = v1.1 medians of 36 fit origins, rounded down to the grid (temp 0.70, precip 0.55, hottest 0.65,
-     cdd 0.55).
-  2. `graph=knn25`: 25 nearest neighbours, equal weights.
-  3. `warming=half`: plus 0.5 W for temperature and CDD (v0.5's W). Shows the W exposure on development years (pre-1983:
-     -2.82 points in 1940-49).
-  4. `precip=off`: G = 0 for precipitation, the weakest component.
-- **Record:** beta per metric, mean `|G|`, share of cities with G != 0, the median removed by centring, and the median forecast
-  shift (which need not be 0).
+- **Order:** v1.1, v1.2, v1.3. Each is compared with the champion recorded just before it. No other official runs, and no
+  version tuned on a development score.
+- **The learner-based v0.5 + G** stays deferred (r4). Validating it needs residual learners refitted at every walk-forward and
+  inner origin.
+- **Implementation:** v1.1 2-3 h (copy the script's functions); v1.2 and v1.3 about 30 min each on top.
+- **Record per run:** beta (gamma) per metric, mean `|G|`, share of cities with G != 0, the centring median, the median forecast
+  shift, and for v1.3 N, I, whether the cap bound, and the mean CDD increment.
 
-### Placeholder_v1.2: 30-year average + joint graph term (frozen definition)
-
-- **Built on:** `control:average30`. It is run whatever v1.1's result.
-- **Model:** `G = centre(beta_m L_raw + gamma_m L_long_raw)`, with (beta_m, gamma_m) fitted jointly on the 21 x 21 grid by the
-  exact transform. There is no other branch.
-- **Why:** the 30-year mean carries about `sd(R)/sqrt(30)` of local sampling noise (0.97 in for precipitation, 0.38 F for hottest
-  day). Against v1.1 in the walk-forward, v1.2 scored +0.40 / +0.12 / -0.03 points by block. Precipitation's 1940-49 block
-  moved from -0.47 to +0.03, and the worst metric floor across triplets from -0.11 to -0.03.
-- **Ablations (max 3):**
-  - `coef=fixed`: (beta, gamma) = v1.2 medians of 36 fit origins: temp (0.75, 0.40), precip (0.60, 0.65), hottest (0.60, 0.65),
-    cdd (0.60, 0.45).
-  - `long_years=45`, with `MIN_LONG_YEARS` 10.
-  - `long_metrics=hot_precip`: gamma 0 for temperature and CDD.
-
-### Deferred: Placeholder_v1.3 (v0.5 + graph term)
-
-v1.3 is not run in this round. A credible v1.3 needs its complete procedure validated chronologically before any development
-scoring:
-- in-fold beta;
-- residual learners whose targets account for the 0.5 blend weight, i.e. learners fit `2 (y - 0.5 combo - G) - ref30 - W` or an
-  equivalent derived from the deployed formula;
-- inner lambda selection scored on the deployed blend;
-- the deployment itself.
-
-That means refitting HistGBM/Huber at every walk-forward fit origin and inner origin, more than a day of work before the
-2026-11-10 deadline. The pre-1983 analogue also shows that W-based bases lose -9.2 points when warming stalls. If v1.1 or v1.2
-promotes, v1.3 would have to beat it under the ladder.
-
-**Order:** v1.1, then v1.2, each with its ablations. No other versions, and no version tuned on a development score.
-
-**Implementation time:** v1.1 2-3 h (small adapter, by copying the script's functions, plus checks). v1.2 is about 30 min on top.
-
-**Checks:**
-- G has zero cross-city median at every origin.
-- With beta = 0, v1.1 equals `control:average30`.
-- No year > fit origin is read (cut the table at t and compare).
-- The adapter's 1975 forecast on a pre-1983 cut equals the evidence script's.
-- Two runs are identical.
-- No NaN.
+**Checks before scoring:**
+- **Rows with a 30-year mean:** with beta = 0 (and `KAPPA = 0` for v1.3), the forecast equals `control:average30` exactly.
+- **Rows without a 30-year mean** (pre-1983: 16 cities at F = 1940, 3 at 1960, 5 at 1975; the development counts are measured
+  at this check): G = 0 and I = 0 there. The forecast equals `reference(..., "average")`'s fallback exactly: the mean of the
+  valid years in the 30-year window, else the full-history mean, else the metric-wide training median.
+- G has zero cross-city median adjustment at every origin.
+- No year > fit origin is read: cut the table at t and compare.
+- The adapter's 1975 forecast on a pre-1983 cut equals the script's, to 1e-9.
+- Two runs give identical SHA-256 digests. Then read `runtime_s` from the first scorecard.
 
 ---
 
-## 6. How each lesson is addressed
+## 6. How each lesson and finding is addressed
 
-1. **Shared warming (lesson 1).** v1.1 and v1.2 omit W, fixed now from the 1940-49 analogue. They forgo the warming gain and
-   take no warming risk. G's median adjustment is 0, so it adds no era-wide shift to the median city's change. It does not
-   claim to leave the median forecast level or W's spatial pattern untouched.
-2. **The 1990 overshoot (lesson 2).** The promotion route avoids it: there is no W. In the walk-forward, the block after
-   early-century warming cost the W-based proxy -9.22 points and gave v1.1 +0.66 (70% of origins positive). Nothing is tuned on
-   1990. The half-W variant is a diagnostic ablation.
-3. **Zero precipitation and hottest-day skill (lesson 3).** Hottest day gained +1.03 to +1.49 points in every held-out block
-   (v1.1). Precipitation is the weak point, at -0.47 / +0.65 / +0.23 (v1.1) and +0.03 / +0.81 / +0.16 (v1.2), with a falling
-   beta. `precip=off` measures its contribution.
-4. **Noise (lesson 4).** At most two scalars per metric, fitted by MAE. The spatial-block diagnostic shows the city bootstrap
-   is mildly optimistic for G (median lower bound 0.08-0.11 points lower). Verdict first, then the lower bound, then the
-   reward.
-5. **Reused years (lesson 5).** Design used years <= 1982 only; the overlap is in section 4.2. Two versions and at most 7
-   ablations are planned. Only the 2004/2011 assessment is clean.
+1. **Shared warming (lesson 1).**
+   - v1.1 and v1.2 carry none: the median adjustment is 0, and the level effect is not claimed to be zero.
+   - v1.3 carries a bounded, floored national level term, not an extrapolated trend.
+   - The floor keeps out the mid-century cooling persistence that the learners absorbed in v0.1.
+2. **The 1990 overshoot (lesson 2, finding 2).**
+   - v1.1 and v1.2 have no exposure: in 1940-49 they gain +0.66 / +1.06, against -9.22 for W.
+   - v1.3's exposure is bounded at 0.5 F and costs 0.47 points in 1940-49. It falls back to the 30-year average whenever the
+     national gap is <= 0.
+   - Nothing is tuned on 1990.
+3. **Zero precipitation and hottest-day skill (lesson 3).** Hottest day gains +1.03 to +1.49 points in every block.
+   Precipitation is weak: -0.47 / +0.65 / +0.23 (v1.1) and +0.03 / +0.81 / +0.16 (v1.2), with a falling beta.
+4. **Noise (lesson 4).** At most two scalars per metric, fitted on overlapping examples (median reuse 4). The verdict is at the
+   bar for v1.1, with Monte Carlo error reported. Spatial-block resampling shows that the city bootstrap is mildly optimistic
+   for G.
+5. **Reused years (lesson 5).** Design used years <= 1982. Three official runs, and no official ablations. Reused development
+   numbers are disclosed (section 1.3). Only the 2004/2011 assessment is clean.
 
 ---
 
 ## 7. Risks, fallbacks, compute and dependencies
 
-| Risk | Measured so far (pre-1983, cutoff enforced) | Sign in development results | Response |
+| Risk | Measured (pre-1983, cutoff enforced) | Sign in development results | Response |
 |---|---|---|---|
-| Local persistence weaker in 1984-2004 | beta stable for temp, hottest day and CDD; precipitation beta 0.80 to 0.45 | v1.1 negative on >= 2 origins | Report a negative result; ablations show which metric failed; no retuning |
-| Precipitation below -2 points | worst block -0.47 (v1.1), +0.03 (v1.2); worst triplet floor -0.11 / -0.03 | `reward.py` floor | Checked, not assumed |
-| Live clearly worse | live +2.32 to +3.00 points by block (v1.1) | live P(worse) | Measured per run |
-| Promotion only marginal | weakest triplet P 0.95-0.96 under every resampling scheme | P(better) just under 0.95 | Rule 4.3.2 decides; no extra runs to push P up |
-| City bootstrap optimistic | spatial blocks lower v1.1's median LB by 0.08-0.11 points | | Official verdict unchanged; report the block diagnostic alongside |
-| Hyperparameters chosen on evidence years | not measurable | promotes on development, fails assessment | Integrator's one-shot assessment; 25-NN ablation for kernel sensitivity |
-| Edge cities | 10th-percentile effective neighbours 19; mass >= 1 everywhere | large `|G|` | Logged if `|G|` > 2 sd(R) |
-| Adapter differs from script | | 1975 equality check fails | Fix before scoring |
+| v1.1 just misses the promotion bar | weakest triplet P 0.950, below 0.95 in 2 of 30 seeds | P(better) 0.93-0.96 | Rule 4.3.2 decides; no reruns or seed changes to push P |
+| Local persistence weaker in 1984-2004 | beta stable except precipitation (0.80 to 0.45) | v1.1 negative at >= 2 origins | Report a negative result; no retuning |
+| Increment wrong-signed at a development origin | 1940-49 cost -0.47 points | v1.3 below v1.1 at 1990 | Expected; section 4.4 hand-off rule |
+| Precipitation below -2 points | worst block -0.47; worst triplet floor -0.11 | `reward.py` floor | Checked per run |
+| Live clearly worse | v1.1 live +2.32 to +3.00; v1.3 +1.87 to +3.02 | live P(worse) | Measured per run |
+| City bootstrap optimistic | spatial blocks lower median LB by 0.08-0.09 | | Official verdict unchanged; diagnostic reported |
+| Hyperparameters chosen on evidence years | not measurable | promotes on development, fails assessment | One-shot assessment; 25-NN diagnostic shows the kernel sensitivity is small |
+| Champion changes between versions | | | Champion recorded before each version |
+| Adapter differs from the script | | 1975 equality check fails | Fix before scoring |
 
-Fallbacks are not run. Half-weight or half-W variants are diagnostics only.
-
-**Dependencies:** none new (numpy, pandas). No PyTorch, GPU or new data release. The manifest is unchanged.
-
-**Compute:** about 7 s per origin measured for the full v1.1 + v1.2 analogue. At most 2 versions + 7 ablations = 9 runs, a few
-minutes in total.
+**Dependencies:** none new (numpy, pandas), and no data release. **Compute:** about 7 s per origin; 3 official runs.
 
 ---
 
@@ -531,43 +615,45 @@ minutes in total.
 
 Every scored run is mirrored with `uv run python scripts/line.py sync`.
 
-- **Names:**
-  - `Placeholder_v1.1` and `Placeholder_v1.1-{coef_fixed, graph_knn25, warming_half, precip_off}`.
-  - `Placeholder_v1.2` and `Placeholder_v1.2-{coef_fixed, long_years_45, long_metrics_hot_precip}`.
-- **Tags:** `series=Placeholder`, `version`, `plan=A-graph`, `built_on=control:average30`, `ablation`, `label=official`.
-- **Reward block per run (`reward.py score --json`):**
-  - verdict;
-  - final delta, 90% interval, P(better), noise sd;
+- **Names:** `Placeholder_v1.1`, `Placeholder_v1.2`, `Placeholder_v1.3`.
+- **Tags:** `series=Placeholder`, `version`, `plan=A-graph`, `built_on`, `finding=<1|2>`, `label=official`, and
+  `champion_before=<run id>`.
+- **Reward block, against the recorded champion and, secondary, against v0.5:**
+  - the verdict and the four guard booleans;
+  - the final delta, 90% interval, P(better) and noise sd;
   - points by origin and by metric;
-  - live delta and live P(worse);
-  - the four guard booleans.
-  Plus the same block against v0.5 (secondary), and `reward.py ladder` after each version.
-- **Scorecard metrics:** `skill.origin.{1983,1990,1997}`, `skill.final.*`, `skill.live.*`, `bias.*`, `win_rate`,
-  `worst_decile_city_skill`, `p90_error_ratio.*`, `stability.range`, `runtime_s`.
-- **Artifacts:** `placeholder_selection.json` with beta (gamma) per metric, mean `|G|`, nonzero share, centring median and median
-  forecast shift. Results go in `docs/models/placeholder.md`.
+  - the live delta and live P(worse).
+- **Insights per run** (`insights.py --json`):
+  - the city-offset share for temperature (finding 1: should fall for v1.1/v1.2);
+  - the bias by origin for temperature and CDD (finding 2: v1.3);
+  - Central-North and East-North zone points (finding 3);
+  - CDD best scaling (finding 4).
+- **Scorecard metrics:** `skill.origin.*`, `skill.final.*`, `skill.live.*`, `bias.*`, `win_rate`, `worst_decile_city_skill`,
+  `stability.range`, `runtime_s`.
+- **Artifacts:** `placeholder_selection.json` with the coefficients, `|G|`, centring median, median forecast shift and, for
+  v1.3, N, I, the cap flag and the CDD increment. Results go in `docs/models/placeholder.md` with the champion recorded before
+  each version.
 
 ---
 
 ## Appendix A. How the numbers were computed
 
-- **Section 3.4 and every coefficient, block, live, bootstrap, runtime and determinism number:**
-  `docs/plans/creative/analysis/planA_walkforward.py`, run as `uv run python docs/plans/creative/analysis/planA_walkforward.py`
-  from the repository root (about 5 minutes).
-  - It reads only `data/annual_valid.csv` and `data/city_info.csv`, drops years > 1982 with an assertion, and asserts
-    `max(training target year) <= F` before every fit.
-  - It rebuilds three origins from a table cut at F and checks exact equality with the walk-forward.
-  - The bootstraps use 2,000 draws with seed 20261108: multinomial over 210 cities, or over 42 / 14 spatial blocks (cells of
-    `floor(lat / 5), floor(lon / 5)` and `floor(lat / 10), floor(lon / 10)`).
-- **Section 1 tables:** throwaway scripts (`$env:TEMP\planA_analysis*.py`, `planA_r3.py`).
-  - They use the same data and cut, and fit and score on the same era. That is descriptive by design, with no forward
-    cutoff involved.
-  - The correlation, relative-noise and decomposition tables use anomalies against each city's 1941-1982 mean and OLS without
-    intercept.
-  - The in-era, kernel and v1.2 tables use the declared centred estimator.
-  - The empirical-Bayes and correlation-graph results in section 1.3 are r2 (uncentred) numbers for rejected alternatives.
-- **W and the v0.5-like proxy** (used only for the diagnostic and reference rows) follow v0.5's definitions.
-  - W: the 30-year OLS slope averaged over self + 15 nearest, floored at 0. CDD goes through the regional OLS response to
-    temperature (>= 15 joint years), floored at 0. W is extrapolated from the mean valid year.
-  - Combo: `0.5 (30-year OLS line, >= 10 years, else average) + 0.5 (mean of the last 10, else average)` for temperature and
-    CDD; the 30-year average otherwise.
+- **Section 3.4, the coefficients, fit-sample counts, fallback counts, national increment, bootstraps, Monte Carlo, runtime and
+  digests:** `docs/plans/creative/analysis/planA_walkforward.py` (about 5 minutes).
+  - It parses the whole CSV, then keeps years <= 1982 (asserted), and asserts `max(training target year) <= F` before every
+    fit.
+  - Its `compare()` mirrors `reward.py`'s `compare()`: seed reset per call, only cities with a scored row, the same draws for
+    all cells, and the four guards. The champion's skill is 0 when the champion is average30.
+  - Spatial blocks are cells of `floor(lat / 5), floor(lon / 5)` and `floor(lat / 10), floor(lon / 10)`.
+- **Section 1:** `docs/plans/creative/analysis/planA_section1.py` (about 3 minutes). It imports the estimator from the
+  walk-forward script.
+  - Correlations use anomalies against each city's 1941-1982 mean, with pairs needing >= 25 shared valid years. The e-folding
+    length is a least-squares fit of `log corr = -d / L` (corr > 0.05, d < 2000 km).
+  - The decomposition is OLS without intercept on pseudo-origins 1950-1975, leads 4-7.
+  - The in-era and kernel tables pick the best coefficient on the same era, with the declared centred estimator and clipping.
+    Kriging and the correlation graph use row-normalised weights with a valid-mass floor of 0.5.
+  - Empirical-Bayes weights are `tau^2 / (tau^2 + noise)` per city, with noise = `var(R) sum(w^2) / (sum w)^2` and tau^2 from
+    the cross-city mean of `L^2`.
+  - The break level is the mean of R after the most significant single split (>= 3 years each side) when t > 4, else L.
+- **W and the v0.5-like proxy** (diagnostic rows only) follow v0.5's definitions. rho is the same regional CDD response that W
+  uses.
