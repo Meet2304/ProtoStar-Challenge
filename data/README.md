@@ -120,3 +120,85 @@ bytes, provenance and aggregation inputs are archived in
 evaluation/independent/snapshots/v2-acquisition.tar.gz and its SHA256 manifest.
 See evaluation/independent/README.md for chronology, limits and the one-time
 opening rule. No observed 2019+ weather is obtained or used.
+
+## Enhancement releases: fixed city geography (`enhance-v1`)
+
+**Use: forecast input, structural.** The data rule permits these fixed facts from
+any year. This release describes the supplied current station coordinates, not
+historical station segments or a municipal population center. No weather target,
+assessment partition, or post-2018 weather observation is read by this builder.
+
+The authoritative handoff is an immutable assembly-line release, not another
+station's build folder. Run `uv run python scripts/line.py pull enhance-v1` and
+read `data/processed/releases/enhance-v1/static/city_static.csv`. The release
+contains all 210 `city_id` values from the tracked `city_info.csv`, its input hash,
+source snapshots, a column schema, and validation results. No generated data is
+committed to Git; the code and this data card are committed before publication.
+For assembly-line model assets this immutable release path supersedes the older
+scratch-folder guidance above; do not read another station's working directory.
+
+| Fields | Source and edition | Preparation and units | License |
+|---|---|---|---|
+| `lat`, `lon`, `city_id`, `name` | Pinned challenge `city_info.csv` | Identity and observing coordinates, in degrees | CC0-1.0 |
+| `elevation_m`, `elevation_resolution_m`, `elevation_acquisition_date` | USGS 3DEP Elevation Point Query Service and direct 3DEP `getSamples`, response snapshots at acquisition | Ground elevation in meters at each supplied coordinate; preserve raster resolution and source date | U.S. government public domain |
+| `station_catalog_elevation_m`, `station_catalog_lat`, `station_catalog_lon`, `elevation_coordinate_offset_km` | NOAA GHCN-Daily structural station catalog, snapshot at acquisition | Match exact station ID; retain catalog elevation and coordinate offset as context, not as a substitute for ground elevation at the supplied coordinate | U.S. government public data |
+| `distance_to_ocean_coast_km`, `coast_sampling_error_bound_km` | Natural Earth coastline shapefile from Git tag `v5.1.2` | Minimum spherical distance to the ocean coastline sampled at intervals no greater than 0.5 km; sampling alone overestimates by at most 0.25 km | Public domain |
+| `landcover_station_class`, `landcover_dominant_class_1km`, `landcover_*_fraction_1km`, coverage fields | ESA WorldCover 2021, algorithm `v200`, approximately 10 m | Native categorical map values; pixel centers within a 1-km radius, cosine-latitude area weights, exclude nodata class 0; fractions sum to one over valid area | CC-BY-4.0 |
+
+Source links and credits:
+
+- USGS: https://www.usgs.gov/the-national-map-data-delivery/gis-data-download;
+  point API https://epqs.nationalmap.gov/v1/json. **Data available from U.S.
+  Geological Survey, National Geospatial Program.** Each response records its
+  exact query coordinates, retrieval time, raster ID, source date, and resolution.
+  The same 3DEP image service supports batched queries at
+  https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer/getSamples;
+  these use bilinear interpolation and preserve original batch responses and
+  location IDs. EPQS timeouts prompted this alternative. Invalid provider date
+  strings are retained in `elevation_acquisition_date_raw` and normalized to
+  `unknown`, without inventing a date or discarding the valid elevation.
+- NOAA: https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt;
+  field definitions https://www.ncei.noaa.gov/pub/data/ghcn/daily/readme.txt.
+  Menne et al. (2012), GHCN-Daily, https://doi.org/10.7289/V5D21VHZ.
+  Only the structural catalog is downloaded; no `.dly` observation file is used.
+- Natural Earth: https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/;
+  exact file https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/10m_physical/ne_10m_coastline.shp.
+  The `10m` in this name means **1:10 million map scale, not 10-meter accuracy**.
+  The Great Lakes are excluded. Source generalization and using a mean-radius
+  sphere add uncertainty beyond the stated sampling bound. This is not a
+  flood, shoreline-hazard, or nearest-water-body distance.
+- ESA: https://esa-worldcover.org/en/data-access;
+  Zanaga et al. (2022), *ESA WorldCover 10 m 2021 v200*,
+  https://doi.org/10.5281/zenodo.7254221.
+  **© ESA WorldCover project 2021 / Contains modified Copernicus Sentinel data
+  (2021) processed by ESA WorldCover consortium.** The release retains small,
+  losslessly compressed native raster windows with tile URL, extraction window,
+  affine transform and SHA256. These are derived portions, not full tiles.
+
+Class codes: 10 tree, 20 shrub, 30 grass, 40 cropland, 50 built, 60 bare,
+70 snow/ice, 80 permanent water, 90 herbaceous wetland, 95 mangrove, 100 moss/lichen.
+Class codes are categorical. Tree-class fraction is not canopy percentage;
+built-class fraction is not impervious-surface percentage. The 2021 map is a
+fixed structural snapshot permitted by the challenge, not a reconstruction of
+land cover in earlier backtest years. This limitation must accompany any result.
+
+Rebuild (only from this station):
+
+```powershell
+uv run --with rasterio==1.4.3 --with pyshp==2.3.1 python code/enhance_static.py
+uv run python -m unittest discover -s code -p test_enhance_static.py -v
+uv run python code/enhance_static.py --validate outputs/enhancement/static-v1
+uv run --with rasterio==1.4.3 --with pyshp==2.3.1 python code/enhance_static.py --from-release data/processed/releases/enhance-v1 --output outputs/enhancement/static-v1-rebuild
+```
+
+The two extra packages are isolated by `uv run --with`; shared dependency files
+are unchanged. `--offline` rebuilds from the station's saved source cache without
+network access. The published source chips and point-response snapshots support
+independent recalculation of the released features; provider refreshes do not
+silently replace their values. The provenance file records all input checksums
+and source retrieval metadata.
+
+AI use: Codex (GPT-6.1-sol) wrote the acquisition and validation code and this
+source documentation. A person should review the station-location interpretation,
+source licensing, snapshot assumptions and eligibility before model adoption.
+No predictive-value claim is made until a model is scored through `line.py score`.
