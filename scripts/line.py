@@ -30,8 +30,9 @@ import tempfile
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
+import getpass
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT =Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "code"))
 os.environ.setdefault("MLFLOW_DISABLE_AGENT_HINT", "1")
 os.environ.setdefault("MLFLOW_HTTP_REQUEST_MAX_RETRIES", "2")  # fail fast if the server's machine is asleep
@@ -40,7 +41,8 @@ LOCK_PATH = ROOT / "line.lock.json"
 STATIONS = ("clean", "enhance", "features", "train", "eval")
 UPSTREAM = {"features": ("clean", "enhance"), "train": ("features",)}
 EVALUATOR_FILES = ("code/evaluate.py", "code/common.py", *(f"code/evaluation/{name}.py" for name in (
-    "core", "protocol", "worker", "runtime_audit", "assets", "suite_identity", "official_score")))
+    "core", "protocol", "worker", "runtime_audit", "native_io", "phase_policy", "assets", "suite_identity",
+    "official_score")))
 RELEASE_EXPERIMENT = "protostar/releases"
 SUITE_EXPERIMENT = "protostar/suites"
 SUITE_NAME = "suite-v3"
@@ -554,9 +556,12 @@ def serve(host, port, allowed_hosts):
     store.mkdir(parents=True, exist_ok=True)
     config = store / "basic_auth.ini"  # holds no secret: the admin password stays in the environment
     config.write_text(AUTH_TEMPLATE.format(database=(store / "basic_auth.db").as_posix()), encoding="utf-8")
-    if not (store / "basic_auth.db").exists() and not os.environ.get("MLFLOW_AUTH_ADMIN_PASSWORD"):
-        raise LineError("Set MLFLOW_AUTH_ADMIN_PASSWORD (12+ characters) in your shell for the first start.")
     environment = {**os.environ, "MLFLOW_AUTH_CONFIG_PATH": str(config)}
+    if not (store / "basic_auth.db").exists() and not environment.get("MLFLOW_AUTH_ADMIN_PASSWORD"):
+        password = getpass.getpass("First start. Choose an admin password (12+ characters): ")
+        if len(password) < 12:
+            raise LineError("The admin password must be at least 12 characters.")
+        environment["MLFLOW_AUTH_ADMIN_PASSWORD"] = password  # used once by MLflow, never written by this tool
     environment.setdefault("MLFLOW_FLASK_SERVER_SECRET_KEY", secrets.token_hex(32))  # per start, never stored
     command = [sys.executable, "-m", "mlflow", "server", "--app-name", "basic-auth",
                "--backend-store-uri", f"sqlite:///{(store / 'mlflow.db').as_posix()}",
