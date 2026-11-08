@@ -1,0 +1,37 @@
+﻿setup 6.9 s; 210 cities; data years <= 1982
+walk-forward 145.4 s; hottest-day F2 cities per origin: median 0, max 0; rho(hottest) range 0.0198-0.0255
+
+== Held-out final points by metric, mean over the 36 fit origins 1940-1975 (vs average30) ==
+   v1.2                 total +1.5787 | temp +2.6408 precip +0.3582 hot +1.3747 cdd +1.9412
+   v2.7                 total +2.0102 | temp +2.6408 precip +0.3582 hot +3.1005 cdd +1.9412
+   v2.7 diag hot-k1     total +2.1326 | temp +2.6408 precip +0.3582 hot +3.5903 cdd +1.9412
+   v2.8                 total +2.0346 | temp +2.6408 precip +0.4560 hot +3.1005 cdd +1.9412
+   v2.8 diag prcp-w75   total +2.0427 | temp +2.6408 precip +0.4882 hot +3.1005 cdd +1.9412
+   check refit-hot      total +2.0244 | temp +2.6408 precip +0.3582 hot +3.1573 cdd +1.9412
+   v2.7                 minus v1.2 by metric: temp +0.0000 precip +0.0000 hot +1.7258 cdd +0.0000; total better at 83% of the 36 fit origins
+   v2.7 diag hot-k1     minus v1.2 by metric: temp +0.0000 precip +0.0000 hot +2.2156 cdd +0.0000; total better at 81% of the 36 fit origins
+   v2.8                 minus v1.2 by metric: temp +0.0000 precip +0.0977 hot +1.7258 cdd +0.0000; total better at 83% of the 36 fit origins
+   v2.8 diag prcp-w75   minus v1.2 by metric: temp +0.0000 precip +0.1300 hot +1.7258 cdd +0.0000; total better at 83% of the 36 fit origins
+   check refit-hot      minus v1.2 by metric: temp +0.0000 precip +0.0000 hot +1.7826 cdd +0.0000; total better at 83% of the 36 fit origins
+
+== Promotion analogue: 22 triplets (F, F+7, F+14), F = 1940..1961, reward.py-matched city bootstrap ==
+   v1.2                 vs average30 median delta +1.8073  mean +1.8251  median P 1.000  min P 0.9765 at (1961, 1968, 1975)  median LB90 +1.1497  min LB90 +0.1104  2+ wins 22/22  promote 22/22  worst floor -0.034
+   v2.7                 vs average30 median delta +2.5575  mean +2.3751  median P 1.000  min P 0.9050 at (1940, 1947, 1954)  median LB90 +1.8297  min LB90 -0.1077  2+ wins 22/22  promote 21/22  worst floor -0.579
+      v2.7 not promoting at (1940, 1947, 1954): delta -0.3988 P 0.000 LB90 -0.5477 wins 1/3 floor -0.579 by origin -1.12 / +0.18 / -0.25
+      v2.7 not promoting at (1941, 1948, 1955): delta -0.2023 P 0.005 LB90 -0.3261 wins 2/3 floor -0.002 by origin -1.05 / +0.35 / +0.09
+      v2.7 not promoting at (1942, 1949, 1956): delta -0.1072 P 0.048 LB90 -0.2065 wins 2/3 floor -0.034 by origin -0.71 / +0.09 / +0.30
+      v2.7 not promoting at (1943, 1950, 1957): delta +0.0295 P 0.680 LB90 -0.0798 wins 2/3 floor +0.178 by origin -0.67 / +0.19 / +0.56
+   v2.7                 vs v1.2      median delta +0.6450  mean +0.5501  median P 1.000  min P 0.0000 at (1940, 1947, 1954)  median LB90 +0.5028  min LB90 -0.5477  2+ wins 21/22  promote 18/22  worst floor -0.579
+      v2.7 diag hot-k1 not promoting at (1940, 1947, 1954): delta -1.1322 P 0.000 LB90 -1.4386 wins 1/3 floor -3.513 by origin -2.95 / +0.31 / -0.76
+      v2.7 diag hot-k1 not promoting at (1941, 1948, 1955): delta -0.6855 P 0.000 LB90 -0.9504 wins 2/3 floor -1.567 by origin -2.74 / +0.60 / +0.08
+      v2.7 diag hot-k1 not promoting at (1942, 1949, 1956): delta -0.3849 P 0.001 LB90 -0.5886 wins 2/3 floor -0.071 by origin -1.72 / +0.08 / +0.48
+      v2.7 diag hot-k1 not promoting at (1943, 1950, 1957): delta -0.1112 P 0.220 LB90 -0.3273 wins 2/3 floor +0.178 by origin -1.50 / +0.24 / +0.93
+      v2.7 diag hot-k1 not promoting at (1947, 1954, 1961): delta +0.7065 P 1.000 LB90 +0.4238 wins 2/3 floor +0.680 by origin +0.31 / -0.76 / +2.57
+      v2.7 diag hot-k1 not promoting at (1959, 1966, 1973): delta +0.2532 P 0.946 LB90 -0.0027 wins 2/3 floor +0.446 by origin +0.11 / +0.88 / -0.23
+   v2.7 diag hot-k1     vs v1.2      median delta +0.9656  mean +0.7796  median P 1.000  min P 0.0000 at (1940, 1947, 1954)  median LB90 +0.7190  min LB90 -1.4386  2+ wins 21/22  promote 16/22  worst floor -3.513
+   v2.7 diag hot-k1     vs v2.7      median delta +0.3362  mean +0.2296  median P 1.000  min P 0.0000 at (1940, 1947, 1954)  median LB90 +0.2085  min LB90 -0.9020  2+ wins 18/22  promote 10/22  worst floor -3.513
+   v2.8                 vs v2.7      median delta -0.0175  mean -0.0233  median P 0.382  min P 0.0000 at (1950, 1957, 1964)  median LB90 -0.1100  min LB90 -0.2586  2+ wins 6/22  promote 3/22  worst floor -0.579
+   v2.8 diag prcp-w75   vs v2.7      median delta +0.0081  mean +0.0079  median P 0.619  min P 0.0060 at (1950, 1957, 1964)  median LB90 -0.0373  min LB90 -0.1055  2+ wins 10/22  promote 5/22  worst floor -0.579
+   v2.8                 vs v1.2      median delta +0.5775  mean +0.5268  median P 1.000  min P 0.0105 at (1940, 1947, 1954)  median LB90 +0.4205  min LB90 -0.4318  2+ wins 21/22  promote 18/22  worst floor -0.579
+   check refit-hot      vs v1.2      median delta +0.6709  mean +0.5636  median P 1.000  min P 0.0000 at (1940, 1947, 1954)  median LB90 +0.5265  min LB90 -0.5447  2+ wins 21/22  promote 18/22  worst floor -0.563
+   check refit-hot      vs v2.7      median delta +0.0096  mean +0.0136  median P 0.804  min P 0.1565 at (1947, 1954, 1961)  median LB90 -0.0088  min LB90 -0.0842  2+ wins 12/22  promote 2/22  worst floor -0.563

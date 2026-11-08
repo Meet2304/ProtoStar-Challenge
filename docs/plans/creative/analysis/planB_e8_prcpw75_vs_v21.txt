@@ -1,0 +1,6 @@
+﻿r21+prcpw25 vs r21: delta +0.060626, 90% [+0.017973, +0.100684], P(better) 0.9870, origin wins 5/5 (+0.0956 / +0.0392 / +0.0578 / +0.0813 / +0.0293), live delta +0.069183 (P worse 0.0005), candidate metric points +2.5900 / +0.2425 / +2.3528 / +3.8549
+checks {'P>=0.95': True, 'wins>=4': True, 'live not clearly worse': True, 'floor -2': True} -> promote
+v20+hotk1 vs r21: delta +0.271834, 90% [+0.166987, +0.382274], P(better) 1.0000, origin wins 3/5 (+0.1885 / -0.0221 / +1.0385 / +0.6839 / -0.5296), live delta -0.095858 (P worse 0.9040), candidate metric points +2.5900 / +0.0000 / +3.4402 / +3.8549
+checks {'P>=0.95': True, 'wins>=4': False, 'live not clearly worse': True, 'floor -2': True} -> not promote
+v20+hotk1+prcp vs v20+hotk1: delta +0.081938, 90% [-0.005217, +0.163276], P(better) 0.9380, origin wins 5/5 (+0.1579 / +0.0510 / +0.0637 / +0.1286 / +0.0084), live delta +0.096915 (P worse 0.0145), candidate metric points +2.5900 / +0.3278 / +3.4402 / +3.8549
+checks {'P>=0.95': False, 'wins>=4': True, 'live not clearly worse': True, 'floor -2': True} -> not promote
