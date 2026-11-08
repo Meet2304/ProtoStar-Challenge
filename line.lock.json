@@ -6,7 +6,8 @@
   "line_started_utc": "20261108T123419Z",
   "mlflow_uri": "http://127.0.0.1:5000",
   "releases": {
-    "clean": "clean-v1"
+    "clean": "clean-v1",
+    "enhance": "enhance-v2"
   },
   "schema_version": 1,
   "suite_id": "4029caa1fb85cd376baf677e5d89549655684044aac68b6b3efb368eb6e46872"
