@@ -454,7 +454,7 @@ def main():
             row = " ".join(f"{fo}:({coefs[(cand, fo, m)][0]:.2f},{coefs[(cand, fo, m)][1]:.2f})" for fo in show)
             b = np.median([coefs[(cand, fo, m)][0] for fo in FIT_ORIGINS])
             g = np.median([coefs[(cand, fo, m)][1] for fo in FIT_ORIGINS])
-            print(f"   {cand:18s} {m:17s} {row}  | median over 36: ({b:.3f},{g:.3f})")
+            print(f"   {cand:18s} {m:17s} {row}  | median over the 36 fit origins 1940-1975: ({b:.3f},{g:.3f})")
     print("   mean share of cities with a positive floored 30-year warming rate, per block:",
           {b: round(float(np.mean([pre[fo]["wpos"] for fo in fos])), 2) for b, fos in BLOCKS.items()})
 

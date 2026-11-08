@@ -1,4 +1,4 @@
-# Plan A: graph-based spatio-temporal learning for the Placeholder series (v1.x)
+﻿# Plan A: graph-based spatio-temporal learning for the Placeholder series (v1.x)
 
 This plan treats the 210 cities as nodes of a fixed geographic graph. It forecasts the part of each city's recent anomaly that
 its neighbours do not share: the city minus a Gaussian-kernel (600 km) average of its neighbours. That relative series has
@@ -25,7 +25,8 @@ The case for v1.3 rests only on the frozen-parameter walk-forward on pre-1983 da
 
 When N was positive and the warm decades continued (1915-1939), the increment paid about +1.7 to +2.0 points. When warming
 stalled (1940-49) it cost 0.47. When N was negative (1950-75) it did nothing. The early-era rows reuse design-era years, so they
-are reused design-era evidence, not a clean test.
+are reused design-era evidence, not a clean test. The 1915-35 and 1925-39 blocks overlap in 1925-1935, and the 11 early
+triplets overlap each other, so they are supporting descriptions of one stretch of history, not independent replications.
 
 | Final points against average30 | 1915-35 | 1925-39 | 1940-49 | 1950-62 | 1963-75 |
 |---|---:|---:|---:|---:|---:|
@@ -48,7 +49,7 @@ submission:
 Everything is numpy. Runs read no feature or enhancement release, so they are `official`. One origin takes 7-9 s,
 deterministically. No development diagnostics are run, even though the `--diagnostic` flag now exists (section 4.3).
 
-Status: draft r6
+Status: draft r6.1 (r6 plus three wording fixes from Sol's 93/100 review, made by the training station)
 
 Author: strategy planner A (Claude Opus 5.5), 2026-11-08. Brief: `docs/plans/creative/brief.md` (sections 3-7). Reward and
 insights: `evaluation/REWARD.md`, `evaluation/INSIGHTS.md`, `code/evaluation/reward.py`. Evidence scripts:
@@ -67,7 +68,7 @@ Sol's re-review of r5 (88/100): three MUSTs and three SHOULDs, plus the eval sta
 | 2. One decision procedure (MUST) | Sections 4.3 and 4.4 merged into one mechanical procedure. Each version is compared with the champion recorded before it (v1.3 against v1.1 or v1.2 if either promoted). Only a promote changes the champion. The nominee for the assessment and the submission is the latest champion. A non-promoting v1.3 goes to the integrator as a disclosed alternative with its evidence, not a recommendation. The r5 hand-off recommendation is withdrawn. |
 | 3. Historical warming claim and early-era diagnostic (MUST) | Withdrawn: "no pre-1983 era of sustained warming" and "never shows its benefit". N is positive at 95% of fit origins 1915-1935 and at every origin 1925-1939. The script now also fits origins 1915-1939, with the same `t + h <= F` assert and unchanged parameters (at least 8,882 temperature and 9,758 precipitation training examples per fit). It adds a cut-table equality check at F = 1925. v1.3 minus v1.1 is **+1.7341** (1915-35) and **+1.9924** (1925-39), matching Sol. These rows are labelled reused design-era evidence. The trade-off discussion is updated. |
 | 4. Parameter provenance (SHOULD) | The freeze of KAPPA, CAP_F and the floor before the first v1.3 number is described as **author-reported**: no timestamped pre-run declaration exists. The constants and the first v1.3 results were committed together in r5. |
-| 5. Wording (SHOULD) | v1.2's equality check sets gamma = 0 as well as beta = 0 (beta 0 with gamma 0.4 gives G = [-0.8, 0, 0.8] in Sol's check). Fallback counts are per metric: precipitation 16 / 4 / 6, the other metrics 16 / 3 / 5 at F = 1940 / 1960 / 1975. N <= 0 removes I, so v1.3 equals v1.1 (not average30) there. The "same cross-city level" wording is dropped. |
+| 5. Wording (SHOULD) | v1.2's equality check sets gamma = 0 as well as beta = 0 (beta 0 with gamma 0.4 gives G = [-0.8, 0, 0.8] in Sol's check). Fallback counts are per metric: precipitation 16 / 4 / 6, the other metrics 16 / 3 / 5 at F = 1940 / 1960 / 1975. N <= 0 removes I at that origin; v1.3 is then `ref30 + G` (not average30), with a beta that can differ slightly from v1.1's (r6 follow-up after Sol's review; see the equality checks). The "same cross-city level" wording is dropped. |
 | 6. Cap as an amplitude bound (SHOULD) | CAP_F is described only as an amplitude bound. It never bound in 1915-1975 (max N +0.743 F), so it does not explain the 1940-49 result. That cost is reported on its own (-0.4721 points). It is small because N was small (mean +0.19 F, increment mean 0.11 F) and the increment is a level, not an extrapolated slope. |
 | Diagnostic runs (eval station, brief section 7) | None pre-declared. The questions they would answer are covered by the pre-1983 diagnostic rows. Any ablation that looked better would have to be re-scored as a candidate, adding attempts on the same three folds (section 4.3). |
 
@@ -189,7 +190,8 @@ Why the 30-year average base:
    leads, for cities with a 30-year mean.
 3. `I_cdd,c = I_temp * rho_c`. `rho_c` is v0.5's regional CDD response: the OLS slope of annual CDD on annual mean temperature
    over O-29..O (>= 15 joint valid years), averaged over the city and its 15 nearest, NaN to 0, floored at 0.
-4. I = 0 for precipitation and hottest day. When N <= 0, I = 0 and v1.3 equals v1.1 (ref30 + G), not average30.
+4. I = 0 for precipitation and hottest day. When N <= 0, I = 0 at that origin and v1.3 is `ref30 + G` (not average30); its
+   beta is refitted with the earlier increments in the training targets, so it can differ slightly from v1.1's.
 
 **Provenance (author-reported).** I report that KAPPA, CAP_F and the floor were written into the script before it first
 computed a v1.3 number, and that I have not changed them since. There is no timestamped pre-run declaration: the constants and
@@ -524,7 +526,9 @@ and which produces the submission.
    - Any other verdict leaves the champion unchanged.
 4. **Order.** v1.1, then v1.2, then v1.3, each against the champion current at that moment. If v1.1 promoted, v1.2 and v1.3 are
    compared with v1.1. If v1.2 also promoted, v1.3 is compared with v1.2.
-   - v1.3 always uses v1.1's graph definition, whatever v1.1's verdict, so that its comparison isolates the increment.
+   - v1.3 always uses v1.1's graph definition, whatever v1.1's verdict. Against a v1.1 champion its comparison measures the
+     increment including the coefficient refit it causes; against a v1.2 champion it also removes the long-window term, so it
+     then measures both changes together, not the increment alone.
 5. **Carried forward** (brief sections 5-6). While nothing from this plan has promoted, a non-promoting version is recorded as
    "carried forward" over `Placeholder_v0.5` only if both its 90% lower bound and its reward beat v0.5's, against the same
    champion. That status only names the reference for a later round of this series. It never nominates. v0.5's values come from
@@ -552,7 +556,7 @@ So the plan has exactly three official development runs: v1.1, v1.2 and v1.3.
 
 **Pre-registered expectations (development):**
 - v1.1: +0.5 to +2.0 points against average30, positive at >= 2 origins. Hottest day and temperature carry the gain;
-  precipitation is within ±0.5. If v1.1 is negative at >= 2 origins, the pre-1983 persistence does not hold in 1984-2004.
+  precipitation is within Â±0.5. If v1.1 is negative at >= 2 origins, the pre-1983 persistence does not hold in 1984-2004.
 - v1.3 against v1.1 follows the sign of N at the development origins, as in the walk-forward:
   - where N <= 0 the two are nearly identical;
   - where N > 0 the difference has the sign of whether the national warm departure persisted over the next 4-7 years.
@@ -608,7 +612,10 @@ uv run python scripts/line.py sync
   - v1.2 with beta = 0 **and gamma = 0** equals it exactly. With beta = 0 and gamma != 0, G is not zero: Sol's example
     gamma 0.4 gives G = [-0.8, 0, 0.8].
   - v1.3 with beta = 0 and `KAPPA = 0` equals it exactly.
-  - v1.3 with `KAPPA = 0.5` at an origin with N <= 0 equals v1.1 (not average30).
+  - v1.3 with `KAPPA = 0.5` at an origin with N <= 0 has I = 0 at that origin, but it is **not** guaranteed to equal v1.1:
+    the increments at earlier pseudo-origins enter v1.3's coefficient fit, so its beta can differ (Sol's check at F = 1970:
+    N = -0.464 F, temperature beta 0.80 for v1.1 against 0.85 for v1.3, forecasts differing by up to 0.067 F). The check
+    there is I = 0 exactly, and that v1.3 equals `ref30 + G` with its own fitted beta.
 - **Rows without a 30-year mean:** the counts are per metric. Pre-1983 they are precipitation 16 / 4 / 6 and the other metrics
   16 / 3 / 5 at F = 1940 / 1960 / 1975; development counts are measured at this check.
   - G = 0 and I = 0 there.
