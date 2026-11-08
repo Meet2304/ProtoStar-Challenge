@@ -48,7 +48,7 @@ skill means worse than the thirty-year-average baseline. Keep each experiment's
 run ID, parameters and source. Run `uv run python code/evaluate.py diagnose --run outputs/evaluation/runs/RUN_ID` for station, CDD and precision sensitivities. To try the supplied nested-selection example,
 omit `--adapter`; that does not test your own model automatically.
 
-**Enhanced inputs:** the default is `enhance-v2` (`line.py pull enhance-v2`, then `--assets evaluation/enhance-v2-assets.json`). Such runs are exploratory; see [REWARD.md](REWARD.md#enhanced-inputs-enhance-v2-is-the-default-from-2026-11-08).
+**Enhanced inputs:** the default is `enhance-v3` (`line.py pull enhance-v3`, then `--assets evaluation/enhance-v3-assets.json`): static facts, ocean indices and per-origin historical forcing. Such runs are exploratory; see [REWARD.md](REWARD.md#enhanced-inputs-enhance-v3-is-the-default-from-2026-11-08).
 
 **Insights:** `line.py score` also prints ranked findings: where the run loses points, why, honest headroom and what to try. See [INSIGHTS.md](INSIGHTS.md).
 
