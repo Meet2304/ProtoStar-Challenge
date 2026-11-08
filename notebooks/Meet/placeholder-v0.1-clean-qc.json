@@ -1,0 +1,8 @@
+{
+  "inputs": {
+    "annual_avg_temp": "qc",
+    "total_precip_in": "qc",
+    "hottest_day_temp": "qc",
+    "cdd": "qc"
+  }
+}

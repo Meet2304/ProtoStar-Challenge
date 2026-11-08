@@ -110,7 +110,7 @@ class ReleaseTests(unittest.TestCase):
     def test_tampered_release_is_detected(self):
         _, folder = line.make_release("clean", self.source("origin-1983.csv"), "a", root=self.root, commit="c")
         target = folder / "origin-1983.csv"
-        target.chmod(stat.S_IWRITE)
+        target.chmod(stat.S_IREAD | stat.S_IWRITE)   # S_IWRITE alone is write-only (0o200) on POSIX
         target.write_text("changed")
         with self.assertRaises(line.LineError):
             line.verify_release_folder(folder)
