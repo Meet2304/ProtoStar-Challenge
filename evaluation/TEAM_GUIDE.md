@@ -48,6 +48,10 @@ skill means worse than the thirty-year-average baseline. Keep each experiment's
 run ID, parameters and source. Run `uv run python code/evaluate.py diagnose --run outputs/evaluation/runs/RUN_ID` for station, CDD and precision sensitivities. To try the supplied nested-selection example,
 omit `--adapter`; that does not test your own model automatically.
 
+**Enhanced inputs:** the default is `enhance-v2` (`line.py pull enhance-v2`, then `--assets evaluation/enhance-v2-assets.json`). Such runs are exploratory; see [REWARD.md](REWARD.md#enhanced-inputs-enhance-v2-is-the-default-from-2026-11-08).
+
+**Reward for training agents:** `line.py score` ends with a reward block (leaderboard points on the final analogue, a paired city bootstrap against the current champion, and a `promote` / `within_noise` / `worse` verdict). See [REWARD.md](REWARD.md).
+
 Use `evaluation/no-assets.json` only for a model that reads no additional files.
 For saved weights, settings or extra inputs, supply your own [asset manifest](ASSETS.md).
 

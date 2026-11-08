@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "files": [
+    {
+      "path": "data/processed/releases/enhance-v2/static/city_static.csv",
+      "kind": "static_context"
+    },
+    {
+      "path": "data/processed/releases/enhance-v2/ocean/origin-1983/annual.csv",
+      "kind": "weather_input",
+      "information_end_year": 1983,
+      "origins": [
+        1983
+      ],
+      "time_column": "year",
+      "time_format": "year"
+    },
+    {
+      "path": "data/processed/releases/enhance-v2/ocean/origin-1983/monthly.csv",
+      "kind": "weather_input",
+      "information_end_year": 1983,
+      "origins": [
+        1983
+      ],
+      "time_column": "date",
+      "time_format": "iso_date"
+    },
+    {
+      "path": "data/processed/releases/enhance-v2/ocean/origin-1990/annual.csv",
+      "kind": "weather_input",
+      "information_end_year": 1990,
+      "origins": [
+        1990
+      ],
+      "time_column": "year",
+      "time_format": "year"
+    },
+    {
+      "path": "data/processed/releases/enhance-v2/ocean/origin-1990/monthly.csv",
+      "kind": "weather_input",
+      "information_end_year": 1990,
+      "origins": [
+        1990
+      ],
+      "time_column": "date",
+      "time_format": "iso_date"
+    },
+    {
+      "path": "data/processed/releases/enhance-v2/ocean/origin-1997/annual.csv",
+      "kind": "weather_input",
+      "information_end_year": 1997,
+      "origins": [
+        1997
+      ],
+      "time_column": "year",
+      "time_format": "year"
+    },
+    {
+      "path": "data/processed/releases/enhance-v2/ocean/origin-1997/monthly.csv",
+      "kind": "weather_input",
+      "information_end_year": 1997,
+      "origins": [
+        1997
+      ],
+      "time_column": "date",
+      "time_format": "iso_date"
+    },
+    {
+      "path": "data/processed/releases/enhance-v2/ocean/origin-2004/annual.csv",
+      "kind": "weather_input",
+      "information_end_year": 2004,
+      "origins": [
+        2004
+      ],
+      "time_column": "year",
+      "time_format": "year"
+    },
+    {
+      "path": "data/processed/releases/enhance-v2/ocean/origin-2004/monthly.csv",
+      "kind": "weather_input",
+      "information_end_year": 2004,
+      "origins": [
+        2004
+      ],
+      "time_column": "date",
+      "time_format": "iso_date"
+    },
+    {
+      "path": "data/processed/releases/enhance-v2/ocean/origin-2011/annual.csv",
+      "kind": "weather_input",
+      "information_end_year": 2011,
+      "origins": [
+        2011
+      ],
+      "time_column": "year",
+      "time_format": "year"
+    },
+    {
+      "path": "data/processed/releases/enhance-v2/ocean/origin-2011/monthly.csv",
+      "kind": "weather_input",
+      "information_end_year": 2011,
+      "origins": [
+        2011
+      ],
+      "time_column": "date",
+      "time_format": "iso_date"
+    }
+  ]
+}

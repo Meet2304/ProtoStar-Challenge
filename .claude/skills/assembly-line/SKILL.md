@@ -32,8 +32,11 @@ If a command fails or a finding is not in this table, stop and ask the integrato
 | To do this | Run |
 |---|---|
 | Score a model | `uv run python scripts/line.py score --name Placeholder_v0.2 --adapter <file.py:forecast> --assets <manifest.json>` |
+| Read a run's reward | Printed by `line.py score`. Or `uv run python code/evaluation/reward.py score <run_id>`; `reward.py ladder` shows the champion. See `evaluation/REWARD.md` |
 | Publish data | Commit, then `line.py release <station> <folder> --note "why"`. Add `--gate-eligible` only if built per origin with nothing after that origin |
 | Get the line's data | `line.py pull`. Declare the files from `data/processed/releases/<id>/` in your asset manifest |
+
+**Reward.** Optimise the reward in `evaluation/REWARD.md`: the verdict first (`promote` beats the champion), then the reward in points. A higher number that is `within_noise` is not progress; do not report it as an improvement.
 
 Your run is `official` only if the code is committed, the evaluator and test set match the lock, and all its data releases are gate-eligible. Anything else is still logged, as `exploratory`. If a run comes out exploratory, read the `line.reasons` tag in MLflow.
 
