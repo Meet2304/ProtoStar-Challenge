@@ -485,7 +485,9 @@ def analyse(rows: pd.DataFrame) -> dict:
 def build(run_dir, against=None, controls=True, runs=RUNS) -> dict:
     meta, rows = load_rows(run_dir)
     final = rows[rows.split == "final"]
+    from evaluation.reward import run_role
     card = {"insights_version": INSIGHTS_VERSION, "run_id": Path(run_dir).name, "model": meta.get("model"),
+            "role": run_role(meta.get("model")),
             "suite_id": meta["suite_id"], "origins": list(meta.get("origins", meta["config"]["origins"])),
             **analyse(rows)}
     if against is not None and Path(against).resolve() != Path(run_dir).resolve():
@@ -503,7 +505,8 @@ def build(run_dir, against=None, controls=True, runs=RUNS) -> dict:
 
 
 def explain(card: dict, top: int = 8) -> str:
-    lines = [f"INSIGHTS {card['model']} ({card['run_id']}): reward {card['reward_points']:+.3f} headline points",
+    role = " [diagnostic: outside the ladder]" if card.get("role") == "diagnostic" else ""
+    lines = [f"INSIGHTS {card['model']} ({card['run_id']}): reward {card['reward_points']:+.3f} headline points{role}",
              "  headroom by metric (headline points): "
              + "  ".join(f"{m} now {h['headline_share']:+.2f} / ceiling {h['ceiling_points'] / 4:+.2f}"
                          for m, h in card["headroom"].items())]
