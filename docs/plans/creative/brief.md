@@ -117,3 +117,21 @@ Lessons so far (details in `docs/models/placeholder.md`, `docs/plans/placeholder
 6. **How each lesson in section 4 is addressed**, especially the 1990 overshoot and zero precipitation skill.
 7. **Risks and fallbacks**, compute budget, and dependencies (new packages, new data releases).
 8. **Tracking:** every scored run goes to MLflow via `line.py sync`; name the metrics to watch.
+
+## 6. Insights and the loop rule (from main `7d3889f`, `evaluation/INSIGHTS.md`)
+
+`line.py score` now prints, after the reward, the top 6 ranked findings (also `uv run python code/evaluation/insights.py
+<run_id> [--json]`). **Loop rule:** pick one top finding per version and write the hypothesis down first; implement the fix
+so it learns only from each origin's training data (never copy a fitted number); keep a version only on a `promote` verdict
+(for non-promoting versions, the lower-bound-and-reward rule in section 5 still decides what is carried forward); rank
+ideas by **honest** (cross-fitted) headroom, not "fit" numbers (v0.9's temperature bias fix is +1.72 fit but -2.69 honest).
+
+What insights say about v0.9 (reward +0.93, within_noise):
+1. Persistent per-city temperature offsets are 32% of squared error (honest headroom +0.98): robust or break-aware city levels.
+2. Regime sensitivity: origin 1990 is -2.11; level bias flips sign by origin (temperature 1983 -0.98 F / 1990 +0.52 F /
+   1997 -0.20 F; CDD -84 / +62 / -2), so a constant correction cannot help. Damp the trend, or fall back to the 30-year
+   average when the trend is unstable.
+3. The Central-North and East-North zones lose about 0.5 points each.
+4. `control:mean10` beats v0.9 on CDD (+0.29) and CDD departures are too large (best scaling 0.72, honest +0.26): blend
+   mean10 in for CDD, or shrink.
+5. Precipitation equals climatology and no control beats it: low priority.
