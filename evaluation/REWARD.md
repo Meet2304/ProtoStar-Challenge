@@ -14,6 +14,8 @@ uv run python code/evaluation/reward.py score <run_id> --against <run_id> --json
 uv run python code/evaluation/reward.py ladder                       # every official run, oldest first
 ```
 
+For *where* a run loses points and what to try next, see [INSIGHTS.md](INSIGHTS.md).
+
 ## The number
 
 The host's formula, applied to our historical analogues
