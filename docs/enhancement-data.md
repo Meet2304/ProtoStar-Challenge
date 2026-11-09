@@ -6,10 +6,16 @@ with `scripts/line.py release`; source and processing documentation live in
 
 The latest enhanced input dataset is pinned in `enhanced/latest.json`. Run
 `uv run python scripts/materialize_enhanced.py` to create the verified real copy
-under `enhanced/enhance-v2/` in your own worktree. The canonical release copy is
+under `enhanced/enhance-v3/` in your own worktree. The canonical release copy is
 also retained for evaluator asset binding and eligibility checks. See
 [`enhanced/README.md`](../enhanced/README.md). New model evaluations should pin
 this latest enhanced input version while preserving its exploratory status.
+
+`enhance-v3` adds historical global radiative forcing to the cumulative static
+and ocean inputs. See [the forcing handoff](forcing-handoff.md) for origin cuts,
+the 1982 design resource, source vintages and the exploratory eligibility call.
+Existing sealed runs retain their previous release bindings; the main lock and
+evaluation-owned defaults are updated only by their owning stations.
 
 ## `enhance-v1`: fixed station geography
 

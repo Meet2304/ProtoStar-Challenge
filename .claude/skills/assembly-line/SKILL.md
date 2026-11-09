@@ -32,6 +32,7 @@ If a command fails or a finding is not in this table, stop and ask the integrato
 | To do this | Run |
 |---|---|
 | Score a model | `uv run python scripts/line.py score --name Placeholder_v0.2 --adapter <file.py:forecast> --assets <manifest.json>` |
+| Score a pre-declared ablation or probe | Add `--diagnostic` to `line.py score`: it is reported but never becomes reward champion |
 | Read a run's reward | Printed by `line.py score`. Or `uv run python code/evaluation/reward.py score <run_id>`; `reward.py ladder` shows the champion. See `evaluation/REWARD.md` |
 | See where a run loses points | Printed by `line.py score`. Or `uv run python code/evaluation/insights.py <run_id>`. See `evaluation/INSIGHTS.md` |
 | Publish data | Commit, then `line.py release <station> <folder> --note "why"`. Add `--gate-eligible` only if built per origin with nothing after that origin |

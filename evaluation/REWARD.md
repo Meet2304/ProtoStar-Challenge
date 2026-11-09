@@ -51,6 +51,15 @@ The ladder replays every official run on the locked suite in time order, startin
 This is the Ladder mechanism (Blum & Hardt, 2015): many agents retrying the same three folds cannot
 push the bar up on noise, because only clear wins move it.
 
+### Diagnostic runs (pre-declared ablations and probes)
+
+Score an ablation or probe with `line.py score --diagnostic --name <name> ...`. Its sealed name becomes
+`diagnostic:<name>`, chosen **before** scoring, and the role cannot be changed afterwards. The run is scored, labelled
+(`official` if it qualifies), synced with the MLflow tag `line.role=diagnostic`, and reported by `reward.py score`
+and the insights. **It never enters the ladder**: `reward.py ladder` lists it as `diagnostic (<verdict>)` and it
+cannot become champion. Declare the role in the plan before running. A model you might adopt must be scored
+without the flag; re-score it as a candidate if a diagnostic turns out to be the better model.
+
 **Optimise in this order:** the verdict first, then the 90% interval's lower bound, then the reward.
 A higher point estimate that stays `within_noise` should not be reported as an improvement.
 
@@ -68,26 +77,38 @@ all `within_noise` (P(better) 0.56–0.84). v0.9's gain is all temperature, CDD 
 (precipitation equals climatology), and it loses on the 1990 origin (−2.1). On the live analogue, v0.3–v0.9
 are clearly better (≈ +2.2 to +3.1, P = 1.00 for v0.9).
 
-## Enhanced inputs: `enhance-v2` is the default (from 2026-11-08)
+## Enhanced inputs: `enhance-v3` is the default (from 2026-11-08)
 
-At the enhancement station's request, newer models that use external context default to **`enhance-v2`**
-(enhancement commit `4c4317e`). It contains static city facts (elevation, coast distance, WorldCover land cover) and the ERSSTv5 Niño 3.4,
-North Pacific and North Atlantic SST indices, with per-origin anomalies, January 1950 to December 2018.
+At the enhancement station's request, newer models that use external context default to **`enhance-v3`**
+(enhancement release commit `ee6cd12`, `release.json` SHA-256 `12c5307f…`). It is cumulative with `enhance-v2`:
+the static city facts and the 40 ERSSTv5 ocean snapshots are byte-identical. It adds **historical effective radiative forcing**
+(IPCC AR6, annual from 1750, W/m²), split into CO2 and other greenhouse gases, aerosols, volcanic, solar, and totals.
+Each origin has its own cut ending at that origin.
 
 ```bash
-uv run python scripts/line.py pull enhance-v2      # canonical, hash-checked copy in data/processed/releases/enhance-v2/
-uv run python scripts/line.py score --name Placeholder_vX --adapter <file.py:forecast> --assets evaluation/enhance-v2-assets.json
+uv run python scripts/line.py pull enhance-v3      # canonical, hash-checked copy in data/processed/releases/enhance-v3/
+uv run python scripts/line.py score --name Placeholder_vX --adapter <file.py:forecast> --assets evaluation/enhance-v3-assets.json
 ```
 
-- [`enhance-v2-assets.json`](enhance-v2-assets.json) declares `static/city_static.csv` (static context) and
-  `ocean/origin-O/{annual,monthly}.csv` as weather inputs with `information_end_year = O`, scoped to their
-  own origin. It covers 1983, 1990 and 1997, plus 2004 and 2011 so a freeze can reuse it. Declaring them does
+- [`enhance-v3-assets.json`](enhance-v3-assets.json) declares `static/city_static.csv` (static context), plus
+  `ocean/origin-O/{annual,monthly}.csv` and `forcing/origin-O/annual.csv` as weather inputs with `information_end_year = O`,
+  each scoped to its own origin. It covers 1983, 1990 and 1997, plus 2004 and 2011 so a freeze can reuse it. Declaring them does
   not open the assessment. A model with its own weights or settings copies these entries into its manifest.
+  It is committed here because the templates in the release's `assets/` folder are git-ignored data, and the harness
+  only accepts a manifest from a committed file.
+- **Use the origin cuts only.** Never declare `forcing/sources/ar6_erf_1750-2018.csv`: it is the full series to 2018 and
+  would leak future forcing into early origins. The harness rejects any year after a file's bound (checked: the 1997 cut
+  declared for 1983 fails). `forcing/design-to-1982/` (and its AR5 reference) is for choosing a design before the first
+  development origin; it is not in the default manifest.
+- The submission origin 2018 has its own cut (`forcing/origin-2018/annual.csv`). The development harness never reads it.
 - Every run pins the release per file: the asset binding stores each file's SHA-256, and `line.py` matches the
-  canonical `data/processed/releases/enhance-v2/` paths to the release to tag the run's lineage. Bind
+  canonical `data/processed/releases/enhance-v3/` paths to the release to tag the run's lineage. Bind
   those paths, not the friendly `enhanced/` copy, which the line does not recognise as a release.
-- **Runs that use `enhance-v2` are `exploratory`** (`enhance-v2 is not gate-eligible`). The ERSSTv5
-  reconstruction vintage is not certified for every early origin. They get a reward and a verdict, which
-  `reward.py score` labels as informative, but they **cannot become champion**. `enhance-v1` (static facts only)
-  is gate-eligible if a model needs only static context and must stay official.
+- **Runs that use `enhance-v3` are `exploratory`** (`enhance-v3 is not gate-eligible`). The forcing comes from a
+  retrospective dataset (AR6, assessed in 2021, data pinned 2021-08-12, cut at 2018). Its aerosol and volcanic
+  values were revised with hindsight and are not certified as known at each origin. The ERSSTv5 caveat from v2 also still
+  applies. These runs get a reward and a verdict, which `reward.py score` labels as informative, but they **cannot become champion**.
+  `enhance-v1` (static facts only) is gate-eligible if a model needs only static context and must stay official.
+- `enhance-v2` and [`enhance-v2-assets.json`](enhance-v2-assets.json) stay as they are, because sealed runs reference them by hash.
+  Do not edit either.
 - Nothing about the targets, scoring arithmetic, sealed runs or assessment policy changes.
