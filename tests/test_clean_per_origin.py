@@ -79,6 +79,22 @@ class LatestYear(unittest.TestCase):
     def test_origins_match_the_evaluation_config(self):
         self.assertEqual(cpo.ORIGINS, (1983, 1990, 1997, 2004, 2011))
 
+    def test_script_allows_only_the_config_origins_and_2018(self):
+        import importlib.util
+        path = Path(__file__).resolve().parents[1] / "scripts" / "03_clean_per_origin.py"
+        spec = importlib.util.spec_from_file_location("clean_per_origin_script", path)
+        script = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(script)
+        self.assertEqual(script.FINAL_ORIGIN, 2018)
+        self.assertEqual(script.ALLOWED, (*cpo.ORIGINS, 2018))
+        argv = sys.argv
+        try:
+            sys.argv = ["03_clean_per_origin.py", "--origins", "2017"]
+            with self.assertRaises(SystemExit):
+                script.main()
+        finally:
+            sys.argv = argv
+
 
 if __name__ == "__main__":
     unittest.main()
