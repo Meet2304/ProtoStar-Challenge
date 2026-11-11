@@ -493,6 +493,16 @@ the user's explicit skip option was taken. The shipped AR6/AR5 experiment stays
 available; no new release, gate flag, evaluation default or champion status was
 changed as a result of this review.
 
+## Processed daily data for Placeholder_F4
+
+The two files Placeholder_F4 reads from the `daily` subset, included as built on 2026-11-10 (the build that reproduced `submission.csv` with SHA-256 `8344e656…3bc37`). Source: the challenge `daily` subset at the pinned revision (CC0-1.0), 1851-01-01 to 2018-12-31 only; downloaded by `code/download_raw.py` into `data/raw/` (not copied here). Used for: forecast input (Placeholder_F4, the submission).
+
+| File | What it holds | How we prepared it |
+|---|---|---|
+| `processed/f2/daily_features.parquet` | One row per city and year (28,052 rows, 30 columns): day counts (`n_tmax`, `n_tmin`, `n_both`, `n_prcp`), cleaned yearly values (`tavg`, `cdd_raw`, `hot1`, `prcp_raw`, …), warm-season and seasonal means (`warm_tavg`, `t_djf`, `t_mam`, `t_jja`, `t_son`) and gap-filled inputs (`cdd_fill`, `prcp_fill`) | `code/f2/f2_daily.py`: sets to missing 9 days with Tmax < Tmin, 462 climatological outliers and 32 one-day spikes, then summarises each city and year; checks parity with the official `annual_indices` values |
+| `processed/f2/cdd_grid.npz` | Monthly CDD response tables per city and year: how CDD changes when the observed daily mean temperatures are shifted | `code/f2/f2_cddgrid.py`, from the cleaned daily data above |
+| `processed/f2/daily_qc_report.json` | Counts of what the cleaning changed (rows, missing values before and after, each rule) | Written by `code/f2/f2_daily.py` |
+
 ## Outside data (analysis and tested inputs)
 
 | File | Content | Source | License | Years | Preparation | Role |
