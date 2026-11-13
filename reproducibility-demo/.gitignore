@@ -1,0 +1,3 @@
+# Downloads (verified against Hugging Face checksums on every run) and per-run build folders, logs and receipts.
+.cache/
+runs/
